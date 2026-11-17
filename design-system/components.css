@@ -999,6 +999,20 @@
 .pb-hint .pb-icon { width: 14px; height: 14px; vertical-align: 0; }
 .pb-list__group { padding: 10px 8px 2px; color: var(--pb-text-tertiary); font-size: var(--pb-fs-xs); font-weight: var(--pb-fw-semibold); }
 .pb-list__group strong { color: var(--pb-text); font-weight: var(--pb-fw-semibold); }
+/* A list that scrolls inside its section once it runs long, so what comes
+   after it stays in view (Coming up). Its group headings stay pinned while it
+   scrolls, and a soft shade along the bottom says there is more below; it
+   goes at the end. Give it tabindex="0" and a name, so the keyboard scrolls it. */
+.pb-list--scroll {
+  max-height: min(400px, 55vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: var(--pb-r-md);
+  background:
+    linear-gradient(transparent, var(--pb-bg) 70%) bottom / 100% 28px no-repeat local,
+    radial-gradient(farthest-side at 50% 100%, color-mix(in srgb, var(--pb-text) 18%, transparent), transparent) bottom / 100% 12px no-repeat;
+}
+.pb-list--scroll .pb-list__group { position: sticky; top: 0; z-index: 1; background: var(--pb-bg); }
 
 /* ---- Emotion: reassurance and progress ------------------------------------ */
 /* One line that names the fear and answers it, beside the risky action. */
@@ -1216,15 +1230,16 @@
 .pb-strip { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(22px, 1fr); gap: var(--pb-s-0-5); overflow-x: auto; padding: var(--pb-s-1) 0; }
 .pb-strip__day { display: grid; align-content: start; justify-items: center; gap: var(--pb-s-0-5); min-height: 60px; padding: var(--pb-s-1) 0 var(--pb-s-1-5); border-radius: var(--pb-r-md); }
 .pb-strip__day.is-week-start { margin-left: var(--pb-s-1-5); }
-.pb-strip__day.is-today { background: var(--pb-bg-pressed); }
 .pb-strip__day.has-due { background: var(--pb-bg-hover); }
-.pb-strip__day.is-today.has-due { background: var(--pb-bg-pressed); }
 .pb-strip__wd { color: var(--pb-text-tertiary); font-size: 10px; font-weight: var(--pb-fw-medium); text-transform: uppercase; letter-spacing: 0.02em; }
-.pb-strip__num { color: var(--pb-text-tertiary); font-size: var(--pb-fs-sm); font-weight: var(--pb-fw-medium); line-height: 1.3; font-variant-numeric: tabular-nums; }
-.pb-strip__day.has-due .pb-strip__num,
-.pb-strip__day.is-today .pb-strip__num { color: var(--pb-text); font-weight: var(--pb-fw-semibold); }
+/* Every date sits in the same round box, so today's filled circle keeps the marks in line. */
+.pb-strip__num { display: grid; place-items: center; width: 22px; height: 22px; border-radius: var(--pb-r-full); color: var(--pb-text-tertiary); font-size: var(--pb-fs-sm); font-weight: var(--pb-fw-medium); line-height: 1; font-variant-numeric: tabular-nums; }
+.pb-strip__day.has-due .pb-strip__num { color: var(--pb-text); font-weight: var(--pb-fw-semibold); }
 .pb-strip__day.is-weekend:not(.has-due) .pb-strip__wd,
 .pb-strip__day.is-weekend:not(.has-due) .pb-strip__num { color: var(--pb-text-disabled); }
+/* Today: the date in a filled circle, the one solid spot in the strip, a weekend or not. */
+.pb-strip .pb-strip__day.is-today .pb-strip__wd { color: var(--pb-text); }
+.pb-strip .pb-strip__day.is-today .pb-strip__num { background: var(--pb-primary); color: var(--pb-on-primary); font-weight: var(--pb-fw-semibold); }
 .pb-strip__marks { display: grid; justify-items: center; gap: 3px; margin-top: var(--pb-s-0-5); }
 /* Named apart from `.pb-mark` (the highlight of a phrase in a text): sharing the name squeezed a marked phrase into this 8px box. */
 .pb-strip__mark { display: inline-block; flex: none; width: 8px; height: 8px; }
@@ -2047,3 +2062,18 @@ a.pb-ref__title:focus-visible { outline: 2px solid var(--pb-accent); outline-off
   .pb-chat__held .ph-chat-thinking,
   .pb-chat__waiting > .pb-icon { animation: none; }
 }
+
+/* ─── Access: Settings → Access and the sign-in gate (ticket 40) ─────────── */
+.pb-access__add { display: flex; gap: var(--pb-s-2); align-items: center; margin-top: var(--pb-s-3); }
+.pb-access__add .pb-input { flex: 1 1 auto; width: auto; min-width: 0; }
+.pb-access__add .pb-select { flex: none; width: auto; min-width: 120px; }
+.pb-access__confirm { display: flex; flex-wrap: wrap; align-items: center; gap: var(--pb-s-2); margin-top: var(--pb-s-2); padding: var(--pb-s-2) var(--pb-s-3); border-radius: var(--pb-r-md); background: var(--pb-bg-subtle); font-size: var(--pb-fs-sm); }
+.pb-access__confirm > span { flex: 1 1 220px; }
+.pb-access__note { display: flex; align-items: flex-start; gap: 6px; color: var(--pb-text-secondary); }
+.pb-access__note > .pb-icon { flex: none; width: 14px; height: 14px; margin-top: 2px; color: var(--pb-icon); }
+.pb-gate { display: flex; align-items: center; justify-content: center; min-height: 100%; padding: var(--pb-s-8) var(--pb-s-4); }
+.pb-gate__card { display: grid; gap: var(--pb-s-3); width: 100%; max-width: 440px; padding: var(--pb-s-6); border: 1px solid var(--pb-border); border-radius: var(--pb-r-lg); background: var(--pb-bg-card); box-shadow: var(--pb-shadow-card); }
+.pb-gate__icon { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: var(--pb-r-md); background: var(--pb-bg-subtle); color: var(--pb-text-secondary); }
+.pb-gate__title { margin: 0; font-size: var(--pb-fs-lg); font-weight: 600; color: var(--pb-text); }
+.pb-gate__address { display: flex; align-items: center; gap: var(--pb-s-2); padding: var(--pb-s-2) var(--pb-s-3); border-radius: var(--pb-r-md); background: var(--pb-bg-subtle); }
+.pb-gate__address code { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: var(--pb-fs-sm); }

@@ -6,6 +6,7 @@ import { ErrorLine } from "../../../components/shared/ErrorLine.js";
 import { useRenameRecord } from "../../../components/shared/useRenameRecord.js";
 import { useRun } from "../../../components/shared/useRun.js";
 import { VaultNotes } from "../../../components/shared/VaultNotes.js";
+import { CURRENCY_FORMAT, currencyCode } from "../../../kit/format/index.js";
 import type { ContactChoice } from "../../../kit/proposal-view/index.js";
 import { Cell, convert, type Field } from "../Items.js";
 import type { TabProps } from "./types.js";
@@ -38,6 +39,8 @@ const TEXT_ROWS: {
   label: string;
   field: Field;
   read: (raw: unknown) => SetProposalDetailsInput;
+  /** Why what was typed can't be saved; nothing is sent then. */
+  check?: (raw: unknown) => string | null;
   value: (s: TabProps["s"]) => string | null | undefined;
 }[] = [
   {
@@ -55,7 +58,8 @@ const TEXT_ROWS: {
   {
     label: "Currency",
     field: CURRENCY,
-    read: (raw) => ({ currency: String(raw).toUpperCase() }),
+    read: (raw) => ({ currency: currencyCode(String(raw)) }),
+    check: (raw) => (currencyCode(String(raw)) ? null : CURRENCY_FORMAT),
     value: (s) => s.currency,
   },
   {
@@ -80,6 +84,7 @@ export function DetailsTab({
   contacts: readonly ContactChoice[];
 }) {
   const run = useRun();
+  const entityRun = useRun();
   const renameEntry = useRenameRecord(documentId);
   const set = (input: SetProposalDetailsInput) =>
     run.run(
@@ -103,7 +108,11 @@ export function DetailsTab({
                 field={row.field}
                 value={row.value(s)}
                 disabled={disabled}
-                onCommit={(raw) => set(row.read(raw))}
+                onCommit={(raw) => {
+                  const why = row.check?.(raw);
+                  if (why) run.run((e) => e([new Error(why)]));
+                  else set(row.read(raw));
+                }}
               />
             </div>
           </div>
@@ -161,13 +170,17 @@ export function DetailsTab({
         label="Contracting entity (a company fact in the vault)"
         notes={s.contractingEntity ? [s.contractingEntity] : []}
         disabled={disabled}
-        error={run.error ?? undefined}
+        error={entityRun.error ?? undefined}
         onAdd={(n) =>
-          run.run((e) =>
+          entityRun.run((e) =>
             send(actions.setProposalParties({ contractingEntity: n }), e),
           )
         }
-        onRemove={() => undefined}
+        onRemove={() =>
+          entityRun.run((e) =>
+            send(actions.setProposalParties({ contractingEntity: null }), e),
+          )
+        }
       />
       <ErrorLine message={run.error} />
     </div>

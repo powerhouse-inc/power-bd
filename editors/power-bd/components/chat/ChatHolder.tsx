@@ -4,8 +4,9 @@
  * while the person moves between places, and while the chat moves between
  * the full view and the side panel. Whichever view shows it puts the held DOM
  * into its own pane: React cannot move a mounted tree between parents, and the
- * stack's ChatPanel keeps its composer to itself (Sektar's way). It is plain
- * component state, so a reload starts a new conversation.
+ * stack's ChatPanel keeps its composer to itself (Sektar's way). The
+ * conversation itself lives outside the app (keptChats.ts): leaving the app
+ * and coming back, or reloading, finds it as it was.
  *
  * Nothing is asked until a view first shows the chat. Then the agent's
  * service is asked once for the tab, and the stack's chat (the AI SDK,
@@ -17,12 +18,15 @@ import {
   Suspense,
   useCallback,
   useContext,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
   type ReactNode,
 } from "react";
+import { keptChats } from "./keptChats.js";
+import { usePerson } from "./useChatChoices.js";
 import type { ChatService } from "./useChatService.js";
 
 /** The held conversation's DOM, for as long as the tab lives. */
@@ -59,6 +63,9 @@ export function ChatHolder({ driveId, children }: { driveId: string; children: R
     clear: heldElement("pb-chat__held-clear"),
   }));
   const start = useCallback(() => setStarted(true), []);
+  // Another person here now: the answers still coming for anyone else stop.
+  const person = usePerson();
+  useEffect(() => keptChats.haltOthers(person), [person]);
   const holder = useMemo(() => ({ slots, service, start }), [slots, service, start]);
   return (
     <HolderContext.Provider value={holder}>

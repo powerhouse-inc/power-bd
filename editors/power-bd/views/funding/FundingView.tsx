@@ -9,6 +9,7 @@ import { useTeam } from "../../components/shared/useTeam.js";
 import { fmtInstant } from "../../components/shared/relationship/common.js";
 import { deadline, sortByDeadline } from "../../kit/funding/index.js";
 import { attemptsLeft } from "../../kit/overview/index.js";
+import { useNow } from "../../components/shared/useNow.js";
 import { useBdSettingsDocumentsInSelectedDrive, useContactDocumentsInSelectedDrive, useOpportunityDocumentsInSelectedDrive } from "../../components/useDriveDocuments.js";
 
 /** The Funding place: opportunities in deadline order, and a way to start one. */
@@ -20,7 +21,7 @@ export function FundingView({ driveId }: { driveId: string }) {
   );
   const select = useSetSelectedNode();
   const team = useTeam();
-  const now = new Date().toISOString();
+  const now = useNow();
 
   const {
     create: createRecord,

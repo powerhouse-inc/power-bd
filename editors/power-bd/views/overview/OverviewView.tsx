@@ -27,6 +27,7 @@ import { OverviewBoard } from "./OverviewBoard.js";
 import { OverviewFilters } from "./OverviewFilters.js";
 import { OverviewTable } from "./OverviewTable.js";
 import { SummaryTiles, type Tile } from "./SummaryTiles.js";
+import { useNow } from "../../components/shared/useNow.js";
 import { useBdSettingsDocumentsInSelectedDrive, useContactDocumentsInSelectedDrive, useDecisionDocumentsInSelectedDrive, useInvestorListDocumentsInSelectedDrive, useLeadDocumentsInSelectedDrive, useOpportunityDocumentsInSelectedDrive, useProposalDocumentsInSelectedDrive } from "../../components/useDriveDocuments.js";
 
 /** A document's id and its global state, the shape the kit reads. */
@@ -64,7 +65,7 @@ export function OverviewView({ driveId }: { driveId: string }) {
   const comingUp = useRef<HTMLElement>(null);
   const boardSection = useRef<HTMLDivElement>(null);
 
-  const now = new Date().toISOString();
+  const now = useNow();
   const {
     input,
     result,
@@ -75,6 +76,7 @@ export function OverviewView({ driveId }: { driveId: string }) {
     windowDays,
     relationships,
     openDecisions,
+    overdueDecisions,
     totals,
   } = overviewModel(
     {
@@ -132,10 +134,6 @@ export function OverviewView({ driveId }: { driveId: string }) {
     });
   };
   const firstDue = result.due.at(0);
-  const overdueDecisions = result.slipping.filter(
-    (s) =>
-      s.source.kind === "decision" && s.reasons.includes("DECISION_OVERDUE"),
-  ).length;
   const withAmount = totals.reduce((n, t) => n + t.count, 0);
   const tiles: Tile[] = [
     {

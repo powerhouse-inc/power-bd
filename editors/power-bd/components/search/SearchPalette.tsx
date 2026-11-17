@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { Suspense, useEffect, useId, useRef, useState } from "react";
 import {
   GROUP_CAP,
   itemIds,
@@ -52,7 +52,18 @@ export function SearchPalette({ open, ...rest }: Props) {
         if (e.target === e.currentTarget) rest.onClose();
       }}
     >
-      {open && <PaletteBody {...rest} />}
+      {open && (
+        // Opened before the records have first loaded, it waits in its own dialog.
+        <Suspense
+          fallback={
+            <div className="pb-palette__list" role="status" aria-label="Loading search">
+              <span className="pb-skeleton" style={{ width: "60%" }} />
+            </div>
+          }
+        >
+          <PaletteBody {...rest} />
+        </Suspense>
+      )}
     </dialog>
   );
 }

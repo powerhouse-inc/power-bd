@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ICONS } from "../../../design-system/icons.js";
-import { PLACES, countFor, placeById, saveStateView } from "./places.js";
+import { PLACES, countFor, hashOf, placeById, placeFromHash, saveStateView } from "./places.js";
 
 describe("places", () => {
   it("lists the ten places, the Agent and Settings last", () => {
@@ -36,5 +36,22 @@ describe("places", () => {
     expect(saveStateView("up-to-date").label).toBe("Up to date");
     expect(saveStateView("setting-up").className).toContain("is-saving");
     expect(saveStateView("offline").className).toContain("is-offline");
+  });
+});
+
+describe("a place in the address", () => {
+  it("names each place in the hash, the Overview too", () => {
+    expect(hashOf("overview")).toBe("#overview");
+    expect(hashOf("leads")).toBe("#leads");
+    expect(hashOf("agent")).toBe("#agent");
+  });
+
+  it("reads back every place from its hash", () => {
+    for (const { id } of PLACES) expect(placeFromHash(hashOf(id))).toBe(id);
+  });
+
+  it("reads nothing from a hash that names no place", () => {
+    for (const hash of ["", "#", "#nowhere", "#Leads", "leads", "#leads/x", "#toString", "#constructor"])
+      expect(placeFromHash(hash)).toBeUndefined();
   });
 });

@@ -1,4 +1,5 @@
 import type { LeadKind, LeadStatus } from "document-models/lead";
+import { daysLate } from "../overview-view/when.js";
 
 const OPEN: LeadStatus[] = [
   "TO_CONTACT",
@@ -44,6 +45,8 @@ export type NextAction =
       text: string;
       dueDate: string | null;
       overdue: boolean;
+      /** Whole days past its due day; 0 unless overdue. */
+      daysLate: number;
     }
   | { kind: "message"; id: string; status: "DRAFT" | "APPROVED" }
   | { kind: "add-step" }
@@ -83,12 +86,14 @@ export function nextAction(
   if (open.length > 0) {
     const s = open[0];
     const due = s.dueDate ? s.dueDate.slice(0, 10) : null;
+    const late = due === null ? 0 : daysLate(due, today.slice(0, 10));
     return {
       kind: "step",
       id: s.id,
       text: s.text,
       dueDate: due,
-      overdue: due !== null && due < today.slice(0, 10),
+      overdue: late > 0,
+      daysLate: late,
     };
   }
   const approved = lead.messages.find((m) => m.status === "APPROVED");

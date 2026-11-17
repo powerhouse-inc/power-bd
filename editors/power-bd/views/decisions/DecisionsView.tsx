@@ -8,6 +8,7 @@ import { useCreateRecord } from "../../components/shared/useCreateRecord.js";
 import { useTeam } from "../../components/shared/useTeam.js";
 import { fmtDay } from "../../components/shared/relationship/common.js";
 import { decisionImpact } from "../../kit/decision-impact/index.js";
+import { overdueText } from "../../kit/overview-view/index.js";
 import {
   daysOverdue,
   gatedTotal,
@@ -147,7 +148,7 @@ export function DecisionsView({ driveId }: { driveId: string }) {
                         <span className={late ? "pb-relative is-overdue" : ""}>
                           {fmtDay(decideBy)}
                           {late
-                            ? ` · ${daysOverdue(decideBy, today)} days overdue`
+                            ? ` · ${overdueText(daysOverdue(decideBy, today))}`
                             : ""}
                         </span>
                       ) : (

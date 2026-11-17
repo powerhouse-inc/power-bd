@@ -4,6 +4,7 @@
  */
 import { useSetPHAppConfig } from "@powerhousedao/reactor-browser";
 import type { EditorProps } from "document-model";
+import { AccessGate } from "./components/access/AccessGate.js";
 import { Shell } from "./components/Shell.js";
 import { editorConfig } from "./config.js";
 
@@ -14,5 +15,9 @@ export default function Editor({ document, children }: EditorProps) {
   useSetPHAppConfig(editorConfig);
   // The drive is the document; without it there is nothing to show yet.
   if (!document) return null;
-  return <Shell driveId={document.header.id}>{children}</Shell>;
+  return (
+    <AccessGate driveId={document.header.id}>
+      <Shell driveId={document.header.id}>{children}</Shell>
+    </AccessGate>
+  );
 }

@@ -34,6 +34,7 @@ export function ConsortiumSection({
   onCoordinator,
   onAdd,
   onRemove,
+  onStatus,
 }: {
   coordinatorId?: string | null;
   partners: readonly PartnerItem[];
@@ -41,6 +42,8 @@ export function ConsortiumSection({
   onCoordinator: (id: string | undefined, e: OnErrors) => void;
   onAdd: (p: AddPartnerInput, e: OnErrors) => void;
   onRemove: (id: string, e: OnErrors) => void;
+  /** A partner moves on: asked, interested, committed, signed. */
+  onStatus: (id: string, status: PartnerItem["status"], e: OnErrors) => void;
 }) {
   const run = useRun();
   const [org, setOrg] = useState("");
@@ -74,7 +77,6 @@ export function ConsortiumSection({
       ) : (
         <div className="pb-list">
           {partners.map((p) => {
-            const st = PARTNER_STATUS.find(([v]) => v === p.status);
             return (
               <div className="pb-list__item" key={p.id}>
                 <span className="pb-list__lead">
@@ -89,7 +91,21 @@ export function ConsortiumSection({
                   </span>
                 </div>
                 <div className="pb-list__end">
-                  <span className={`pb-tag pb-tag--${st?.[2]}`}>{st?.[1]}</span>
+                  <select
+                    className="pb-select pb-select--inline"
+                    aria-label={`Status of ${name(p.organisationId)}`}
+                    value={p.status}
+                    onChange={(e) => {
+                      const next = enumValue(PARTNER_STATUSES, e.target.value);
+                      if (next) run.run((er) => onStatus(p.id, next, er));
+                    }}
+                  >
+                    {PARTNER_STATUS.map(([v, l]) => (
+                      <option key={v} value={v}>
+                        {l}
+                      </option>
+                    ))}
+                  </select>
                   <button
                     className="pb-btn pb-btn--ghost pb-btn--sm pb-btn--icon"
                     aria-label={`Remove partner ${name(p.organisationId)}`}

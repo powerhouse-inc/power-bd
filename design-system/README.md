@@ -94,6 +94,26 @@ One conversation, two presentations, switched from the conversation's header. Th
 
 A note linked from BD shows the vault's title today: as a list row (`.pb-note`, its title `.pb-note__title` the link out, with `.pb-note__open` saying it leaves for the vault) or as a chip (`.pb-ref` with `.pb-ref__title`). While the vault is asked, the title it was linked with shows over `.pb-note__wait`. One that can't be read is `.is-unavailable`: that title in grey and the reason in a few words (`.pb-note__why`, `.pb-ref__why`), never red. Notes are added with `.pb-picker`: a search field whose results (`.pb-picker__option` with `__title`, `__desc` and `__kind`) drop over the page in a `.pb-popover`; the filled row is where Enter goes, a note already linked is `.is-linked`, and a sticky `__foot` holds the reassurance and the way to type an id instead (`__switch`). `__status` says the vault is being asked or nothing matched; `__typed` with `__why` is the fallback when search can't run. ⌘K lists notes in a group of their own, "Notes in the vault". BD only reads the vault, and no part has a coloured edge.
 
+### Access
+
+Settings → Access (`.pb-access`) is a `.pb-list` of the drive's grants, each row with a level `.pb-select` (View, Edit, Manage) and a remove button; `.pb-access__confirm` holds the one confirm a change or removal waits for, and `.pb-access__add` is the add row (address, level, "Give access"). `.pb-access__note` says when the server keeps no permission tables. The sign-in gate is `.pb-gate` with one `.pb-gate__card`: an icon, `.pb-gate__title`, a line, and either the sign-in action or `.pb-gate__address` with copy. Demo: `#access`.
+
+### A list that scrolls
+
+`.pb-list--scroll` caps a `.pb-list` at 400 px (or 55 % of the window, if less) and scrolls it inside its section, so what follows stays in view (Coming up on the Overview). Its `.pb-list__group` headings stay pinned while it scrolls, and a soft shade along the bottom says there is more below; the shade goes at the end. Give it `tabindex="0"`, `role="region"` and a name, so the keyboard scrolls it too.
+
+### Today in the strip
+
+The strip's first day is today. Its date sits in a filled circle in the primary colour, and the cell carries `aria-current="date"`. Every date sits in the same 22 px round box, so the marks below stay in line. The app rolls the strip over at midnight in the team's time zone by itself.
+
+### A date that has passed
+
+A passed date reads in red with its age: `.pb-relative.is-overdue`, "Tue 10 Nov · 7 days overdue", and "1 day overdue" for one day. A card row has no room for that: there the date stays plain and whole (`.pb-card__date`), and the card ends with the slipping signal (`.pb-signal`, "Next step overdue · 7 days"), as the Overview's cards do.
+
+### A place while its records first load
+
+The frame (sidebar, top bar) paints at once. The place's pane shows its title (`.pb-page__title`) and four `.pb-skeleton` lines in a `.pb-stack.pb-gap-12` with `role="status"`, then the place fills in, with the sidebar's counts, in one go. It shows only the first time a drive's records load in a page; going back to a place, or to the app, paints at once. Until the records are known a place is loading, never empty: no empty state or set-up message stands in for records that have not arrived.
+
 ## Using it in the app
 
 1. Import `tokens.css` and `components.css` once, in the BD drive app. Don't load a font: Connect already provides Inter.

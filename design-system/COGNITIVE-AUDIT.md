@@ -120,6 +120,9 @@ Record pages blend the same way:
 | Lead, funding opportunity, organisation, person | record, document, entity | BD words; the rest is how the software stores it |
 | Note in the vault, or the note's title | reference, PHID, document id | The team knows "the vault" |
 | Owner (a name) | assignee, user, 0x… address | Names come from the team list |
+| View, Edit, Manage | READ, WRITE, ADMIN, permission level | The levels said by what they let someone do |
+| Access, give access, remove | grant, revoke, permission, ACL | The team's words for who can open the space |
+| Wallet address (in Access and the gate only) | user id, DID, Renown account | Access is given to the address someone signs in with; a team name shows beside it when known |
 | Next step | task, to-do item | The team's own phrase |
 | History | interactions, operations, events | What a person calls the past of a relationship |
 | Stage: New, Active, Parked, Closed | common stage | "Common stage" is a spec term |
@@ -775,3 +778,136 @@ Added on 2026-11-17 (ticket 30). Research, programme rules, company facts and co
 - **Language:** "note in the vault" and the vault's own kinds; short reasons; the id only in the fallback.
 - **Decision:** what each note says, before it is linked; the reason before the fallback fields.
 - **Emotion:** "Linking a note changes nothing in the vault"; an unreadable link keeps its title and a calm reason.
+
+### Access in Settings, and the sign-in gate (built, `components/access/`, `kit/access/`; ticket 40)
+
+Asked for so that access is managed in the app "instead of terminal commands, just like the knowledge vault app". The concepts weighed: a separate Access page (task-oriented), a section in Settings beside the team (conventional), and inline grants on each team member (immersive). Chosen: the Settings section, because the team list is already there and the vault's own Access is reached from its settings; grants on team rows were set aside because grants are by wallet and not everyone with access is on the team.
+
+- **Vision:** in Settings, the list is the anchor; the add row sits under it. On the gate, one card with one action: sign in, or copy your address.
+- **Wayfinding:** Access sits in Settings, after the team and the rules. The gate replaces the app only when the space can't be opened, and never because the server is slow or down.
+- **Memory:** the shape of sharing dialogs (person, level, remove) and the vault's Access; a team name where the address is on the team.
+- **Language:** View, Edit, Manage, each with one line on what it allows; "Give access"; the wallet address only here and on the gate.
+- **Decision:** a level change and a removal each wait for one confirm that says what changes; a mistyped address says what an address looks like; the only manager is guarded, with the reason on the row.
+- **Emotion:** "Access covers every record in it"; the confirm says what the person will no longer do; the gate says that signing in again won't help, and why.
+
+### Three fixes: places open in place, Coming up scrolls, the conversation stays (built, `components/useDriveDocuments.ts`, `views/overview/ComingUp.tsx`, `components/chat/`; tickets 41, 42, 43)
+
+The App shell, Overview and Chat audits stand. These are three faults the user reported on the deployed 1.0.3, fixed on 2026-11-17.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** Every click on a place, a tab or a record blanked the whole app for about a third of a second behind Connect's loader, so the eye lost its place each time. Places, tabs and records now open in place, and the sidebar and top bar never go. A long Coming up list pushed the board below the fold; the list now scrolls inside its section, and the board starts where it did.
+2. **Wayfinding.** In a scrolled Coming up list, the day's heading stays pinned, so the person knows which day they are reading. A soft shade along the bottom says there is more below, and it goes at the end. The day strip and its legend stay put above the list.
+3. **Memory and semantics.** Leaving the app and coming back finds the conversation as it was, as in any chat product, and so does a reload. The person no longer has to remember what the agent said.
+4. **Language.** For an answer a reload cut off: "The last answer stopped when the page closed. Ask again to go on." and, on its step, "Stopped: the page closed before this step finished." In a step whose long result was not kept: "Too long to keep once the page closed. Ask again to see it." Where an image was: "An image was attached here. Images are not kept once the page closes." No system terms.
+5. **Decision making.** Unchanged.
+6. **Emotion.** No flash that reads as a crash or a reload, no conversation that vanishes, and an answer the page cut off says so instead of looking finished.
+
+**2. Concepts weighed** (for Coming up)
+
+- **A · Task-oriented:** the first five items and a "more" disclosure, as What needs attention has. Short, but the page grows again once it is opened.
+- **B · Conventional:** a list of fixed height that scrolls inside its section, with the day headings pinned, as in a calendar's agenda panel.
+- **C · Immersive:** the day strip as a selector, showing one day's items at a time. Short, but the list stops being a glance at the days ahead.
+
+**Chosen:** B. Evidence: the user asked for it ("add a scrolling feature on this card so I can scroll"), and it keeps the glance at the days ahead that A and C trade away.
+
+**3. Implementation:** `.pb-list--scroll` (at most 400 px or 55 % of the window; the shade a `local` background, so it goes at the end; `.pb-list__group` sticky on `--pb-bg`), a focusable region named "Items coming up"; demo on the Overview screen. Places: the loading check is shared by every view (`kit/drive/loadable.ts`), and a changed record list loads in the background. Chat: `kit/chat/kept-conversation.ts`.
+
+**4. Mapping**
+
+- **Vision:** the app never blanks on a click; the board stays in reach.
+- **Wayfinding:** the pinned day; the shade at the bottom.
+- **Memory:** the conversation is there when the person comes back.
+- **Language:** the stopped-answer and not-kept lines.
+- **Decision:** unchanged.
+- **Emotion:** no flash, no lost conversation, no answer that looks finished when it was cut off.
+
+### Opening fast, and each place's address (built, `components/Shell.tsx`, `components/PlaceLoading.tsx`, `components/access/AccessGate.tsx`, `kit/drive/loadable.ts`, `kit/places.ts`; tickets 44, 45)
+
+The App shell audit stands. Asked on 2026-11-17, against Sektar: "are we having the most efficient way to load and navigate across the views? I want it to be impeccable."
+
+**1. Checkpoints**
+
+1. **Vision and attention.** Opening the app showed nothing of ours, then "Opening the space…", then everything at once; for a moment the Overview said "Setting up your space" on a space set up long ago. Now the frame comes first, the place's title and quiet lines stand where its content will be, and the place and the sidebar's counts fill in together the moment the records are there.
+2. **Wayfinding.** Each place has its address (`#leads`). Back and Forward move between places and through records opened from them; a reload stays where it was; a link opens a place. The sidebar's current place always matches the address.
+3. **Memory and semantics.** Back works as on any website: the person no longer has to remember that it leaves the app.
+4. **Language.** No new words. "Setting up" shows in the top bar only when something is really being set up, and "Setting up your space" only on a new space.
+5. **Decision making.** Unchanged.
+6. **Emotion.** No blank wait before the space, no false set-up message, no lost place on reload.
+
+**2. Concepts weighed** (for loading)
+
+- **A · Task-oriented:** no loading state at all; the frame waits for the records, as before. Simple, but the person stares at Connect's loader.
+- **B · Conventional:** the frame at once and a skeleton in the pane, as Sektar's frame does with its page skeleton.
+- **C · Immersive:** each view draws its own rows and fills them in as records arrive. Smooth, but every view needs its own loading design, and lists reshuffle as records land.
+
+**Chosen:** B, filled in one go (not committed as a fallback, so React's 300 ms reveal throttle never holds the content back). Evidence: measured on the local Vetra. Requests on opening went from 46 to 14 (19 single reads became one batched read), there is no round trip before the frame, the content follows the batched read by the Overview's own render time, and returning to the app paints at once.
+
+**3. Implementation:** `PlaceLoading` (`.pb-page__title`, `.pb-skeleton`, `role="status"`); the first load in a background render (`useDeferredValue`) gated on the drive's records being listed; the access gate up only on a refusal; the set-up skipped when the records known show nothing missing; `hashOf` / `placeFromHash`, with the place added to Connect's own entries and never written over an address that names one.
+
+**4. Mapping**
+
+- **Vision:** frame first, the place in one go.
+- **Wayfinding:** an address per place; Back, Forward, reload and links.
+- **Memory:** Back behaves as everywhere else.
+- **Language:** "Setting up" only when true.
+- **Decision:** unchanged.
+- **Emotion:** no blank wait, no false message, no lost place.
+
+### Dates that stay true: the clock moves, today stands out, overdue says so (built, `kit/clock/`, `components/shared/useNow.ts`, `components/shared/useToday.ts`, `views/overview/`, `views/leads/NextStep.tsx`, `components/shared/relationship/NextStepsSection.tsx`; ticket 46)
+
+The Overview audit stands. Asked on 2026-11-17: "make sure that this coming up card works correctly with the date. so, if there's a date that is already overdue, it's displayed correctly. and also, it's displayed the current day in the calendar and so on".
+
+**1. Checkpoints**
+
+1. **Vision and attention.** Today in the strip was one shade darker than any day with something due, so in a busy fortnight it did not stand out. Now its date sits in a filled circle, the one solid spot in the strip. An overdue next step reads in red with its age on record pages and in the Leads table; on a card, the red signal line ends the card, as on the Overview.
+2. **Wayfinding.** The strip always starts at today: at midnight in the team's time zone it rolls over by itself, and Coming up's headings ("today", "tomorrow") move with it.
+3. **Memory and semantics.** The person no longer works out how late something is: "7 days overdue" says it.
+4. **Language.** One wording for a passed date: "1 day overdue", "7 days overdue". Signals keep the lexicon's names ("Next step overdue · 7 days", "Meeting not recorded").
+5. **Decision making.** The Open decisions tile names the overdue ones ("1 overdue"); it said "None overdue" whatever the dates.
+6. **Emotion.** A view left open no longer misleads: no meeting that has passed still listed as coming up, no yesterday called today.
+
+**2. Concepts weighed** (for today in the strip)
+
+- **A · Task-oriented:** a "Today" label over the first day. Unmistakable, but the strip's columns are 22 px wide: a word does not fit without widening one day.
+- **B · Conventional:** the date in a filled circle, as calendars mark today.
+- **C · Immersive:** a "now" line across the strip and the list. Striking, but the list is grouped by day, not laid out on a timeline; the line would mean nothing there.
+
+**Chosen:** B, in the primary colour (charcoal in light, near-white in dark): colour still marks meaning only, and blue stays for links and focus. The cell carries `aria-current="date"`. Evidence, measured on the local Vetra with the page's clock set: at 23:58:53 the strip's today was Tue 17 with two steps due; at 00:00:09, by the clock alone, it was Wed 18, and the two steps were in Needs attention as "Next step overdue · 1 day". A 09:30 meeting left Coming up at 09:31 and showed as "Meeting not recorded". After a 24-hour jump the page caught up 0.4 s after being seen again. A browser in New York saw the team's day.
+
+**3. Implementation:** one clock for the app (`kit/clock`), read on each minute boundary while a view listens and at once when the page is seen again, stopped when none listens; `useNow` for the Overview and Funding, `useToday` drawing again only when the day changes; the overview model counts overdue decisions with the Decisions place's rule; `daysLate` and `overdueText` in the kit; `.pb-relative.is-overdue` for a passed date, `.pb-card__date` and `.pb-signal` on cards; the strip's dates in one round box, today's filled.
+
+**4. Mapping**
+
+- **Vision:** today is the strip's one solid spot; overdue is red with its age.
+- **Wayfinding:** the strip starts at today, whatever the hour the page was opened.
+- **Memory:** the age is written, not worked out.
+- **Language:** "1 day overdue", one wording everywhere.
+- **Decision:** the tile names the overdue decisions.
+- **Emotion:** the view stays true while it is left open.
+
+### Editing what was recorded: next steps, meetings, partners, funding dates (built, `components/shared/relationship/`, `records/opportunity/`; ticket 47)
+
+The Lead and Opportunity audits stand. Found while testing every editor's controls on 2026-11-17.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** Edit sits beside Remove on each open next step and history entry, as a quiet icon; a meeting whose time has passed shows "Record how it went" in words, the one action that row needs.
+2. **Wayfinding.** "Update the next step" and "Record how it went" in Needs attention now lead to a control that does it, on the record they open.
+3. **Memory and semantics.** An edit opens in place with what was stored, so nothing is retyped.
+4. **Language.** The panel's words reused ("Record how it went"); "Decide by" and "Expected opening" as in Coming up; partner statuses from the vocabulary.
+5. **Decision making.** A funding opportunity's decide-by date can be set while it is evaluated, so the decision has its date.
+6. **Emotion.** No more removing and re-adding a meeting to say it happened.
+
+**2. Concepts weighed:** a side peek per entry (heavy for a line of text), a modal (breaks the page), editing in place (chosen: the pattern People and Settings already use).
+
+**3. Implementation:** inline edit with Save and Cancel in the shared sections; status as an inline select (`.pb-select--inline`), as conditions do; dates as date fields shown by status.
+
+**4. Mapping**
+
+- **Vision:** one worded action on the row that needs it.
+- **Wayfinding:** the panel's fixes reach a control.
+- **Memory:** edits start from what is stored.
+- **Language:** the panel's and Coming up's words.
+- **Decision:** decide-by dates can be set.
+- **Emotion:** no remove-and-re-add.

@@ -99,6 +99,11 @@ export function ConfidentialSection({
                     },
                     onErrors,
                   ),
+                  () => {
+                    setText("");
+                    setSubject("");
+                    setAdding(false);
+                  },
                 )
               }
             >

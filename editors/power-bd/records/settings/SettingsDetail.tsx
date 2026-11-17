@@ -1,10 +1,12 @@
 import { generateId } from "document-model";
+import { ErrorLine } from "../../components/shared/ErrorLine.js";
 import {
   actions,
   useBdSettingsDocumentById,
   type BdSettingsAction,
 } from "document-models/bd-settings";
 import { useMemo, useState, type ReactNode } from "react";
+import { AccessSection } from "../../components/access/AccessSection.js";
 import { Icon } from "../../components/Icon.js";
 import { dispatchWith, type OnErrors } from "../../components/shared/useRun.js";
 import {
@@ -233,7 +235,7 @@ export function SettingsDetail({
             />
           </label>
         </div>
-        {errors.add && <span className="pb-field__error">{errors.add}</span>}
+        <ErrorLine message={errors.add} />
         <div className="pb-mt-8">
           <button className="pb-btn pb-btn--primary" onClick={add}>
             <Icon name="plus" />
@@ -316,6 +318,7 @@ export function SettingsDetail({
           due for deletion are listed for you to review.
         </p>
       </div>
+      <AccessSection team={state.teamMembers} />
       {children}
     </div>
   );

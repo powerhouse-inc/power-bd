@@ -22,6 +22,7 @@ import { ReferencesSection } from "../../components/shared/relationship/Referenc
 import {
   ErrorLine,
   fmtInstant,
+  newDay,
   useRun,
   dispatchWith,
   type OnErrors,
@@ -45,6 +46,7 @@ import { GoNoGo } from "./GoNoGo.js";
 import { NextBar } from "./NextBar.js";
 import { OpportunityHeader } from "./OpportunityHeader.js";
 import { StatusControls } from "./StatusControls.js";
+import { CURRENCY_FORMAT, currencyCode } from "../../kit/format/index.js";
 import { StepsSection } from "./StepsSection.js";
 import { SubmissionsSection } from "./SubmissionsSection.js";
 import { useBdSettingsDocumentsInSelectedDrive, useContactDocumentsInSelectedDrive, useDecisionDocumentsInSelectedDrive, useOpportunityDocumentsInSelectedDrive } from "../../components/useDriveDocuments.js";
@@ -74,6 +76,7 @@ export function OpportunityDetail({
   const [deciding, setDeciding] = useState(false);
   const details = useRun();
   const owner = useRun();
+  const dates = useRun();
 
   const send = (a: OpportunityAction, e: OnErrors) =>
     dispatchWith(dispatch, a, e);
@@ -251,19 +254,29 @@ export function OpportunityDetail({
             placeholder="EUR"
             defaultValue={s.currency ?? ""}
             key={`c${s.currency ?? ""}`}
-            onBlur={(e) =>
-              e.target.value !== (s.currency ?? "") &&
-              e.target.value.trim() !== "" &&
+            onBlur={(e) => {
+              const typed = e.target.value;
+              if (typed.trim() === "" || typed === (s.currency ?? "")) return;
+              const code = currencyCode(typed);
+              if (!code) {
+                details.run((er) => er([new Error(CURRENCY_FORMAT)]));
+                return;
+              }
+              // "eur" for a stored "EUR" changes nothing: show the stored code again.
+              if (code === s.currency) {
+                e.target.value = code;
+                return;
+              }
               details.run((er) =>
                 send(
                   actions.setOpportunityDetails({
-                    currency: e.target.value.trim().toUpperCase(),
+                    currency: code,
                     amount: s.amount ?? undefined,
                   }),
                   er,
                 ),
-              )
-            }
+              );
+            }}
           />
           <select
             className="pb-select pb-select--inline"
@@ -280,7 +293,7 @@ export function OpportunityDetail({
               )
             }
           >
-            <option value="">Kind not set</option>
+            <option value="">Not set</option>
             {VOCABULARY.instrument.map((i) => (
               <option key={i.value} value={i.value}>
                 {i.label}
@@ -354,6 +367,64 @@ export function OpportunityDetail({
             }
           />
         </div>
+        {s.status === "TO_EVALUATE" || s.status === "DECIDING" ? (
+          <>
+            <div className="pb-prop__key">
+              <Icon name="hourglass" />
+              Decide by
+            </div>
+            <div className="pb-prop__value">
+              <input
+                className="pb-input pb-w-160"
+                type="date"
+                aria-label="Decide by"
+                defaultValue={(s.decideBy ?? "").slice(0, 10)}
+                key={`d${s.decideBy ?? ""}`}
+                onChange={(e) =>
+                  dates.run((er) =>
+                    send(
+                      actions.setDecideBy({
+                        decideBy: e.target.value ? newDay(e.target.value) : null,
+                      }),
+                      er,
+                    ),
+                  )
+                }
+              />
+              <ErrorLine message={dates.error} />
+            </div>
+          </>
+        ) : null}
+        {s.status === "WATCHING" ? (
+          <>
+            <div className="pb-prop__key">
+              <Icon name="calendar" />
+              Expected opening
+            </div>
+            <div className="pb-prop__value">
+              <input
+                className="pb-input pb-w-160"
+                type="date"
+                aria-label="Expected opening"
+                defaultValue={(s.expectedOpening ?? "").slice(0, 10)}
+                key={`o${s.expectedOpening ?? ""}`}
+                onChange={(e) =>
+                  dates.run((er) =>
+                    send(
+                      actions.setExpectedOpening({
+                        expectedOpening: e.target.value
+                          ? newDay(e.target.value)
+                          : null,
+                      }),
+                      er,
+                    ),
+                  )
+                }
+              />
+              <ErrorLine message={dates.error} />
+            </div>
+          </>
+        ) : null}
         <div className="pb-prop__key">
           <Icon name="note" />
           Programme
@@ -437,6 +508,9 @@ export function OpportunityDetail({
         }
         onAdd={(p, e) => send(actions.addPartner(p), e)}
         onRemove={(id, e) => send(actions.removePartner({ id }), e)}
+        onStatus={(id, status, e) =>
+          send(actions.updatePartner({ id, status }), e)
+        }
       />
 
       <NextStepsSection
@@ -449,11 +523,13 @@ export function OpportunityDetail({
         }
         onReopen={(id, e) => send(actions.reopenNextStep({ id }), e)}
         onRemove={(id, e) => send(actions.removeNextStep({ id }), e)}
+        onUpdate={(st, e) => send(actions.updateNextStep(st), e)}
       />
       <InteractionsSection
         items={s.interactions}
         onAdd={(i, e) => send(actions.addInteraction(i), e)}
         onRemove={(id, e) => send(actions.removeInteraction({ id }), e)}
+        onUpdate={(c, e) => send(actions.updateInteraction(c), e)}
       />
       <ContactLinksSection
         items={s.contactLinks}

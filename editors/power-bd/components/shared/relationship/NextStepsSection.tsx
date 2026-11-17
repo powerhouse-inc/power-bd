@@ -2,6 +2,8 @@ import { useState } from "react";
 import { ErrorLine } from "../ErrorLine.js";
 import { generateId } from "document-model";
 import { Icon } from "../../Icon.js";
+import { daysLate, overdueText } from "../../../kit/overview-view/index.js";
+import { useToday } from "../useToday.js";
 import {
   fmtDay,
   newDay,
@@ -27,6 +29,7 @@ export function NextStepsSection({
   onComplete,
   onReopen,
   onRemove,
+  onUpdate,
 }: {
   items: readonly NextStepItem[];
   /** Team members to pick from; empty hides the owner picker. */
@@ -39,12 +42,22 @@ export function NextStepsSection({
   onComplete: (id: string, doneAt: string, onErrors: OnErrors) => void;
   onReopen: (id: string, onErrors: OnErrors) => void;
   onRemove: (id: string, onErrors: OnErrors) => void;
+  /** Changes an open step's text, who does it and its due day ("Update the next step"). */
+  onUpdate?: (
+    step: { id: string; text: string; owner: string | null; dueDate: string | null },
+    onErrors: OnErrors,
+  ) => void;
 }) {
   const [adding, setAdding] = useState(false);
   const [text, setText] = useState("");
   const [owner, setOwner] = useState("");
   const [due, setDue] = useState("");
+  const [editing, setEditing] = useState<string>();
+  const [editText, setEditText] = useState("");
+  const [editOwner, setEditOwner] = useState("");
+  const [editDue, setEditDue] = useState("");
   const { error, run } = useRun();
+  const today = useToday();
   const open = items.filter((s) => !s.doneAt);
   const done = items.filter((s) => s.doneAt);
   const submit = () =>
@@ -58,8 +71,77 @@ export function NextStepsSection({
         },
         onErrors,
       ),
+      () => {
+        setText("");
+        setOwner("");
+        setDue("");
+        setAdding(false);
+      },
     );
-  const row = (s: NextStepItem) => (
+  const row = (s: NextStepItem) =>
+    editing === s.id ? (
+      <div key={s.id} className="pb-todo">
+        <div className="pb-todo__main pb-stack pb-gap-6">
+          <input
+            className="pb-input"
+            aria-label="Next step"
+            value={editText}
+            onChange={(e) => setEditText(e.target.value)}
+          />
+          <div className="pb-row pb-gap-6">
+            {owners.length > 0 ? (
+              <select
+                className="pb-select pb-select--inline"
+                aria-label="Who does it"
+                value={editOwner}
+                onChange={(e) => setEditOwner(e.target.value)}
+              >
+                <option value="">Nobody yet</option>
+                {owners.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            ) : null}
+            <input
+              className="pb-input pb-w-160"
+              type="date"
+              aria-label="Due day"
+              value={editDue}
+              onChange={(e) => setEditDue(e.target.value)}
+            />
+            <button
+              className="pb-btn pb-btn--primary pb-btn--sm"
+              disabled={!editText.trim()}
+              onClick={() =>
+                run(
+                  (onErrors) =>
+                    onUpdate?.(
+                      {
+                        id: s.id,
+                        text: editText.trim(),
+                        owner: editOwner || null,
+                        dueDate: editDue ? newDay(editDue) : null,
+                      },
+                      onErrors,
+                    ),
+                  () => setEditing(undefined),
+                )
+              }
+            >
+              Save
+            </button>
+            <button
+              className="pb-btn pb-btn--ghost pb-btn--sm"
+              onClick={() => setEditing(undefined)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    ) : (
     <div key={s.id} className={`pb-todo${s.doneAt ? " is-done" : ""}`}>
       <input
         type="checkbox"
@@ -80,10 +162,32 @@ export function NextStepsSection({
         <span className="pb-todo__text">{s.text}</span>
         <span className="pb-todo__meta">
           {s.owner ? <span>{ownerLabel(s.owner)}</span> : null}
-          {s.dueDate ? <span>{fmtDay(s.dueDate)}</span> : null}
+          {s.dueDate ? (
+            !s.doneAt && daysLate(s.dueDate, today) > 0 ? (
+              <span className="pb-relative is-overdue">
+                {fmtDay(s.dueDate)} · {overdueText(daysLate(s.dueDate, today))}
+              </span>
+            ) : (
+              <span>{fmtDay(s.dueDate)}</span>
+            )
+          ) : null}
           {s.doneAt ? <span>Done {fmtDay(s.doneAt)}</span> : null}
         </span>
       </div>
+      {!s.doneAt && onUpdate ? (
+        <button
+          className="pb-btn pb-btn--ghost pb-btn--sm pb-btn--icon"
+          aria-label="Edit this next step"
+          onClick={() => {
+            setEditing(s.id);
+            setEditText(s.text);
+            setEditOwner(s.owner ?? "");
+            setEditDue(s.dueDate ? s.dueDate.slice(0, 10) : "");
+          }}
+        >
+          <Icon name="edit" />
+        </button>
+      ) : null}
       <button
         className="pb-btn pb-btn--ghost pb-btn--sm pb-btn--icon"
         aria-label="Remove this next step"

@@ -28,6 +28,16 @@ export function daysBetween(from: string, to: string): number {
   );
 }
 
+/** Whole days a due day (`YYYY-MM-DD`, or a stored whole day) is past today; 0 for today and the days ahead. */
+export function daysLate(due: string, today: string): number {
+  return Math.max(0, daysBetween(due.slice(0, 10), today));
+}
+
+/** "1 day overdue", "7 days overdue": one wording for every date that has passed. */
+export function overdueText(days: number): string {
+  return `${days} ${days === 1 ? "day" : "days"} overdue`;
+}
+
 /** "today", "tomorrow", "in 3 days", "yesterday", "7 days ago". */
 export function relativeDay(day: string, today: string): string {
   const n = daysBetween(today, day);

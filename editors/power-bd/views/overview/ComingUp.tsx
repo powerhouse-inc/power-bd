@@ -59,6 +59,7 @@ export function ComingUp({
             <div
               key={c.day}
               role="listitem"
+              aria-current={c.today ? "date" : undefined}
               title={text}
               aria-label={text}
               className={`pb-strip__day${c.today ? " is-today" : ""}${c.weekend ? " is-weekend" : ""}${c.weekStart ? " is-week-start" : ""}${c.total > 0 ? " has-due" : ""}`}
@@ -92,7 +93,13 @@ export function ComingUp({
             : `Nothing due in the next ${windowDays} days.`}
         </div>
       ) : (
-        <div className="pb-list">
+        // Scrolls inside the section once it runs long, so the board stays in reach.
+        <div
+          className="pb-list pb-list--scroll"
+          role="region"
+          aria-label="Items coming up"
+          tabIndex={0}
+        >
           {days.map((g) => (
             <div key={g.day}>
               <div className="pb-list__group">

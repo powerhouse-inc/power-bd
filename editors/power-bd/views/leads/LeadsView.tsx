@@ -1,4 +1,4 @@
-import { NextStep } from "./NextStep.js";
+import { NextStep, NextStepSignal } from "./NextStep.js";
 import { useSetSelectedNode } from "@powerhousedao/reactor-browser";
 import { ErrorLine } from "../../components/shared/ErrorLine.js";
 import { useState } from "react";
@@ -139,7 +139,7 @@ export function LeadsView({ driveId }: { driveId: string }) {
                             <span>{kind?.label ?? "Kind not set"}</span>
                           </div>
                           <div className="pb-card__row">
-                            <NextStep next={nextAction(s, today)} />
+                            <NextStep next={nextAction(s, today)} inCard />
                           </div>
                           {badge ? (
                             <div className="pb-card__row">
@@ -155,6 +155,7 @@ export function LeadsView({ driveId }: { driveId: string }) {
                               )}
                             </span>
                           </div>
+                          <NextStepSignal next={nextAction(s, today)} />
                         </div>
                       );
                     })}

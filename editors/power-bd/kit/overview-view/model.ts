@@ -9,6 +9,8 @@ import {
   type OverviewInput,
   type ViewItem,
 } from "../overview/index.js";
+import { isOverdue } from "../decision-view/index.js";
+import { today } from "../overview/time.js";
 import { openOpportunities } from "./index.js";
 
 const key = (r: Pick<ItemRef, "kind" | "id">) => `${r.kind}:${r.id}`;
@@ -34,6 +36,8 @@ export type OverviewModel = {
   relationships: number;
   /** Open decisions. */
   openDecisions: number;
+  /** Open decisions whose decide-by day has passed in our time zone, by the Decisions place's rule. */
+  overdueDecisions: number;
   /** Open funding, one total per currency. */
   totals: ReturnType<typeof totalsPerCurrency>;
 };
@@ -71,6 +75,9 @@ export function overviewModel(
     relationships: OPEN_STAGES.reduce((n, s) => n + result.board[s].length, 0),
     openDecisions: records.decisions.filter((d) => d.state.status === "OPEN")
       .length,
+    overdueDecisions: records.decisions.filter((d) =>
+      isOverdue(d.state.status, d.state.decideBy, today(records.now, zone)),
+    ).length,
     totals: totalsPerCurrency(
       openOpportunities(records.opportunities, result.board),
     ),

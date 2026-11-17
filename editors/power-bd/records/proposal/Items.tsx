@@ -38,17 +38,23 @@ export function convert(f: Field, raw: unknown): unknown {
   return text;
 }
 
-/** One input that saves when it loses focus. */
+/**
+ * One input that saves when it loses focus. `onType` hears every keystroke:
+ * a form to add a row uses it so its button reads what is typed, not only
+ * what was left.
+ */
 export function Cell({
   field,
   value,
   disabled,
   onCommit,
+  onType,
 }: {
   field: Field;
   value: unknown;
   disabled?: boolean;
   onCommit: (raw: unknown) => void;
+  onType?: (raw: string) => void;
 }) {
   const label = field.label;
   if (field.kind === "check")
@@ -88,6 +94,7 @@ export function Cell({
     placeholder: label,
     disabled,
     defaultValue: shown,
+    onChange: (e: { target: { value: string } }) => onType?.(e.target.value),
     onBlur: (e: { target: { value: string } }) =>
       e.target.value !== shown && onCommit(e.target.value),
   };
@@ -150,8 +157,13 @@ export function Items<R extends Row>({
   const flags = useContext(FindingsContext);
   const run = useRun();
   const [draft, setDraft] = useState<Record<string, unknown>>({});
+  // What is typed in the add form, before it is left: the button reads it,
+  // so a name typed and then "Add" clicked adds the row on the first click.
+  const [typed, setTyped] = useState<Record<string, unknown>>({});
+  const [formKey, setFormKey] = useState(0);
+  const current = { ...draft, ...typed };
   const ready = fields.every(
-    (f) => !f.required || str(draft[f.key]).trim() !== "",
+    (f) => !f.required || str(current[f.key]).trim() !== "",
   );
   const move = (i: number, d: number) => {
     const ids = items.map((r) => r.id);
@@ -245,26 +257,33 @@ export function Items<R extends Row>({
         <div className="pb-row">
           {fields.map((f) => (
             <Cell
-              key={f.key}
+              key={`${f.key}-${formKey}`}
               field={f}
               value={draft[f.key]}
               disabled={disabled}
               onCommit={(raw) => setDraft((d) => ({ ...d, [f.key]: raw }))}
+              onType={(raw) => setTyped((t) => ({ ...t, [f.key]: raw }))}
             />
           ))}
           <button
             className="pb-btn pb-btn--sm"
             disabled={disabled || !ready}
             onClick={() =>
-              run.run((e) => {
-                onAdd(
-                  Object.fromEntries(
-                    fields.map((f) => [f.key, convert(f, draft[f.key])]),
+              run.run(
+                (e) =>
+                  onAdd(
+                    Object.fromEntries(
+                      fields.map((f) => [f.key, convert(f, current[f.key])]),
+                    ),
+                    e,
                   ),
-                  e,
-                );
-                setDraft({});
-              })
+                // Cleared once the row is added; a refused one keeps what was typed.
+                () => {
+                  setDraft({});
+                  setTyped({});
+                  setFormKey((k) => k + 1);
+                },
+              )
             }
           >
             <Icon name="plus" />

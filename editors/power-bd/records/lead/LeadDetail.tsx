@@ -414,6 +414,7 @@ export function LeadDetail({
         }
         onReopen={(id, e) => send(actions.reopenNextStep({ id }), e)}
         onRemove={(id, e) => send(actions.removeNextStep({ id }), e)}
+        onUpdate={(st, e) => send(actions.updateNextStep(st), e)}
       />
 
       <MessagesSection
@@ -476,6 +477,7 @@ export function LeadDetail({
           )
         }
         onRemove={(id, e) => send(actions.removeInteraction({ id }), e)}
+        onUpdate={(c, e) => send(actions.updateInteraction(c), e)}
       />
 
       <ContactLinksSection

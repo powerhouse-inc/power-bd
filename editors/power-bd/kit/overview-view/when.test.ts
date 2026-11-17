@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { agoText, daysBetween, relativeDay } from "./when.js";
+import { agoText, daysBetween, daysLate, overdueText, relativeDay } from "./when.js";
 
 const NOW = "2026-11-17T10:00:00.000Z";
 
@@ -45,5 +45,32 @@ describe("relativeDay", () => {
     ["2026-11-10", "7 days ago"],
   ])("reads %s as %s", (day, text) => {
     expect(relativeDay(day, "2026-11-17")).toBe(text);
+  });
+});
+
+describe("daysLate", () => {
+  it("counts the whole days a due day is past today", () => {
+    expect(daysLate("2026-11-10", "2026-11-17")).toBe(7);
+    expect(daysLate("2026-11-16", "2026-11-17")).toBe(1);
+  });
+
+  it("reads a stored whole day by its date", () => {
+    expect(daysLate("2026-11-16T00:00:00.000Z", "2026-11-17")).toBe(1);
+  });
+
+  it("is 0 for today and the days ahead", () => {
+    expect(daysLate("2026-11-17", "2026-11-17")).toBe(0);
+    expect(daysLate("2026-11-20", "2026-11-17")).toBe(0);
+  });
+
+  it("counts across a month and a clock change", () => {
+    expect(daysLate("2026-10-24", "2026-11-02")).toBe(9);
+  });
+});
+
+describe("overdueText", () => {
+  it("says one day, or so many days", () => {
+    expect(overdueText(1)).toBe("1 day overdue");
+    expect(overdueText(7)).toBe("7 days overdue");
   });
 });

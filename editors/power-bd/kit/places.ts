@@ -94,6 +94,22 @@ export function placeById(id: PlaceId): Place {
   return BY_ID[id];
 }
 
+/**
+ * The hash that puts a place in the address (`/d/<drive>#leads`), so Back and
+ * Forward move between places, a reload stays, and a link opens it. Every
+ * place has one, the Overview too: an address without one is a fresh entry
+ * of Connect's, still to be given its place.
+ */
+export function hashOf(id: PlaceId): string {
+  return `#${id}`;
+}
+
+/** The place an address's hash names, or undefined when it names none. */
+export function placeFromHash(hash: string): PlaceId | undefined {
+  const id = hash.startsWith("#") ? hash.slice(1) : undefined;
+  return id !== undefined && Object.hasOwn(BY_ID, id) ? (id as PlaceId) : undefined;
+}
+
 /** The count to show beside a place, or undefined when it has none. */
 export function countFor(id: PlaceId, counts: PlaceCounts): number | undefined {
   if (

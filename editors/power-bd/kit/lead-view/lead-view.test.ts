@@ -58,7 +58,13 @@ describe("nextAction", () => {
     const steps = [{ id: "a", text: "A", dueDate: "2026-11-10", doneAt: null }];
     expect(
       nextAction({ ...base, nextSteps: steps }, "2026-11-16"),
-    ).toMatchObject({ overdue: true });
+    ).toMatchObject({ overdue: true, daysLate: 6 });
+  });
+  it("does not call a step due today overdue", () => {
+    const steps = [{ id: "a", text: "A", dueDate: "2026-11-16T00:00:00.000Z", doneAt: null }];
+    expect(
+      nextAction({ ...base, nextSteps: steps }, "2026-11-16"),
+    ).toMatchObject({ overdue: false, daysLate: 0 });
   });
   it("points at an approved message to send, then a draft", () => {
     const m = (id: string, status: string) => ({ id, status });
@@ -98,7 +104,15 @@ describe("lead view edge cases", () => {
       text: "Dated",
       dueDate: "2026-12-01",
       overdue: false,
+      daysLate: 0,
     });
+  });
+  it("keeps a dated step ahead whichever order the steps come in", () => {
+    const steps = [
+      { id: "d", text: "Dated", dueDate: "2026-12-01T09:00:00Z", doneAt: null },
+      { id: "u", text: "Undated", doneAt: null },
+    ];
+    expect(nextAction({ ...base, nextSteps: steps }, "2026-11-16")).toMatchObject({ id: "d" });
   });
   it("offers an undated step with no due day and never calls it overdue", () => {
     const steps = [{ id: "u", text: "Undated", dueDate: null, doneAt: null }];
@@ -108,6 +122,7 @@ describe("lead view edge cases", () => {
       text: "Undated",
       dueDate: null,
       overdue: false,
+      daysLate: 0,
     });
   });
 });

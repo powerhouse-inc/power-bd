@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { formatMoney, formatMoneyCompact, periodWord } from "./format.js";
+import {
+  CURRENCY_FORMAT,
+  currencyCode,
+  formatMoney,
+  formatMoneyCompact,
+  periodWord,
+} from "./format.js";
 
 describe("formatMoney", () => {
   it("formats a currency amount in en-US", () => {
@@ -26,5 +32,31 @@ describe("formatMoneyCompact", () => {
   });
   it("falls back to the code and the plain amount for an unknown currency", () => {
     expect(formatMoneyCompact(8, "??")).toBe("?? 8");
+  });
+});
+
+describe("formatMoney with a code no browser knows how to read", () => {
+  it("shows the code and the amount instead of failing the page", () => {
+    expect(formatMoney(1234.5, "XX1")).toBe("XX1 1,234.50");
+    expect(formatMoney(18000, "EURO")).toBe("EURO 18,000.00");
+  });
+
+  it("still formats a well-formed code it does not know", () => {
+    expect(formatMoney(1, "XYZ")).toContain("XYZ");
+  });
+});
+
+describe("currencyCode", () => {
+  it("reads three letters as a code, in capitals", () => {
+    expect(currencyCode("chf")).toBe("CHF");
+    expect(currencyCode(" eur ")).toBe("EUR");
+  });
+
+  it("refuses anything else", () => {
+    for (const bad of ["", "XX1", "EURO", "E", "€", "US D"]) expect(currencyCode(bad)).toBeNull();
+  });
+
+  it("says what a code looks like", () => {
+    expect(CURRENCY_FORMAT).toMatch(/three letters/);
   });
 });

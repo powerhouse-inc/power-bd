@@ -51,6 +51,7 @@
         <a href="#proposal-page">Proposal page</a>
         <a href="#chat">Chat</a>
         <a href="#vault-notes">Vault notes</a>
+        <a href="#access">Access</a>
         <div class="ds-nav__group">Screens</div>
         <a href="#screen-overview">Overview</a>
         <a href="#screen-lead">Lead</a>
@@ -726,6 +727,11 @@
                   <div>
                     <div class="ds-label">Loading</div>
                     <div class="pb-card" style="cursor: default"><span class="pb-skeleton" style="width: 70%"></span><span class="pb-skeleton" style="width: 45%"></span><div class="pb-card__foot"><span class="pb-skeleton" style="width: 64px; height: 18px"></span><span class="pb-skeleton" style="width: 20px; height: 20px; border-radius: 50%"></span></div></div>
+                  </div>
+                  <div>
+                    <div class="ds-label">A place, the first time its records load</div>
+                    <div class="pb-page__head"><h1 class="pb-page__title">Leads</h1></div>
+                    <div class="pb-stack pb-gap-12" role="status" aria-label="Loading Leads"><span class="pb-skeleton" style="width: 38%"></span><span class="pb-skeleton" style="width: 72%"></span><span class="pb-skeleton" style="width: 64%"></span><span class="pb-skeleton" style="width: 48%"></span></div>
                   </div>
                 </div>
               </div>
@@ -1586,6 +1592,42 @@ Pilot owner: [•]. Start date: [•].
               </div>
             </div>
           </section>
+          <section class="ds-section" id="access">
+            <h2 class="ds-section__title">Access: who can open the space</h2>
+            <p class="ds-section__lead">Decision and emotion. Settings → Access lists who holds a grant on the space's drive, in the team's words (View, Edit, Manage), with a team name where the address is on the team. Adding, changing and removing each confirm in place, and the only manager can't be changed or removed. Everyone else sees their own address to send an admin. The gate says why the space won't open, instead of an error.</p>
+            <div class="ds-demo">
+              <div class="ds-pane pb-root">
+                <div class="pb-stack" style="gap: 14px">
+                  <div class="ds-label">An admin's view: the only manager is guarded, and a change waits for its confirm</div>
+                  <div class="pb-section pb-access">
+                    <div class="pb-section__head"><h2 class="pb-section__title"><i data-icon="lock"></i> Access <span class="pb-count">3</span></h2></div>
+                    <p class="pb-muted">Who can open this space and what they can do. Access covers every record in it.</p>
+                    <div class="pb-list">
+                      <div class="pb-list__item"><span class="pb-list__lead"><span class="pb-avatar pb-avatar--blue">JB</span></span><div class="pb-list__main"><span class="pb-list__title">Jonas Brandt <span class="pb-tag pb-tag--blue">You</span></span><span class="pb-list__sub pb-mono">0x1111111111111111111111111111111111111111</span><span class="pb-list__sub">Added by you · 17 Nov 2026</span><span class="pb-list__sub">The only person who can manage access. Add another manager before changing this.</span></div><div class="pb-list__end"><select class="pb-select" aria-label="Access level" disabled><option>View</option><option>Edit</option><option selected>Manage</option></select><button type="button" class="pb-btn pb-btn--ghost pb-btn--sm" aria-label="Remove" disabled><i data-icon="trash"></i></button></div></div>
+                      <div class="pb-list__item"><span class="pb-list__lead"><span class="pb-avatar pb-avatar--blue">ML</span></span><div class="pb-list__main"><span class="pb-list__title">Mira Lindqvist</span><span class="pb-list__sub pb-mono">0x2222222222222222222222222222222222222222</span><span class="pb-list__sub">Added by you · 17 Nov 2026</span></div><div class="pb-list__end"><select class="pb-select" aria-label="Access level"><option>View</option><option selected>Edit</option><option>Manage</option></select><button type="button" class="pb-btn pb-btn--ghost pb-btn--sm" aria-label="Remove"><i data-icon="trash"></i></button></div></div>
+                      <div class="pb-list__item"><span class="pb-list__lead"><span class="pb-avatar pb-avatar--blue"><i data-icon="user"></i></span></span><div class="pb-list__main"><span class="pb-list__title">0x3333…3333</span><span class="pb-list__sub pb-mono">0x3333333333333333333333333333333333333333</span><span class="pb-list__sub">Added by you · 17 Nov 2026</span><div class="pb-access__confirm" role="group"><span>Change 0x3333…3333 to Manage? Can also add and remove people, and change their access.</span><button type="button" class="pb-btn pb-btn--sm pb-btn--primary">Change</button><button type="button" class="pb-btn pb-btn--ghost pb-btn--sm">Cancel</button></div></div><div class="pb-list__end"><select class="pb-select" aria-label="Access level"><option>View</option><option>Edit</option><option selected>Manage</option></select><button type="button" class="pb-btn pb-btn--ghost pb-btn--sm" aria-label="Remove"><i data-icon="trash"></i></button></div></div>
+                    </div>
+                    <form class="pb-access__add" onsubmit="return false"><input class="pb-input pb-mono" placeholder="0x… wallet address" aria-label="Wallet address" value="0x123"><select class="pb-select" aria-label="Access level"><option>View</option><option selected>Edit</option><option>Manage</option></select><button type="submit" class="pb-btn pb-btn--primary"><i data-icon="plus"></i> Give access</button></form>
+                    <p class="pb-reassure"><i data-icon="shield"></i>Edit: Can also create and change records. They open the space by signing in with that wallet.</p>
+                    <p class="pb-field__error" role="alert">A wallet address starts with 0x, followed by 40 letters a–f and digits.</p>
+                  </div>
+                  <div class="ds-label">Everyone else</div>
+                  <div class="pb-section pb-access">
+                    <div class="pb-section__head"><h2 class="pb-section__title"><i data-icon="lock"></i> Access</h2></div>
+                    <div class="pb-list"><div class="pb-list__item"><span class="pb-list__lead"><span class="pb-avatar pb-avatar--blue"><i data-icon="user"></i></span></span><div class="pb-list__main"><span class="pb-list__title">You</span><span class="pb-list__sub pb-mono">0x2222222222222222222222222222222222222222</span></div><div class="pb-list__end"><button type="button" class="pb-btn pb-btn--sm"><i data-icon="copy"></i>Copy address</button></div></div></div>
+                    <p class="pb-reassure"><i data-icon="shield"></i>An admin of this space manages who has access. Send them your address to change what you can do.</p>
+                  </div>
+                  <div class="ds-label">A server without permission tables, such as a local Vetra</div>
+                  <p class="pb-access__note"><i data-icon="info"></i>This server doesn't control access, so anyone who can reach it can open the space.</p>
+                  <div class="ds-label">The gate: signed out, and signed in without access</div>
+                  <div class="pb-grid-2">
+                    <div class="pb-gate" style="min-height: 0; padding: 0"><div class="pb-gate__card"><span class="pb-gate__icon"><i data-icon="lock"></i></span><h1 class="pb-gate__title">Sign in to open this space</h1><p class="pb-muted">This space is protected, so it needs to know who you are. Signing in uses your Renown identity: no password, and only your wallet address is shared.</p><div class="pb-gate__action"><button type="button" class="pb-btn pb-btn--primary">Sign in</button></div></div></div>
+                    <div class="pb-gate" style="min-height: 0; padding: 0"><div class="pb-gate__card"><span class="pb-gate__icon"><i data-icon="lock"></i></span><h1 class="pb-gate__title">You don't have access to this space yet</h1><p class="pb-muted">Send this address to an admin of the space. Once they add you in Settings, under Access, reload this page.</p><div class="pb-gate__address"><code class="pb-mono">0x2222222222222222222222222222222222222222</code><button type="button" class="pb-btn pb-btn--sm"><i data-icon="copy"></i>Copy address</button></div><p class="pb-reassure"><i data-icon="shield"></i>Signing in again won't change this: an admin has to add your address.</p></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
 
           <!-- ============================== SCREENS ============================== -->
           <section class="ds-section" id="screen-overview">
@@ -1621,15 +1663,21 @@ Pilot owner: [•]. Start date: [•].
                           </div>
                           <div class="pb-stack pb-gap-2">
                             <div class="pb-section__head"><h2 class="pb-section__title">Coming up</h2><button class="pb-filter pb-filter--off"><i data-icon="user" class="pb-icon--sm"></i>Mine</button></div>
-                            <div data-strip="2026-11-16" data-days="15" data-due="2:meeting 3:step 4:deadline 11:deadline"></div>
+                            <div data-strip="2026-11-16" data-days="15" data-due="2:meeting 3:step 4:deadline 7:step 8:meeting 9:step 11:deadline"></div>
                             <div class="pb-strip__legend"><span><span class="pb-strip__mark pb-strip__mark--deadline"></span>Deadline</span><span><span class="pb-strip__mark pb-strip__mark--meeting"></span>Meeting</span><span><span class="pb-strip__mark pb-strip__mark--step"></span>Next step</span></div>
-                            <div class="pb-list">
+                            <div class="pb-list pb-list--scroll" tabindex="0" role="region" aria-label="Items coming up">
                               <div class="pb-list__group"><strong>Wed 18 Nov</strong> · in 2 days</div>
                               <div class="pb-list__item"><span class="pb-list__lead pb-list__lead--meeting"><i data-icon="meeting"></i></span><div class="pb-list__main"><span class="pb-list__title">Meeting · Kelvar Institute</span><span class="pb-list__sub">15:00 your time · with Dana Reyes</span></div><div class="pb-list__end"><span class="pb-avatar-stack"><span class="pb-avatar pb-avatar--blue">ML</span><span class="pb-avatar pb-avatar--purple">IV</span></span></div></div>
                               <div class="pb-list__group"><strong>Thu 19 Nov</strong> · in 3 days</div>
                               <div class="pb-list__item"><span class="pb-list__lead pb-list__lead--step"><i data-icon="checklist"></i></span><div class="pb-list__main"><span class="pb-list__title">Send revised pricing</span><span class="pb-list__sub">Brisa Labs</span></div><div class="pb-list__end"><span class="pb-avatar pb-avatar--green">TO</span></div></div>
                               <div class="pb-list__group"><strong>Fri 20 Nov</strong> · in 4 days</div>
                               <div class="pb-list__item"><span class="pb-list__lead pb-list__lead--deadline"><i data-icon="hourglass"></i></span><div class="pb-list__main"><span class="pb-list__title">Decide by</span><span class="pb-list__sub">Orvane Foundation · incubator grant</span></div><div class="pb-list__end"><span class="pb-avatar pb-avatar--purple">IV</span></div></div>
+                              <div class="pb-list__group"><strong>Mon 23 Nov</strong> · in 7 days</div>
+                              <div class="pb-list__item"><span class="pb-list__lead pb-list__lead--step"><i data-icon="checklist"></i></span><div class="pb-list__main"><span class="pb-list__title">Share the dataset outline</span><span class="pb-list__sub">Kelvar Institute · joint data programme</span></div><div class="pb-list__end"><span class="pb-avatar pb-avatar--purple">IV</span></div></div>
+                              <div class="pb-list__group"><strong>Tue 24 Nov</strong> · in 8 days</div>
+                              <div class="pb-list__item"><span class="pb-list__lead pb-list__lead--meeting"><i data-icon="meeting"></i></span><div class="pb-list__main"><span class="pb-list__title">Intro call · Halloway Fund</span><span class="pb-list__sub">10:00 your time · with Priya Lorne</span></div><div class="pb-list__end"><span class="pb-avatar pb-avatar--blue">ML</span></div></div>
+                              <div class="pb-list__group"><strong>Wed 25 Nov</strong> · in 9 days</div>
+                              <div class="pb-list__item"><span class="pb-list__lead pb-list__lead--step"><i data-icon="checklist"></i></span><div class="pb-list__main"><span class="pb-list__title">Book a call with their finance lead</span><span class="pb-list__sub">Brisa Labs · pilot reporting</span></div><div class="pb-list__end"><span class="pb-avatar pb-avatar--green">TO</span></div></div>
                               <div class="pb-list__group"><strong>Fri 27 Nov</strong> · in 11 days</div>
                               <div class="pb-list__item"><span class="pb-list__lead pb-list__lead--deadline"><i data-icon="funding"></i></span><div class="pb-list__main"><span class="pb-list__title">Full proposal · Ardent Reason Fund</span><span class="pb-list__sub">02:00 your time · Thu 26 Nov, 17:00 for them</span></div><div class="pb-list__end"><span class="pb-avatar pb-avatar--blue">ML</span></div></div>
                             </div>

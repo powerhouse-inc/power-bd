@@ -51,10 +51,49 @@ describe("overviewModel", () => {
     ]);
   });
 
+  it("keys every slipping item by kind and id", () => {
+    const m = overviewModel(
+      { ...records, leads: [{ id: "l1", state: lead({ owner: null }) }] },
+      undefined,
+    );
+    expect(m.slipByKey.get("lead:l1")?.reasons).toContain("NO_OWNER");
+  });
+
   it("counts open decisions and the relationships that are not closed", () => {
     const m = overviewModel(records, undefined);
     expect(m.openDecisions).toBe(1);
     expect(m.relationships).toBe(2);
+  });
+
+  it("counts the open decisions whose decide-by day has passed", () => {
+    // NOW is 10:00 UTC on 16 Nov: due on the 15th is overdue, due today is not.
+    const m = overviewModel(
+      {
+        ...records,
+        decisions: [
+          { id: "d1", state: decision({ decideBy: "2026-11-15T00:00:00.000Z" }) },
+          { id: "d2", state: decision({ decideBy: "2026-11-16T00:00:00.000Z" }) },
+          {
+            id: "d3",
+            state: decision({ status: "ANSWERED", decideBy: "2026-11-01T00:00:00.000Z" }),
+          },
+          { id: "d4", state: decision() },
+        ],
+      },
+      { timeZone: "Europe/Zurich" },
+    );
+    expect(m.overdueDecisions).toBe(1);
+  });
+
+  it("counts overdue by the team's day: past midnight in Zurich, yesterday's decide-by is overdue", () => {
+    // 23:30 UTC on 16 Nov is already 00:30 on 17 Nov in Zurich.
+    const late = {
+      ...records,
+      now: "2026-11-16T23:30:00.000Z",
+      decisions: [{ id: "d1", state: decision({ decideBy: "2026-11-16T00:00:00.000Z" }) }],
+    };
+    expect(overviewModel(late, { timeZone: "Europe/Zurich" }).overdueDecisions).toBe(1);
+    expect(overviewModel(late, { timeZone: "UTC" }).overdueDecisions).toBe(0);
   });
 
   it("leaves closed opportunities out of the open funding totals", () => {

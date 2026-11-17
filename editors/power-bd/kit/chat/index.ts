@@ -8,6 +8,15 @@ export {
 export { chatWay, type ChatWay, type OwnKeyShown } from "./chat-way.js";
 export { chatInstructions, type InstructionFacts } from "./instructions.js";
 export {
+  keptConversations,
+  STOPPED_BY_RELOAD,
+  type ConversationView,
+  type KeptConversation,
+  type KeptConversations,
+  type StartTurn,
+  type TurnAgent,
+} from "./kept-conversation.js";
+export {
   OPENROUTER_API,
   openRouterConnection,
   testOpenRouterKey,

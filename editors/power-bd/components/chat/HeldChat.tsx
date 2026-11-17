@@ -1,17 +1,21 @@
 /**
- * The agent's service and the tab's one conversation, loaded with the stack's
+ * The agent's service and the person's conversation, loaded with the stack's
  * chat when a view first shows it. The conversation renders into the
- * holder's slots, whichever view shows them, or none (ChatHolder.tsx).
+ * holder's slots, whichever view shows them, or none (ChatHolder.tsx). It is
+ * kept outside the app (keptChats.ts), so it is there again when the person
+ * comes back, and after a reload.
  */
-import { ChatPanel, useReactorChat, type AiConnection } from "@powerhousedao/reactor-browser/ai";
+import { ChatPanel, type AiConnection } from "@powerhousedao/reactor-browser/ai";
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Icon } from "../Icon.js";
 import type { ChatSlots } from "./ChatHolder.js";
+import { keptChats } from "./keptChats.js";
 import { useChatPlaces } from "./useChatPlaces.js";
 import { useAutoApprove, usePerson } from "./useChatChoices.js";
 import { useChatService, type ChatService } from "./useChatService.js";
 import { useChatSetup } from "./useChatSetup.js";
+import { useKeptChat } from "./useKeptChat.js";
 
 const SUGGESTIONS = [
   "What needs attention?",
@@ -26,20 +30,28 @@ interface Props {
 }
 
 /**
- * Asks the agent's service for the tab, and holds the conversation once it
- * may start: on the server's service, or on the person's own key. A new way
- * or another person starts a new conversation.
+ * Asks the agent's service for the tab, and shows the person's conversation
+ * once it may go on: on the server's service, or on the person's own key.
+ * Each person has their own conversation in each space.
  */
 export default function HeldService({ driveId, slots, onService }: Props) {
   const service = useChatService(driveId);
   const person = usePerson();
   useEffect(() => onService(service), [onService, service]);
   useEffect(() => () => onService(undefined), [onService]);
+  // The service answered and is no longer this person's (their key removed):
+  // an answer still coming stops. The conversation stays for when it is back.
+  const gone =
+    (service.way.way === "server" || service.way.way === "own-key") && !service.connection;
+  useEffect(() => {
+    if (gone) keptChats.of(driveId, person).stop();
+  }, [gone, driveId, person]);
   return service.connection ? (
     <HeldConversation
       key={`${service.way.way} ${person}`}
       connection={service.connection}
       driveId={driveId}
+      person={person}
       slots={slots}
     />
   ) : null;
@@ -68,18 +80,19 @@ function Welcome({ userName, autoApprove }: { userName?: string; autoApprove: bo
 }
 
 /**
- * The conversation, on the stack's chat. It ends with this component: Clear,
- * a key removed, signing out or another person signing in (the service's
- * answer and the own key are the person's, so the connection goes with them).
- * An answer still coming stops then too.
+ * The person's conversation, on the stack's chat panel. It outlives this
+ * component: closing the app leaves it as it is (an answer still coming keeps
+ * coming, an approval keeps waiting), and only Clear ends it.
  */
 function HeldConversation({
   connection,
   driveId,
+  person,
   slots,
 }: {
   connection: AiConnection;
   driveId: string;
+  person: string;
   slots: ChatSlots;
 }) {
   const { reads, vaultDriveId } = useChatPlaces(driveId);
@@ -90,9 +103,11 @@ function HeldConversation({
     vaultDriveId,
     autoApprove,
   );
-  const chat = useReactorChat(tools, { connection, instructions, autoApprove });
-  const { clear } = chat;
-  useEffect(() => clear, [clear]);
+  const chat = useKeptChat(keptChats.of(driveId, person), tools, {
+    connection,
+    instructions,
+    autoApprove,
+  });
 
   return (
     <>
@@ -101,7 +116,7 @@ function HeldConversation({
           type="button"
           className="pb-btn pb-btn--sm pb-btn--ghost"
           disabled={chat.messages.length === 0}
-          onClick={clear}
+          onClick={chat.clear}
         >
           Clear
         </button>,

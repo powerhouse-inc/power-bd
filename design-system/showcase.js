@@ -446,7 +446,7 @@
           wd === 1 && i > 0 ? "is-week-start" : "",
           marks.length > 0 ? "has-due" : ""
         ];
-        cells.push(`<div class="${classes.filter(Boolean).join(" ")}"><span class="pb-strip__wd">${"SMTWTFS".charAt(wd)}</span><span class="pb-strip__num">${day.getUTCDate()}</span><span class="pb-strip__marks">${marks.join("")}</span></div>`);
+        cells.push(`<div class="${classes.filter(Boolean).join(" ")}"${i === 0 ? ' aria-current="date"' : ""}><span class="pb-strip__wd">${"SMTWTFS".charAt(wd)}</span><span class="pb-strip__num">${day.getUTCDate()}</span><span class="pb-strip__marks">${marks.join("")}</span></div>`);
       }
       host.outerHTML = `<div class="pb-strip">${cells.join("")}</div>`;
     }

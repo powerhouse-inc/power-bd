@@ -105,7 +105,13 @@ export {
   type DueClass,
   type StripDay,
 } from "./strip.js";
-export { agoText, daysBetween, relativeDay } from "./when.js";
+export {
+  agoText,
+  daysBetween,
+  daysLate,
+  overdueText,
+  relativeDay,
+} from "./when.js";
 export {
   canMove,
   cardMove,

@@ -102,6 +102,12 @@ export function ContactLinksSection({
                   },
                   onErrors,
                 ),
+                () => {
+                  setContactId("");
+                  setPersonId("");
+                  setRole("");
+                  setAdding(false);
+                },
               )
             }
           >

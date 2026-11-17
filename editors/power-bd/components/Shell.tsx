@@ -3,7 +3,7 @@ import {
   addFolder,
   dispatchActions,
   loadDriveNodes,
-  useDocumentById,
+  useDocumentSafe,
   useDriveById,
   useNodesInSelectedDrive,
   useSelectedNode,
@@ -11,16 +11,30 @@ import {
 } from "@powerhousedao/reactor-browser";
 import { setDriveIcon } from "@powerhousedao/shared/document-drive";
 import type { ReactNode } from "react";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import {
+  Suspense,
+  useDeferredValue,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import {
   isShortcut,
   placeOf,
   type Entry,
   type QuickAction,
 } from "../kit/search/index.js";
-import { countsByPlace } from "../kit/drive-plan.js";
+import { driveIconToSet } from "../kit/app-icon.js";
+import { countsByPlace, planDriveSetup } from "../kit/drive-plan.js";
 import { setUpDrive } from "../kit/init-drive.js";
-import { placeById, type PlaceId, type SaveState } from "../kit/places.js";
+import {
+  hashOf,
+  placeById,
+  placeFromHash,
+  type PlaceId,
+  type SaveState,
+} from "../kit/places.js";
 import { openProposalCount } from "../kit/proposal-list/index.js";
 import { recordTitle } from "../kit/record-name/index.js";
 import {
@@ -35,6 +49,7 @@ import { Sidebar } from "./Sidebar.js";
 import { ShellProvider } from "./ShellContext.js";
 import { PLACE_VIEWS } from "./placeViews.js";
 import { Sprite } from "./Icon.js";
+import { PlaceLoading } from "./PlaceLoading.js";
 import { TopBar } from "./TopBar.js";
 import { AgentView } from "./chat/AgentView.js";
 import { ChatDock } from "./chat/ChatDock.js";
@@ -57,6 +72,22 @@ const useOnline = () =>
     () => true,
   );
 
+/** Drives whose records this page has loaded once: coming back paints at once. */
+const loadedOnce = new Set<string>();
+
+/** This address with another hash; an empty one removes it. */
+const addressWith = (hash: string) => `${window.location.pathname}${window.location.search}${hash}`;
+/** How long a record opened or closed here may take before the address is given its place anyway. */
+const MOVE_PATIENCE_MS = 5000;
+/** Whether the address shows the record Connect has selected (or, with none, no record): no move under way. */
+const addressShows = (pathname: string, recordId: string | undefined) => {
+  // Connect's addresses are …/d/<drive>/<record>, under any base path.
+  const parts = pathname.split("/").filter(Boolean);
+  const at = parts.indexOf("d");
+  const nodeSlug = at === -1 ? undefined : parts[at + 2];
+  return recordId ? (nodeSlug?.endsWith(recordId) ?? false) : nodeSlug === undefined;
+};
+
 /**
  * The app's frame: sidebar, top bar and the place being shown. An open
  * record's editor (`children`) takes the place's spot, and the sidebar stays.
@@ -68,8 +99,10 @@ export function Shell({
   driveId: string;
   children: ReactNode;
 }) {
-  const [place, setPlace] = useState<PlaceId>("overview");
-  const [settingUp, setSettingUp] = useState(true);
+  // The place is in the address (`#leads`): a reload stays and a link opens it.
+  const [place, setPlace] = useState<PlaceId>(
+    () => placeFromHash(window.location.hash) ?? "overview",
+  );
   const [searching, setSearching] = useState(false);
   const [investorRow, setInvestorRow] = useState<InvestorRowRequest>();
   // The agent: in full view it is the Agent place; beside, a panel that
@@ -81,7 +114,6 @@ export function Shell({
   const nodes = useNodesInSelectedDrive();
   const selected = useSelectedNode();
   const setSelectedNode = useSetSelectedNode();
-  const proposals = useProposalDocumentsInSelectedDrive() ?? [];
 
   // The drive's icon as the set-up finds it: an icon-less drive gets the app's own.
   const [drive] = useDriveById(driveId);
@@ -91,9 +123,25 @@ export function Shell({
     driveIcon.current = icon;
   }, [icon]);
 
-  // First open: create the folders and single records the drive is missing.
+  // What the drive is missing, as far as the records known here show. A space
+  // set up before asks the server nothing on opening; one missing something
+  // is set up from the server's tree, so a stale copy cannot cause duplicates.
+  const known = nodes !== undefined;
+  const plan = known ? planDriveSetup(nodes) : undefined;
+  const missing = plan !== undefined && plan.folders.length + plan.singletons.length > 0;
+  const needsSetUp = missing || (known && driveIconToSet(icon) !== null);
+  const [setUpFailed, setSetUpFailed] = useState<string>();
+
+  // The records' first load runs in the background: the place shows its
+  // loading state until what it needs is there, then the place and the
+  // sidebar's counts fill in together. Committing a fallback instead would
+  // hold the content back for React's 300 ms reveal throttle.
+  const ready = useDeferredValue(known, known && loadedOnce.has(driveId));
   useEffect(() => {
-    let live = true;
+    if (ready) loadedOnce.add(driveId);
+  }, [ready, driveId]);
+  useEffect(() => {
+    if (!needsSetUp) return;
     setUpDrive(driveId, {
       loadNodes: () => loadDriveNodes(driveId, { refresh: true }),
       addFolder: (name) => addFolder(driveId, name),
@@ -103,16 +151,11 @@ export function Shell({
         set: (icon) => dispatchActions(setDriveIcon({ icon }), driveId),
       },
     })
-      .catch((error: unknown) =>
-        console.error("Power BD: drive set-up failed", error),
-      )
-      .finally(() => {
-        if (live) setSettingUp(false);
+      .catch((error: unknown) => {
+        console.error("Power BD: drive set-up failed", error);
+        setSetUpFailed(driveId);
       });
-    return () => {
-      live = false;
-    };
-  }, [driveId]);
+  }, [driveId, needsSetUp]);
 
   // ⌘K or Ctrl+K opens search from anywhere in the app, and closes it again.
   useEffect(() => {
@@ -154,7 +197,7 @@ export function Shell({
 
   const saveState: SaveState = !online
     ? "offline"
-    : settingUp
+    : missing && setUpFailed !== driveId
       ? "setting-up"
       : "up-to-date";
   const current = placeById(place);
@@ -162,17 +205,54 @@ export function Shell({
   const open = children ? selected : undefined;
   const atAgent = place === "agent" && !children;
   const besideOpen = chatBeside && !atAgent;
-  const [openDocument] = useDocumentById(open?.id);
-  // The crumb reads the record's own title; the entry's name can lag behind it.
+  // The crumb reads the record's own title once it has loaded (the entry's
+  // name can lag behind it), without holding up the frame until then.
+  const openDocument = useDocumentSafe(open?.id).data;
   const openTitle = open
     ? (recordTitle(openDocument?.header.documentType, openDocument?.state) ??
       open.name)
     : undefined;
+  /** A record opened or closed here that Connect has not finished moving to yet. */
+  const connectMove = useRef<{ to: string | undefined; at: number } | null>(null);
   const goTo = (id: PlaceId, recordId?: string) => {
     setPlace(id);
     setInvestorRow(undefined);
-    setSelectedNode(recordId);
+    // Opening or closing a record is Connect's move, with its own history
+    // entry (the place joins it below); a move between places is ours.
+    if (selected?.id !== recordId) {
+      connectMove.current = { to: recordId, at: Date.now() };
+      setSelectedNode(recordId);
+    } else if (id !== place) window.history.pushState(window.history.state, "", addressWith(hashOf(id)));
   };
+
+  // Back and Forward: the address names the place, and Connect restores the record.
+  useEffect(() => {
+    const onPop = () => {
+      setPlace(placeFromHash(window.location.hash) ?? "overview");
+      setInvestorRow(undefined);
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+
+  // Every address carries its place. Connect's new entries (a record opened
+  // or closed) and its own rewrites (a record renamed gets a new address)
+  // come without one and get it here, after every render. An address that
+  // names a place is never written over, because Connect's router can redraw
+  // for Back and Forward before the app hears of them. Nothing is written
+  // while Connect is still moving: writing the address under a move it has
+  // started left the record open with the address saying it was closed.
+  const selectedId = selected?.id;
+  useEffect(() => {
+    const move = connectMove.current;
+    if (move) {
+      if (selectedId !== move.to && Date.now() - move.at < MOVE_PATIENCE_MS) return;
+      connectMove.current = null;
+    }
+    if (!addressShows(window.location.pathname, selectedId)) return;
+    if (placeFromHash(window.location.hash) === undefined)
+      window.history.replaceState(window.history.state, "", addressWith(hashOf(place)));
+  });
   /** The full view: remembers where the person was, and closes the side panel. */
   const openFull = () => {
     if (place !== "agent") setCameFrom({ place, recordId: open?.id });
@@ -197,9 +277,7 @@ export function Shell({
     const home = placeOf(group);
     switch (target.type) {
       case "record":
-        if (home) setPlace(home);
-        setInvestorRow(undefined);
-        setSelectedNode(target.id);
+        goTo(home ?? place, target.id);
         break;
       case "investor-row":
         pick("investors");
@@ -215,14 +293,35 @@ export function Shell({
     }
   };
   const runAction = async (action: QuickAction) => {
+    // The place first, so the new record's entry is given it; back if it fails.
+    const before = place;
+    setPlace(action.place);
     const id = await creators[action.id].create(NEW_NAMES[action.id]);
-    if (id) setPlace(action.place);
+    if (id === undefined) setPlace(before);
     return id !== undefined;
   };
   const closeSearch = () => {
     setSearching(false);
     for (const c of Object.values(creators)) c.setError(null);
   };
+
+  // Until the drive's records have loaded, a place is loading, never empty.
+  const shown = !ready ? (
+    <PlaceLoading place={current} />
+  ) : (
+    children ||
+    (PlaceView ? (
+      <PlaceView driveId={driveId} />
+    ) : (
+      <AgentView
+        driveId={driveId}
+        onBeside={() => {
+          setPresentation("side");
+          leaveFull(true);
+        }}
+      />
+    ))
+  );
 
   return (
     <ShellProvider value={true}>
@@ -231,14 +330,17 @@ export function Shell({
         <div className="pb-root pb-fill-height pb-fill-height--full">
           <Sprite />
           <div className={besideOpen ? "pb-app pb-app--chat" : "pb-app"}>
-            <Sidebar
-              active={place}
-              counts={countsByPlace(
-                nodes ?? [],
-                openProposalCount(proposals.map((d) => d.state.global.status)),
+            <Suspense
+              fallback={
+                <Sidebar active={place} counts={countsByPlace(nodes ?? [])} onPick={pick} />
+              }
+            >
+              {ready ? (
+                <CountedSidebar active={place} nodes={nodes ?? []} onPick={pick} />
+              ) : (
+                <Sidebar active={place} counts={countsByPlace(nodes ?? [])} onPick={pick} />
               )}
-              onPick={pick}
-            />
+            </Suspense>
             <main className="pb-main">
               <TopBar
                 place={current}
@@ -251,18 +353,8 @@ export function Shell({
               />
               <div className={atAgent ? "pb-scroll pb-scroll--fill" : "pb-scroll"}>
                 <InvestorRowProvider value={investorRow}>
-                  {children ||
-                    (PlaceView ? (
-                      <PlaceView driveId={driveId} />
-                    ) : (
-                      <AgentView
-                        driveId={driveId}
-                        onBeside={() => {
-                          setPresentation("side");
-                          leaveFull(true);
-                        }}
-                      />
-                    ))}
+                  {/* The first load waits here, in the place's pane; the frame is already up. */}
+                  <Suspense fallback={<PlaceLoading place={current} />}>{shown}</Suspense>
                 </InvestorRowProvider>
               </div>
             </main>
@@ -289,4 +381,19 @@ export function Shell({
       </PlaceProvider>
     </ShellProvider>
   );
+}
+
+/** The sidebar once the records have loaded: the open proposals join its counts. */
+function CountedSidebar({
+  active,
+  nodes,
+  onPick,
+}: {
+  active: PlaceId;
+  nodes: Parameters<typeof countsByPlace>[0];
+  onPick: (id: PlaceId) => void;
+}) {
+  const proposals = useProposalDocumentsInSelectedDrive() ?? [];
+  const open = openProposalCount(proposals.map((d) => d.state.global.status));
+  return <Sidebar active={active} counts={countsByPlace(nodes, open)} onPick={onPick} />;
 }
