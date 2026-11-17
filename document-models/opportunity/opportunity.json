@@ -1,0 +1,1036 @@
+{
+  "id": "powerbd/opportunity",
+  "name": "Opportunity",
+  "author": {
+    "name": "Powerhouse",
+    "website": "https://powerhouse.inc"
+  },
+  "extension": "",
+  "description": "One round of a funding programme we pursue: the funder's facts, our fit, who owns it, how far it has got and the team lead's go-or-no-go decision.",
+  "specifications": [
+    {
+      "state": {
+        "local": {
+          "schema": "",
+          "examples": [],
+          "initialValue": ""
+        },
+        "global": {
+          "schema": "type OpportunityState {\n  name: String\n  funderId: PHID\n  programme: VaultRef\n  roundLabel: String\n  roundOpenedAt: DateTime\n  instrument: Instrument\n  amount: Amount_Money\n  currency: Currency\n  fundingRate: Amount_Percentage\n  whereToApply: String\n  rolling: Boolean!\n  owner: EthereumAddress\n  fit: Fit\n  fitReasoning: VaultRef\n  status: OpportunityStatus!\n  statusReason: String\n  closedAt: DateTime\n  expectedOpening: Date\n  decideBy: Date\n  blocked: Blocked\n  goNoGoDecisions: [GoNoGoDecision!]!\n  steps: [Step!]!\n  conditions: [Condition!]!\n  attemptLimit: AttemptLimit\n  applyingEntity: VaultRef\n  submissions: [Submission!]!\n  coordinatorId: PHID\n  partners: [Partner!]!\n  nextSteps: [NextStep!]!\n  interactions: [Interaction!]!\n  contactLinks: [ContactLink!]!\n  references: [Reference!]!\n  confidentialItems: [ConfidentialItem!]!\n}\n\ntype VaultRef {\n  id: PHID!\n  title: String!\n}\n\nenum Instrument {\n  GRANT\n  FELLOWSHIP\n  ACCELERATOR\n  CONSORTIUM_CALL\n  EQUITY\n  IN_KIND\n  PRIZE\n  MIXED\n}\n\nenum Fit {\n  BEST\n  GOOD\n  LATER\n  UNLIKELY\n}\n\nenum OpportunityStatus {\n  WATCHING\n  TO_EVALUATE\n  DECIDING\n  PREPARING\n  SUBMITTED\n  NEXT_STAGE\n  AWARDED\n  REJECTED\n  WITHDRAWN\n  NO_GO\n}\n\ntype Blocked {\n  decisionId: PHID\n  text: String\n}\n\nenum GoNoGo {\n  GO\n  NO_GO\n}\n\ntype GoNoGoDecision {\n  id: OID!\n  decision: GoNoGo!\n  decidedBy: EthereumAddress!\n  reason: String!\n  attemptsLeft: Int\n  decidedAt: DateTime!\n}\n\nenum StepKind {\n  LETTER_OF_INTENT\n  CUT_OFF\n  STAGE\n  FULL_PROPOSAL\n  INTERVIEW\n  EXPECTED_RESULT\n  OTHER\n}\n\ntype Step {\n  id: OID!\n  kind: StepKind!\n  label: String!\n  at: DateTime!\n  timeZone: String!\n  targeted: Boolean!\n  source: String!\n  checkedAt: DateTime!\n}\n\nenum ConditionKind {\n  ELIGIBILITY\n  COUNTRY\n  LEGAL_FORM\n  READINESS\n  PURPOSE\n  CO_FUNDING\n  CONSORTIUM\n  OTHER\n}\n\nenum ConditionState {\n  MET\n  NOT_MET\n  UNKNOWN\n  WAITING_ON_DECISION\n}\n\ntype Condition {\n  id: OID!\n  kind: ConditionKind!\n  text: String!\n  state: ConditionState!\n  decisionIds: [PHID!]!\n  factNotes: [VaultRef!]!\n  source: String!\n  checkedAt: DateTime!\n}\n\ntype AttemptLimit {\n  max: Int!\n  withdrawnCounts: Boolean!\n  source: String!\n  checkedAt: DateTime!\n}\n\nenum SubmissionResult {\n  PASSED\n  AWARDED\n  UNSUCCESSFUL\n  WITHDRAWN\n}\n\ntype SubmissionOutcome {\n  result: SubmissionResult!\n  amount: Amount_Money\n  currency: Currency\n  text: String\n  receivedAt: DateTime!\n}\n\ntype Submission {\n  id: OID!\n  stepId: OID\n  submittedAt: DateTime!\n  where: String\n  submittedBy: EthereumAddress!\n  outcome: SubmissionOutcome\n}\n\nenum PartnerStatus {\n  ASKED\n  INTERESTED\n  COMMITTED\n  SIGNED\n}\n\ntype Partner {\n  id: OID!\n  organisationId: PHID!\n  role: String\n  country: String\n  status: PartnerStatus!\n  leadId: PHID\n}\n\ntype PersonRef {\n  contactId: PHID!\n  personId: OID!\n}\n\ntype NextStep {\n  id: OID!\n  text: String!\n  owner: EthereumAddress\n  dueDate: Date\n  doneAt: DateTime\n}\n\nenum InteractionKind {\n  EMAIL\n  CALL\n  MEETING\n  EVENT\n  MESSAGE\n  OTHER\n}\n\nenum InteractionStatus {\n  SCHEDULED\n  HELD\n  CANCELLED\n}\n\ntype Interaction {\n  id: OID!\n  kind: InteractionKind!\n  status: InteractionStatus!\n  at: DateTime\n  timeZone: String\n  summary: String\n  people: [PersonRef!]!\n  teamMembers: [EthereumAddress!]!\n  notesSource: VaultRef\n}\n\ntype ContactLink {\n  id: OID!\n  contactId: PHID!\n  personId: OID\n  role: String\n}\n\nenum ReferenceKind {\n  RESEARCH\n  NOTE\n  SOURCE\n  COMPARABLE\n  OPPORTUNITY\n  LEAD\n  DECISION\n  OTHER\n}\n\ntype Reference {\n  id: OID!\n  kind: ReferenceKind!\n  documentId: PHID!\n  title: String!\n}\n\ntype ConfidentialItem {\n  id: OID!\n  subjectContactId: PHID\n  text: String!\n  addedBy: EthereumAddress!\n  addedAt: DateTime!\n}",
+          "examples": [],
+          "initialValue": "{\"name\":null,\"funderId\":null,\"programme\":null,\"roundLabel\":null,\"roundOpenedAt\":null,\"instrument\":null,\"amount\":null,\"currency\":null,\"fundingRate\":null,\"whereToApply\":null,\"rolling\":false,\"owner\":null,\"fit\":null,\"fitReasoning\":null,\"status\":\"TO_EVALUATE\",\"statusReason\":null,\"closedAt\":null,\"expectedOpening\":null,\"decideBy\":null,\"blocked\":null,\"goNoGoDecisions\":[],\"steps\":[],\"conditions\":[],\"attemptLimit\":null,\"applyingEntity\":null,\"submissions\":[],\"coordinatorId\":null,\"partners\":[],\"nextSteps\":[],\"interactions\":[],\"contactLinks\":[],\"references\":[],\"confidentialItems\":[]}"
+        }
+      },
+      "modules": [
+        {
+          "id": "d11674c4-489c-4f97-a6db-7fb5ddf5c75e",
+          "name": "details",
+          "description": "What the funder offers, what we think of it and who owns it",
+          "operations": [
+            {
+              "id": "772cfe85-17db-494b-a8e9-8651c4db1498",
+              "name": "SET_OPPORTUNITY_DETAILS",
+              "description": "Set the opportunity's name, funder, programme, round, instrument, amount with its currency, funding rate, where to apply and whether it is rolling; a field left out is unchanged",
+              "schema": "input SetOpportunityDetailsInput {\n  name: String\n  funderId: PHID\n  programme: SetOpportunityDetailsProgrammeInput\n  roundLabel: String\n  roundOpenedAt: DateTime\n  instrument: Instrument\n  amount: Amount_Money\n  currency: Currency\n  fundingRate: Amount_Percentage\n  whereToApply: String\n  rolling: Boolean\n}\n\ninput SetOpportunityDetailsProgrammeInput {\n  id: PHID!\n  title: String!\n}",
+              "template": "Set the opportunity's name, funder, programme, round, instrument, amount with its currency, funding rate, where to apply and whether it is rolling; a field left out is unchanged",
+              "reducer": "const { input } = action;\nconst amount = input.amount === undefined ? state.amount : input.amount;\nconst currency =\n  input.currency === undefined ? state.currency : input.currency;\nif (amount != null && currency == null)\n  throw new AmountNeedsCurrencyError(\"An amount needs a currency\");\nif (\n  input.fundingRate != null &&\n  (input.fundingRate < 0 || input.fundingRate > 100)\n)\n  throw new InvalidFundingRateError(\n    \"The funding rate is a percentage between 0 and 100\",\n  );\n\nif (input.name !== undefined) state.name = input.name;\nif (input.funderId !== undefined) state.funderId = input.funderId;\nif (input.programme !== undefined) state.programme = input.programme;\nif (input.roundLabel !== undefined) state.roundLabel = input.roundLabel;\nif (input.roundOpenedAt !== undefined)\n  state.roundOpenedAt = input.roundOpenedAt;\nif (input.instrument !== undefined) state.instrument = input.instrument;\nif (input.amount !== undefined) state.amount = input.amount;\nif (input.currency !== undefined) state.currency = input.currency;\nif (input.fundingRate !== undefined) state.fundingRate = input.fundingRate;\nif (input.whereToApply !== undefined)\n  state.whereToApply = input.whereToApply;\nif (input.rolling != null) state.rolling = input.rolling;",
+              "errors": [
+                {
+                  "id": "f8a9bb8b-a045-43f3-951e-08765b964b6e",
+                  "name": "AmountNeedsCurrencyError",
+                  "code": "AMOUNT_NEEDS_CURRENCY",
+                  "description": "An amount needs a currency",
+                  "template": ""
+                },
+                {
+                  "id": "ef35fbec-f056-4394-a8bc-f23216c45772",
+                  "name": "InvalidFundingRateError",
+                  "code": "INVALID_FUNDING_RATE",
+                  "description": "The funding rate is a percentage between 0 and 100",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "4e8fddb0-8412-499c-8c3c-186dcf649a46",
+              "name": "SET_OWNER",
+              "description": "Set the team member who owns the opportunity, or clear the owner",
+              "schema": "input SetOwnerInput {\n  owner: EthereumAddress\n}",
+              "template": "Set the team member who owns the opportunity, or clear the owner",
+              "reducer": "const { owner } = action.input;\nif (\n  owner == null &&\n  state.status !== \"WATCHING\" &&\n  state.status !== \"TO_EVALUATE\"\n)\n  throw new OwnerRequiredError(\n    \"An opportunity past to evaluate needs an owner\",\n  );\nstate.owner = owner ?? null;",
+              "errors": [
+                {
+                  "id": "6a3c764c-8188-4221-a2be-7b895d5b15b6",
+                  "name": "OwnerRequiredError",
+                  "code": "OWNER_REQUIRED",
+                  "description": "An opportunity past to evaluate needs an owner",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "adeba1e5-76c4-4b15-b96d-2d6e293abc0d",
+              "name": "SET_FIT",
+              "description": "Record our fit and the vault note that holds the reasoning; a field left out is unchanged",
+              "schema": "input SetFitInput {\n  fit: Fit\n  reasoning: SetFitReasoningInput\n}\n\ninput SetFitReasoningInput {\n  id: PHID!\n  title: String!\n}",
+              "template": "Record our fit and the vault note that holds the reasoning; a field left out is unchanged",
+              "reducer": "const { input } = action;\nif (input.fit !== undefined) state.fit = input.fit;\nif (input.reasoning !== undefined) state.fitReasoning = input.reasoning;",
+              "errors": [],
+              "examples": [],
+              "scope": "global"
+            }
+          ]
+        },
+        {
+          "id": "fda2dcfd-f292-4026-8ee9-3179d5243838",
+          "name": "status",
+          "description": "How far the opportunity has got: its status, the go-or-no-go decision, the blocked flag, and the decide-by and expected-opening dates",
+          "operations": [
+            {
+              "id": "e080b252-6bfb-4388-bae7-1cbf9a7d4272",
+              "name": "SET_OPPORTUNITY_STATUS",
+              "description": "Move the opportunity by hand, along the moves the status rules allow",
+              "schema": "input SetOpportunityStatusInput {\n  status: OpportunityStatus!\n  reason: String\n  changedAt: DateTime!\n}",
+              "template": "Move the opportunity by hand, along the moves the status rules allow",
+              "reducer": "const { status, reason, changedAt } = action.input;\nconst from = state.status;\nif (CLOSED.includes(from))\n  throw new OpportunityClosedError(\"A closed opportunity is final\");\nif (\n  status === \"NO_GO\" ||\n  (status === \"PREPARING\" &&\n    (from === \"TO_EVALUATE\" || from === \"DECIDING\"))\n)\n  throw new GoNoGoDecisionRequiredError(\n    \"Preparing for the first time and no-go are reached only through the go-or-no-go decision\",\n  );\nif (!MOVES[from]?.includes(status))\n  throw new InvalidStatusMoveError(\n    `An opportunity cannot move from ${from} to ${status}`,\n  );\nif (status !== \"WATCHING\" && status !== \"TO_EVALUATE\" && !state.owner)\n  throw new OwnerRequiredError(NEEDS_OWNER);\nif (\n  from === \"PREPARING\" &&\n  status === \"SUBMITTED\" &&\n  !state.submissions.some((s) => !s.outcome)\n)\n  throw new SubmissionRequiredError(\n    \"Submitting needs a submission that has no outcome yet\",\n  );\nconst closing = status === \"REJECTED\" || status === \"WITHDRAWN\";\nif (closing && !reason?.trim())\n  throw new ClosingReasonRequiredError(\n    \"A rejected or withdrawn opportunity needs a reason\",\n  );\n\nconst closes = closing || status === \"AWARDED\";\nstate.status = status;\nstate.statusReason = closes ? (reason ?? null) : null;\nstate.closedAt = closes ? changedAt : null;\nif (from === \"PREPARING\") state.blocked = null;",
+              "errors": [
+                {
+                  "id": "5ee590c0-2e14-4855-83cc-a1ad5b0f8d94",
+                  "name": "OpportunityClosedError",
+                  "code": "OPPORTUNITY_CLOSED",
+                  "description": "An awarded, rejected, withdrawn or no-go opportunity is final",
+                  "template": ""
+                },
+                {
+                  "id": "829c19ab-26c0-4a66-8f84-9a29ad2c2ebf",
+                  "name": "GoNoGoDecisionRequiredError",
+                  "code": "GO_NO_GO_DECISION_REQUIRED",
+                  "description": "Preparing for the first time, and no-go, are reached only through the go-or-no-go decision",
+                  "template": ""
+                },
+                {
+                  "id": "d29d48c6-9732-479e-91f7-b447494901a5",
+                  "name": "InvalidStatusMoveError",
+                  "code": "INVALID_STATUS_MOVE",
+                  "description": "The status rules do not allow this move",
+                  "template": ""
+                },
+                {
+                  "id": "80f2eb5b-7e05-457f-a8df-33f4b746d124",
+                  "name": "OwnerRequiredError",
+                  "code": "OWNER_REQUIRED",
+                  "description": "An opportunity past to evaluate needs an owner",
+                  "template": ""
+                },
+                {
+                  "id": "581c52eb-1f05-48d5-88da-67aabd954184",
+                  "name": "ClosingReasonRequiredError",
+                  "code": "CLOSING_REASON_REQUIRED",
+                  "description": "A rejected or withdrawn opportunity needs a reason",
+                  "template": ""
+                },
+                {
+                  "id": "a49a0820-a10a-46a7-99bc-74d4e14f2608",
+                  "name": "SubmissionRequiredError",
+                  "code": "SUBMISSION_REQUIRED",
+                  "description": "Moving from preparing to submitted needs a submission that has no outcome yet",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "b6b6dc93-7199-4e33-aeb7-2bd1d9e90f75",
+              "name": "DECIDE_GO_NO_GO",
+              "description": "Record the go-or-no-go decision: go starts preparing, no-go closes the opportunity. People-only: an agent never decides go or no-go",
+              "schema": "input DecideGoNoGoInput {\n  id: OID!\n  decision: GoNoGo!\n  decidedBy: EthereumAddress\n  reason: String!\n  attemptsLeft: Int\n  decidedAt: DateTime!\n}",
+              "template": "Record the go-or-no-go decision: go starts preparing, no-go closes the opportunity. People-only: an agent never decides go or no-go",
+              "reducer": "const { id, decision, decidedBy, reason, attemptsLeft, decidedAt } =\n  action.input;\nif (state.status !== \"TO_EVALUATE\" && state.status !== \"DECIDING\")\n  throw new GoNoGoNotAllowedError(\n    \"Go or no-go is decided while the opportunity is to evaluate or deciding\",\n  );\nif (!state.owner) throw new OwnerRequiredError(NEEDS_OWNER);\nif (!decidedBy)\n  throw new DeciderRequiredError(\n    \"The go-or-no-go decision needs a decider\",\n  );\nif (!reason.trim())\n  throw new DecisionReasonRequiredError(\n    \"The go-or-no-go decision needs a reason\",\n  );\n\nstate.goNoGoDecisions.push({\n  id,\n  decision,\n  decidedBy,\n  reason,\n  attemptsLeft: attemptsLeft ?? null,\n  decidedAt,\n});\nif (decision === \"GO\") {\n  state.status = \"PREPARING\";\n} else {\n  state.status = \"NO_GO\";\n  state.statusReason = reason;\n  state.closedAt = decidedAt;\n}",
+              "errors": [
+                {
+                  "id": "47023fec-fcab-4d02-85b6-41039d55bb29",
+                  "name": "GoNoGoNotAllowedError",
+                  "code": "GO_NO_GO_NOT_ALLOWED",
+                  "description": "Go or no-go is decided while the opportunity is to evaluate or deciding",
+                  "template": ""
+                },
+                {
+                  "id": "84ab8582-e12b-4b40-ab34-cf23d145d3f4",
+                  "name": "OwnerRequiredError",
+                  "code": "OWNER_REQUIRED",
+                  "description": "An opportunity past to evaluate needs an owner",
+                  "template": ""
+                },
+                {
+                  "id": "b27db5eb-5650-447c-a41c-d1d7c2547fcb",
+                  "name": "DeciderRequiredError",
+                  "code": "DECIDER_REQUIRED",
+                  "description": "The go-or-no-go decision needs a decider",
+                  "template": ""
+                },
+                {
+                  "id": "8647b868-7dc9-4402-9655-2f1acb1774a0",
+                  "name": "DecisionReasonRequiredError",
+                  "code": "DECISION_REASON_REQUIRED",
+                  "description": "The go-or-no-go decision needs a reason",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "e7ae15f9-e852-4624-956b-bc28fe3fdc0c",
+              "name": "SET_BLOCKED",
+              "description": "Flag a preparing opportunity as blocked, naming a company decision, a short text or both",
+              "schema": "input SetBlockedInput {\n  decisionId: PHID\n  text: String\n}",
+              "template": "Flag a preparing opportunity as blocked, naming a company decision, a short text or both",
+              "reducer": "const { decisionId, text } = action.input;\nif (state.status !== \"PREPARING\")\n  throw new NotPreparingError(\n    \"An opportunity can be blocked only while preparing\",\n  );\nif (!decisionId && !text?.trim())\n  throw new BlockerRequiredError(\"Blocked must name a decision or a text\");\nstate.blocked = { decisionId: decisionId ?? null, text: text ?? null };",
+              "errors": [
+                {
+                  "id": "d0146eef-2967-4f71-861f-aafee5b4f278",
+                  "name": "NotPreparingError",
+                  "code": "NOT_PREPARING",
+                  "description": "An opportunity can be blocked only while preparing",
+                  "template": ""
+                },
+                {
+                  "id": "6c21349d-b2cd-43d7-9559-cd7d79bf01de",
+                  "name": "BlockerRequiredError",
+                  "code": "BLOCKER_REQUIRED",
+                  "description": "Blocked must name a decision or a text",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "088ea958-7075-4572-9002-ab9a8ab2942b",
+              "name": "CLEAR_BLOCKED",
+              "description": "Lift the block. The status stays where it was",
+              "schema": "input ClearBlockedInput {\n  _empty: Boolean\n}",
+              "template": "Lift the block. The status stays where it was",
+              "reducer": "if (!state.blocked)\n  throw new NotBlockedError(\"The opportunity is not blocked\");\nstate.blocked = null;",
+              "errors": [
+                {
+                  "id": "808019c2-4ec5-4717-9ece-1790b35e2412",
+                  "name": "NotBlockedError",
+                  "code": "NOT_BLOCKED",
+                  "description": "The opportunity is not blocked",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "6bed8918-cbfd-4ab9-be9d-75b21dd6337b",
+              "name": "SET_DECIDE_BY",
+              "description": "Set the day by which go or no-go must be decided. Null removes it",
+              "schema": "input SetDecideByInput {\n  decideBy: Date\n}",
+              "template": "Set the day by which go or no-go must be decided. Null removes it",
+              "reducer": "state.decideBy = action.input.decideBy ?? null;",
+              "errors": [],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "110eb08b-c190-4146-849c-e5bfeb045a95",
+              "name": "SET_EXPECTED_OPENING",
+              "description": "Set the day the next round is expected to open, for a watched opportunity. Null removes it",
+              "schema": "input SetExpectedOpeningInput {\n  expectedOpening: Date\n}",
+              "template": "Set the day the next round is expected to open, for a watched opportunity. Null removes it",
+              "reducer": "state.expectedOpening = action.input.expectedOpening ?? null;",
+              "errors": [],
+              "examples": [],
+              "scope": "global"
+            }
+          ]
+        },
+        {
+          "id": "bc484945-3239-4b2b-be21-0b58b900313c",
+          "name": "dates",
+          "description": "The dated steps of the call: letters of intent, cut-offs, stages, interviews and the expected result",
+          "operations": [
+            {
+              "id": "7ffcd57a-2cff-41ad-815f-a9e7cae803b3",
+              "name": "ADD_STEP",
+              "description": "Add a dated step, in the funder's time zone, with where the date comes from and when it was last checked",
+              "schema": "input AddStepInput {\n  id: OID!\n  kind: StepKind!\n  label: String!\n  at: DateTime!\n  timeZone: String!\n  source: String\n  checkedAt: DateTime\n}",
+              "template": "Add a dated step, in the funder's time zone, with where the date comes from and when it was last checked",
+              "reducer": "const { input } = action;\nif (state.steps.some((step) => step.id === input.id))\n  throw new DuplicateStepIdError(`Step ${input.id} already exists`);\ncheckTimeZone(input.timeZone);\nif (!input.source?.trim())\n  throw new SourceRequiredError(\"A step needs a source\");\nif (!input.checkedAt)\n  throw new CheckedDateRequiredError(\n    \"A step needs the date it was checked\",\n  );\n\nstate.steps.push({\n  id: input.id,\n  kind: input.kind,\n  label: input.label,\n  at: input.at,\n  timeZone: input.timeZone,\n  targeted: false,\n  source: input.source,\n  checkedAt: input.checkedAt,\n});",
+              "errors": [
+                {
+                  "id": "ceef18bc-f3ce-4855-ac97-77c79da4573e",
+                  "name": "DuplicateStepIdError",
+                  "code": "DUPLICATE_STEP_ID",
+                  "description": "A step with this id already exists",
+                  "template": ""
+                },
+                {
+                  "id": "c1e62040-7ec5-492f-92cb-4dea149f014b",
+                  "name": "InvalidTimeZoneError",
+                  "code": "INVALID_TIME_ZONE",
+                  "description": "The time zone is not an IANA name such as Europe/Zurich",
+                  "template": ""
+                },
+                {
+                  "id": "d7c6f981-2fd3-4633-a53a-f3f3347c5c98",
+                  "name": "SourceRequiredError",
+                  "code": "SOURCE_REQUIRED",
+                  "description": "A step needs a source",
+                  "template": ""
+                },
+                {
+                  "id": "569637e9-5cf2-433e-90ca-4e50bf4dd9f9",
+                  "name": "CheckedDateRequiredError",
+                  "code": "CHECKED_DATE_REQUIRED",
+                  "description": "A step needs the date it was checked",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "38011d39-30d7-40a5-baa4-159adec4cb96",
+              "name": "UPDATE_STEP",
+              "description": "Change a step; a field left out is unchanged. A step that stops being a cut-off stops being targeted",
+              "schema": "input UpdateStepInput {\n  id: OID!\n  kind: StepKind\n  label: String\n  at: DateTime\n  timeZone: String\n  source: String\n  checkedAt: DateTime\n}",
+              "template": "Change a step; a field left out is unchanged. A step that stops being a cut-off stops being targeted",
+              "reducer": "const { input } = action;\nconst step = state.steps.find((s) => s.id === input.id);\nif (!step) throw new StepNotFoundError(`Step ${input.id} not found`);\nif (input.timeZone != null) checkTimeZone(input.timeZone);\nif (input.source != null && !input.source.trim())\n  throw new SourceRequiredError(\"A step needs a source\");\n\nif (input.kind != null) {\n  step.kind = input.kind;\n  if (input.kind !== \"CUT_OFF\") step.targeted = false;\n}\nif (input.label != null) step.label = input.label;\nif (input.at != null) step.at = input.at;\nif (input.timeZone != null) step.timeZone = input.timeZone;\nif (input.source != null) step.source = input.source;\nif (input.checkedAt != null) step.checkedAt = input.checkedAt;",
+              "errors": [
+                {
+                  "id": "c61eb463-f788-4425-8a8d-cfa46fd4647f",
+                  "name": "StepNotFoundError",
+                  "code": "STEP_NOT_FOUND",
+                  "description": "No step has this id",
+                  "template": ""
+                },
+                {
+                  "id": "adecaaad-0711-4d74-b072-f1048dd44ec6",
+                  "name": "InvalidTimeZoneError",
+                  "code": "INVALID_TIME_ZONE",
+                  "description": "The time zone is not an IANA name such as Europe/Zurich",
+                  "template": ""
+                },
+                {
+                  "id": "a55d46ae-4367-4f76-a6e8-773face7b605",
+                  "name": "SourceRequiredError",
+                  "code": "SOURCE_REQUIRED",
+                  "description": "A step needs a source",
+                  "template": ""
+                },
+                {
+                  "id": "4c427978-d1f5-445e-b656-ef85db8a72ae",
+                  "name": "CheckedDateRequiredError",
+                  "code": "CHECKED_DATE_REQUIRED",
+                  "description": "A step needs the date it was checked",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "d8da0330-9027-438b-ac38-dd55817f49b1",
+              "name": "REMOVE_STEP",
+              "description": "Remove a step that no submission names",
+              "schema": "input RemoveStepInput {\n  id: OID!\n}",
+              "template": "Remove a step. A submission that pointed at it keeps its record without the step",
+              "reducer": "const index = state.steps.findIndex((s) => s.id === action.input.id);\nif (index === -1)\n  throw new StepNotFoundError(`Step ${action.input.id} not found`);\nif (state.submissions.some((s) => s.stepId === action.input.id))\n  throw new StepInUseError(\n    `Step ${action.input.id} is named by a submission and cannot be removed`,\n  );\nstate.steps.splice(index, 1);",
+              "errors": [
+                {
+                  "id": "af7e2b5d-14de-4089-ab4a-cb275b827981",
+                  "name": "StepNotFoundError",
+                  "code": "STEP_NOT_FOUND",
+                  "description": "No step has this id",
+                  "template": ""
+                },
+                {
+                  "id": "d329c103-ffa5-4a8e-9cf9-0022e666a334",
+                  "name": "StepInUseError",
+                  "code": "STEP_IN_USE",
+                  "description": "A step that a submission names cannot be removed",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "38804bf4-f1ba-4474-9104-58904cb54990",
+              "name": "TARGET_CUT_OFF",
+              "description": "Mark a cut-off as the one we aim for; any other target is cleared",
+              "schema": "input TargetCutOffInput {\n  id: OID!\n}",
+              "template": "Mark a cut-off as the one we aim for; any other target is cleared",
+              "reducer": "const step = state.steps.find((s) => s.id === action.input.id);\nif (!step) throw new StepNotFoundError(`Step ${action.input.id} not found`);\nif (step.kind !== \"CUT_OFF\")\n  throw new NotACutOffError(\"Only a cut-off can be targeted\");\nfor (const other of state.steps) other.targeted = other.id === step.id;",
+              "errors": [
+                {
+                  "id": "d456f5de-20ef-4b01-9b28-cd46c1195fdf",
+                  "name": "StepNotFoundError",
+                  "code": "STEP_NOT_FOUND",
+                  "description": "No step has this id",
+                  "template": ""
+                },
+                {
+                  "id": "ed191df4-b4ab-488c-b04c-6becea6e33c6",
+                  "name": "NotACutOffError",
+                  "code": "NOT_ACUT_OFF",
+                  "description": "Only a cut-off can be targeted",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            }
+          ]
+        },
+        {
+          "id": "c318ecb1-d782-46ff-b199-5f0e8e7cb1b0",
+          "name": "conditions",
+          "description": "What the funder requires of an applicant, and whether we meet it",
+          "operations": [
+            {
+              "id": "f895566f-31fe-4183-b818-40487b876557",
+              "name": "ADD_CONDITION",
+              "description": "Add a condition, with the decisions it waits on and the company-fact notes it relies on",
+              "schema": "input AddConditionInput {\n  id: OID!\n  kind: ConditionKind!\n  text: String!\n  state: ConditionState\n  decisionIds: [PHID!]\n  factNotes: [AddConditionFactNoteInput!]\n  source: String\n  checkedAt: DateTime\n}\n\ninput AddConditionFactNoteInput {\n  id: PHID!\n  title: String!\n}",
+              "template": "Add a condition, with the decisions it waits on and the company-fact notes it relies on",
+              "reducer": "const { input } = action;\nif (state.conditions.some((c) => c.id === input.id))\n  throw new DuplicateConditionIdError(\n    `Condition ${input.id} already exists`,\n  );\nif (!input.source?.trim())\n  throw new SourceRequiredError(\"A condition needs a source\");\nif (!input.checkedAt)\n  throw new CheckedDateRequiredError(\n    \"A condition needs the date it was checked\",\n  );\n\nstate.conditions.push({\n  id: input.id,\n  kind: input.kind,\n  text: input.text,\n  state: input.state ?? \"UNKNOWN\",\n  decisionIds: input.decisionIds ?? [],\n  factNotes: input.factNotes ?? [],\n  source: input.source,\n  checkedAt: input.checkedAt,\n});",
+              "errors": [
+                {
+                  "id": "24d7d2af-812f-45c4-b940-8fc2e61cd37f",
+                  "name": "DuplicateConditionIdError",
+                  "code": "DUPLICATE_CONDITION_ID",
+                  "description": "A condition with this id already exists",
+                  "template": ""
+                },
+                {
+                  "id": "574cbf39-8e20-4109-8919-49bd746f580c",
+                  "name": "SourceRequiredError",
+                  "code": "SOURCE_REQUIRED",
+                  "description": "A condition needs a source",
+                  "template": ""
+                },
+                {
+                  "id": "218458a4-5667-440c-97ac-6a522f05fa09",
+                  "name": "CheckedDateRequiredError",
+                  "code": "CHECKED_DATE_REQUIRED",
+                  "description": "A condition needs the date it was checked",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "ef1e2eef-ae36-4af1-9492-395550b9cfc2",
+              "name": "UPDATE_CONDITION",
+              "description": "Change a condition; a field left out is unchanged, and a list given replaces the list",
+              "schema": "input UpdateConditionInput {\n  id: OID!\n  kind: ConditionKind\n  text: String\n  decisionIds: [PHID!]\n  factNotes: [UpdateConditionFactNoteInput!]\n  source: String\n  checkedAt: DateTime\n}\n\ninput UpdateConditionFactNoteInput {\n  id: PHID!\n  title: String!\n}",
+              "template": "Change a condition; a field left out is unchanged, and a list given replaces the list",
+              "reducer": "const { input } = action;\nconst condition = state.conditions.find((c) => c.id === input.id);\nif (!condition)\n  throw new ConditionNotFoundError(`Condition ${input.id} not found`);\nif (input.source != null && !input.source.trim())\n  throw new SourceRequiredError(\"A condition needs a source\");\n\nif (input.kind != null) condition.kind = input.kind;\nif (input.text != null) condition.text = input.text;\nif (input.decisionIds != null) condition.decisionIds = input.decisionIds;\nif (input.factNotes != null) condition.factNotes = input.factNotes;\nif (input.source != null) condition.source = input.source;\nif (input.checkedAt != null) condition.checkedAt = input.checkedAt;",
+              "errors": [
+                {
+                  "id": "1234e737-4339-469e-85cf-4e1ce25552de",
+                  "name": "ConditionNotFoundError",
+                  "code": "CONDITION_NOT_FOUND",
+                  "description": "No condition has this id",
+                  "template": ""
+                },
+                {
+                  "id": "1c202bfd-1dee-4302-9dcf-19572fba0997",
+                  "name": "SourceRequiredError",
+                  "code": "SOURCE_REQUIRED",
+                  "description": "A condition needs a source",
+                  "template": ""
+                },
+                {
+                  "id": "f318cb36-31b1-4d56-848e-3a6fe28bb1fd",
+                  "name": "CheckedDateRequiredError",
+                  "code": "CHECKED_DATE_REQUIRED",
+                  "description": "A condition needs the date it was checked",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "a49e9cb0-4bb5-46dd-b7a5-ebd47b0a5c4d",
+              "name": "REMOVE_CONDITION",
+              "description": "Remove a condition",
+              "schema": "input RemoveConditionInput {\n  id: OID!\n}",
+              "template": "Remove a condition",
+              "reducer": "const index = state.conditions.findIndex((c) => c.id === action.input.id);\nif (index === -1)\n  throw new ConditionNotFoundError(\n    `Condition ${action.input.id} not found`,\n  );\nstate.conditions.splice(index, 1);",
+              "errors": [
+                {
+                  "id": "9e5bf773-ef3c-44fc-a93f-dfeba5016ee0",
+                  "name": "ConditionNotFoundError",
+                  "code": "CONDITION_NOT_FOUND",
+                  "description": "No condition has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "600e0d03-3c2a-47e5-a3e6-1206dd3207c3",
+              "name": "MARK_CONDITION",
+              "description": "Record whether a condition is met, and when that was checked",
+              "schema": "input MarkConditionInput {\n  id: OID!\n  state: ConditionState!\n  checkedAt: DateTime!\n}",
+              "template": "Record whether a condition is met, and when that was checked",
+              "reducer": "const { id, state: next, checkedAt } = action.input;\nconst condition = state.conditions.find((c) => c.id === id);\nif (!condition)\n  throw new ConditionNotFoundError(`Condition ${id} not found`);\ncondition.state = next;\ncondition.checkedAt = checkedAt;",
+              "errors": [
+                {
+                  "id": "e17d7860-23b1-439d-85c3-c6a101fc1806",
+                  "name": "ConditionNotFoundError",
+                  "code": "CONDITION_NOT_FOUND",
+                  "description": "No condition has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            }
+          ]
+        },
+        {
+          "id": "ab191ee1-7b29-4109-954b-0f76480ebdd7",
+          "name": "limits",
+          "description": "The call's cap on attempts, and the entity that applies",
+          "operations": [
+            {
+              "id": "06f4b909-0fe6-4d74-a7c7-d632246e4005",
+              "name": "SET_ATTEMPT_LIMIT",
+              "description": "Set the maximum number of attempts, whether a withdrawn submission counts, and where the limit comes from",
+              "schema": "input SetAttemptLimitInput {\n  max: Int!\n  withdrawnCounts: Boolean!\n  source: String\n  checkedAt: DateTime\n}",
+              "template": "Set the maximum number of attempts, whether a withdrawn submission counts, and where the limit comes from",
+              "reducer": "const { max, withdrawnCounts, source, checkedAt } = action.input;\nif (max < 1)\n  throw new InvalidAttemptLimitError(\"The limit must be at least 1\");\nif (!source?.trim())\n  throw new SourceRequiredError(\"An attempt limit needs a source\");\nif (!checkedAt)\n  throw new CheckedDateRequiredError(\n    \"An attempt limit needs the date it was checked\",\n  );\nstate.attemptLimit = { max, withdrawnCounts, source, checkedAt };",
+              "errors": [
+                {
+                  "id": "9dc1a9fb-879e-4f95-8e0e-4d86c5ed68b5",
+                  "name": "InvalidAttemptLimitError",
+                  "code": "INVALID_ATTEMPT_LIMIT",
+                  "description": "The limit must be at least 1",
+                  "template": ""
+                },
+                {
+                  "id": "d680157d-a7f6-4c30-bddb-5e3147cb7f28",
+                  "name": "SourceRequiredError",
+                  "code": "SOURCE_REQUIRED",
+                  "description": "An attempt limit needs a source",
+                  "template": ""
+                },
+                {
+                  "id": "1774867a-33a5-4932-bd13-bf17b9042568",
+                  "name": "CheckedDateRequiredError",
+                  "code": "CHECKED_DATE_REQUIRED",
+                  "description": "An attempt limit needs the date it was checked",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "7a609f6a-46b5-4a28-b87c-50238622d84f",
+              "name": "CLEAR_ATTEMPT_LIMIT",
+              "description": "Record that the call has no limit",
+              "schema": "input ClearAttemptLimitInput {\n  _empty: Boolean\n}",
+              "template": "Record that the call has no limit",
+              "reducer": "state.attemptLimit = null;",
+              "errors": [],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "7908d219-bcbf-428f-a1f8-f5b31ca79aee",
+              "name": "SET_APPLYING_ENTITY",
+              "description": "Set the company-fact note that names the applying entity, or clear it",
+              "schema": "input SetApplyingEntityInput {\n  entity: SetApplyingEntityEntityInput\n}\n\ninput SetApplyingEntityEntityInput {\n  id: PHID!\n  title: String!\n}",
+              "template": "Set the company-fact note that names the applying entity, or clear it",
+              "reducer": "state.applyingEntity = action.input.entity ?? null;",
+              "errors": [],
+              "examples": [],
+              "scope": "global"
+            }
+          ]
+        },
+        {
+          "id": "2bc75dc9-a80f-4773-8ff1-9c5191206376",
+          "name": "submissions",
+          "description": "What was sent to the funder, and what came back",
+          "operations": [
+            {
+              "id": "e2304e7a-aa1a-46a6-9a47-aca397400caa",
+              "name": "MARK_SUBMISSION",
+              "description": "Mark a submission as sent. Its fields cannot change afterwards. People-only: an agent never submits",
+              "schema": "input MarkSubmissionInput {\n  id: OID!\n  stepId: OID\n  submittedAt: DateTime!\n  where: String\n  submittedBy: EthereumAddress!\n}",
+              "template": "Mark a submission as sent. Its fields cannot change afterwards. People-only: an agent never submits",
+              "reducer": "const { input } = action;\nif (state.submissions.some((s) => s.id === input.id))\n  throw new DuplicateSubmissionIdError(\n    `Submission ${input.id} already exists`,\n  );\nif (input.stepId && !state.steps.some((s) => s.id === input.stepId))\n  throw new StepNotFoundError(`Step ${input.stepId} not found`);\n\nstate.submissions.push({\n  id: input.id,\n  stepId: input.stepId ?? null,\n  submittedAt: input.submittedAt,\n  where: input.where ?? null,\n  submittedBy: input.submittedBy,\n  outcome: null,\n});",
+              "errors": [
+                {
+                  "id": "9f634190-dbcc-4416-b4d6-9952ff870061",
+                  "name": "DuplicateSubmissionIdError",
+                  "code": "DUPLICATE_SUBMISSION_ID",
+                  "description": "A submission with this id already exists",
+                  "template": ""
+                },
+                {
+                  "id": "f3ff65f7-27ef-4413-980c-c7658afe5753",
+                  "name": "StepNotFoundError",
+                  "code": "STEP_NOT_FOUND",
+                  "description": "The submission names a step that does not exist",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "a5983000-8c5a-41a9-a8c8-477f311ec755",
+              "name": "RECORD_SUBMISSION_OUTCOME",
+              "description": "Record the funder's answer to a submission, once",
+              "schema": "input RecordSubmissionOutcomeInput {\n  id: OID!\n  result: SubmissionResult!\n  amount: Amount_Money\n  currency: Currency\n  text: String\n  receivedAt: DateTime!\n}",
+              "template": "Record the funder's answer to a submission, once",
+              "reducer": "const { input } = action;\nconst submission = state.submissions.find((s) => s.id === input.id);\nif (!submission)\n  throw new SubmissionNotFoundError(`Submission ${input.id} not found`);\nif (submission.outcome)\n  throw new OutcomeAlreadyRecordedError(\n    `The outcome of submission ${input.id} is already recorded`,\n  );\nif (input.amount != null && input.currency == null)\n  throw new AmountNeedsCurrencyError(\"An amount needs a currency\");\n\nsubmission.outcome = {\n  result: input.result,\n  amount: input.amount ?? null,\n  currency: input.currency ?? null,\n  text: input.text ?? null,\n  receivedAt: input.receivedAt,\n};",
+              "errors": [
+                {
+                  "id": "191c5eac-e85f-43bc-9270-755defd10415",
+                  "name": "SubmissionNotFoundError",
+                  "code": "SUBMISSION_NOT_FOUND",
+                  "description": "No submission has this id",
+                  "template": ""
+                },
+                {
+                  "id": "50133ac3-a690-45f7-885e-fe9000971657",
+                  "name": "OutcomeAlreadyRecordedError",
+                  "code": "OUTCOME_ALREADY_RECORDED",
+                  "description": "The outcome of this submission is already recorded",
+                  "template": ""
+                },
+                {
+                  "id": "8be080b0-6e57-47bb-9acb-4955e7a44c1e",
+                  "name": "AmountNeedsCurrencyError",
+                  "code": "AMOUNT_NEEDS_CURRENCY",
+                  "description": "An amount needs a currency",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            }
+          ]
+        },
+        {
+          "id": "9d2fe510-11eb-425b-afc8-a08094725bb6",
+          "name": "consortium",
+          "description": "The coordinator and the partners of a consortium call",
+          "operations": [
+            {
+              "id": "3c428c5c-3bf8-4cb9-baa2-e6bc52c3b250",
+              "name": "SET_COORDINATOR",
+              "description": "Set the organisation that coordinates the consortium, or clear it",
+              "schema": "input SetCoordinatorInput {\n  coordinatorId: PHID\n}",
+              "template": "Set the organisation that coordinates the consortium, or clear it",
+              "reducer": "state.coordinatorId = action.input.coordinatorId ?? null;",
+              "errors": [],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "3ced53c6-ee38-4531-bd9e-3a4523c326e6",
+              "name": "ADD_PARTNER",
+              "description": "Add a partner organisation with its role, country, status and partnership lead",
+              "schema": "input AddPartnerInput {\n  id: OID!\n  organisationId: PHID!\n  role: String\n  country: String\n  status: PartnerStatus\n  leadId: PHID\n}",
+              "template": "Add a partner organisation with its role, country, status and partnership lead",
+              "reducer": "const { input } = action;\nif (state.partners.some((p) => p.id === input.id))\n  throw new DuplicatePartnerIdError(`Partner ${input.id} already exists`);\nstate.partners.push({\n  id: input.id,\n  organisationId: input.organisationId,\n  role: input.role ?? null,\n  country: input.country ?? null,\n  status: input.status ?? \"ASKED\",\n  leadId: input.leadId ?? null,\n});",
+              "errors": [
+                {
+                  "id": "97134869-766c-4e43-9702-7de953db9fb3",
+                  "name": "DuplicatePartnerIdError",
+                  "code": "DUPLICATE_PARTNER_ID",
+                  "description": "A partner with this id already exists",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "8c2021b0-709d-4ca4-b815-3b061dfc35aa",
+              "name": "UPDATE_PARTNER",
+              "description": "Change a partner; a field left out is unchanged, and null clears an optional field",
+              "schema": "input UpdatePartnerInput {\n  id: OID!\n  organisationId: PHID\n  role: String\n  country: String\n  status: PartnerStatus\n  leadId: PHID\n}",
+              "template": "Change a partner; a field left out is unchanged, and null clears an optional field",
+              "reducer": "const { input } = action;\nconst partner = state.partners.find((p) => p.id === input.id);\nif (!partner)\n  throw new PartnerNotFoundError(`Partner ${input.id} not found`);\nif (input.organisationId != null)\n  partner.organisationId = input.organisationId;\nif (input.role !== undefined) partner.role = input.role;\nif (input.country !== undefined) partner.country = input.country;\nif (input.status != null) partner.status = input.status;\nif (input.leadId !== undefined) partner.leadId = input.leadId;",
+              "errors": [
+                {
+                  "id": "c36e5c21-eb9e-4766-a453-2dc6b77979d9",
+                  "name": "PartnerNotFoundError",
+                  "code": "PARTNER_NOT_FOUND",
+                  "description": "No partner has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "6c22bb6a-2f10-4cf9-b674-2bcb7d3e1a9f",
+              "name": "REMOVE_PARTNER",
+              "description": "Remove a partner from the consortium",
+              "schema": "input RemovePartnerInput {\n  id: OID!\n}",
+              "template": "Remove a partner",
+              "reducer": "const index = state.partners.findIndex((p) => p.id === action.input.id);\nif (index === -1)\n  throw new PartnerNotFoundError(`Partner ${action.input.id} not found`);\nstate.partners.splice(index, 1);",
+              "errors": [
+                {
+                  "id": "99f6fb4b-a2d7-45ce-99bd-01aece6208a0",
+                  "name": "PartnerNotFoundError",
+                  "code": "PARTNER_NOT_FOUND",
+                  "description": "No partner has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            }
+          ]
+        },
+        {
+          "id": "f2b2587f-f1a5-4e29-b819-f1d3d113e448",
+          "name": "relationship",
+          "description": "The parts every relationship carries: next steps, interactions, contact links, references and confidential items",
+          "operations": [
+            {
+              "id": "00261c2f-28e4-4839-98f8-8df6c4579b6d",
+              "name": "ADD_NEXT_STEP",
+              "description": "Add a next step, open until it is done",
+              "schema": "input AddNextStepInput {\n  id: OID!\n  text: String!\n  owner: EthereumAddress\n  dueDate: Date\n}",
+              "template": "Add a next step, open until it is done",
+              "reducer": "const { id, text, owner, dueDate } = action.input;\nif (state.nextSteps.some((step) => step.id === id))\n  throw new DuplicateNextStepIdError(`NextStep ${id} already exists`);\nstate.nextSteps.push({\n  id,\n  text,\n  owner: owner ?? null,\n  dueDate: dueDate ?? null,\n  doneAt: null,\n});",
+              "errors": [
+                {
+                  "id": "92ba1d2a-b634-4aee-a35c-480c561e2cea",
+                  "name": "DuplicateNextStepIdError",
+                  "code": "DUPLICATE_NEXT_STEP_ID",
+                  "description": "A next step with this id already exists",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "4494d63c-9021-44ea-b013-6de471e61a16",
+              "name": "UPDATE_NEXT_STEP",
+              "description": "Change a next step's text, owner or due date; a field left out is unchanged",
+              "schema": "input UpdateNextStepInput {\n  id: OID!\n  text: String\n  owner: EthereumAddress\n  dueDate: Date\n}",
+              "template": "Change a next step's text, owner or due date; a field left out is unchanged",
+              "reducer": "const { id, text, owner, dueDate } = action.input;\nconst step = state.nextSteps.find((s) => s.id === id);\nif (!step) throw new NextStepNotFoundError(`NextStep ${id} not found`);\nif (text != null) step.text = text;\nif (owner !== undefined) step.owner = owner;\nif (dueDate !== undefined) step.dueDate = dueDate;",
+              "errors": [
+                {
+                  "id": "058a0822-b111-4129-914c-c4de9c5d7de8",
+                  "name": "NextStepNotFoundError",
+                  "code": "NEXT_STEP_NOT_FOUND",
+                  "description": "No next step has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "cd6e1c42-5169-47f1-93b3-6c0f8fc674c6",
+              "name": "COMPLETE_NEXT_STEP",
+              "description": "Mark a next step done",
+              "schema": "input CompleteNextStepInput {\n  id: OID!\n  doneAt: DateTime!\n}",
+              "template": "Mark a next step done",
+              "reducer": "const { id, doneAt } = action.input;\nconst step = state.nextSteps.find((s) => s.id === id);\nif (!step) throw new NextStepNotFoundError(`NextStep ${id} not found`);\nif (step.doneAt !== null)\n  throw new NextStepAlreadyDoneError(`NextStep ${id} is already done`);\nstep.doneAt = doneAt;",
+              "errors": [
+                {
+                  "id": "c4d05277-c2c9-4d33-a55e-6dfeaa70235e",
+                  "name": "NextStepNotFoundError",
+                  "code": "NEXT_STEP_NOT_FOUND",
+                  "description": "No next step has this id",
+                  "template": ""
+                },
+                {
+                  "id": "c7463151-e4cc-4608-a4d4-4c304efcae51",
+                  "name": "NextStepAlreadyDoneError",
+                  "code": "NEXT_STEP_ALREADY_DONE",
+                  "description": "The next step is already done",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "142a5896-ef42-41a1-b7a3-16534c37a4e4",
+              "name": "REOPEN_NEXT_STEP",
+              "description": "Return a done next step to open",
+              "schema": "input ReopenNextStepInput {\n  id: OID!\n}",
+              "template": "Return a done next step to open",
+              "reducer": "const { id } = action.input;\nconst step = state.nextSteps.find((s) => s.id === id);\nif (!step) throw new NextStepNotFoundError(`NextStep ${id} not found`);\nif (step.doneAt === null)\n  throw new NextStepNotDoneError(`NextStep ${id} is not done`);\nstep.doneAt = null;",
+              "errors": [
+                {
+                  "id": "635d2a68-99a2-4967-b622-dea82325c3e4",
+                  "name": "NextStepNotFoundError",
+                  "code": "NEXT_STEP_NOT_FOUND",
+                  "description": "No next step has this id",
+                  "template": ""
+                },
+                {
+                  "id": "5a9dec4b-f742-4f59-92e7-fc94e69e2c0c",
+                  "name": "NextStepNotDoneError",
+                  "code": "NEXT_STEP_NOT_DONE",
+                  "description": "The next step is not done",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "4c8f6763-ffa9-4c2d-bcd1-c215aada307c",
+              "name": "REMOVE_NEXT_STEP",
+              "description": "Remove a next step",
+              "schema": "input RemoveNextStepInput {\n  id: OID!\n}",
+              "template": "Remove a next step",
+              "reducer": "const { id } = action.input;\nif (!state.nextSteps.some((step) => step.id === id))\n  throw new NextStepNotFoundError(`NextStep ${id} not found`);\nstate.nextSteps = state.nextSteps.filter((step) => step.id !== id);",
+              "errors": [
+                {
+                  "id": "2aee430d-ac94-4e73-9847-e9f96c296644",
+                  "name": "NextStepNotFoundError",
+                  "code": "NEXT_STEP_NOT_FOUND",
+                  "description": "No next step has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "0d821fb3-d865-44f4-a288-9f792773f90f",
+              "name": "ADD_INTERACTION",
+              "description": "Record an email, call, meeting, event or message, held or scheduled",
+              "schema": "input AddInteractionInput {\n  id: OID!\n  kind: InteractionKind!\n  status: InteractionStatus!\n  at: DateTime\n  timeZone: String\n  summary: String\n  people: [AddInteractionPersonInput!]\n  teamMembers: [EthereumAddress!]\n  notesSource: AddInteractionNotesSourceInput\n}\n\ninput AddInteractionPersonInput {\n  contactId: PHID!\n  personId: OID!\n}\n\ninput AddInteractionNotesSourceInput {\n  id: PHID!\n  title: String!\n}",
+              "template": "Record an email, call, meeting, event or message, held or scheduled",
+              "reducer": "const { id, kind, status, summary, people, teamMembers, notesSource } =\n  action.input;\nconst at = action.input.at ?? null;\nconst timeZone = action.input.timeZone ?? null;\nif (state.interactions.some((interaction) => interaction.id === id))\n  throw new DuplicateInteractionIdError(\n    `Interaction ${id} already exists`,\n  );\ncheckWhen(kind, status, at, timeZone);\nstate.interactions.push({\n  id,\n  kind,\n  status,\n  at,\n  timeZone,\n  summary: summary ?? null,\n  people: (people ?? []).map((p) => ({\n    contactId: p.contactId,\n    personId: p.personId,\n  })),\n  teamMembers: teamMembers ?? [],\n  notesSource: notesSource\n    ? { id: notesSource.id, title: notesSource.title }\n    : null,\n});",
+              "errors": [
+                {
+                  "id": "43fc783e-73d0-4245-b917-3a39a33f7ffa",
+                  "name": "DuplicateInteractionIdError",
+                  "code": "DUPLICATE_INTERACTION_ID",
+                  "description": "An interaction with this id already exists",
+                  "template": ""
+                },
+                {
+                  "id": "c0fe75cb-ebae-4362-a5a8-0c07da08e4ca",
+                  "name": "MeetingNeedsTimeError",
+                  "code": "MEETING_NEEDS_TIME",
+                  "description": "A scheduled or held meeting needs an instant and a time zone",
+                  "template": ""
+                },
+                {
+                  "id": "9d5a03b9-f001-40f0-8041-0b5c4c198e1b",
+                  "name": "InvalidTimeZoneError",
+                  "code": "INVALID_TIME_ZONE",
+                  "description": "The time zone is not a well-formed IANA name",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "f89c1da7-c157-4ecd-a5df-7086d0b04586",
+              "name": "UPDATE_INTERACTION",
+              "description": "Change an interaction; a field left out is unchanged",
+              "schema": "input UpdateInteractionInput {\n  id: OID!\n  kind: InteractionKind\n  status: InteractionStatus\n  at: DateTime\n  timeZone: String\n  summary: String\n  people: [UpdateInteractionPersonInput!]\n  teamMembers: [EthereumAddress!]\n  notesSource: UpdateInteractionNotesSourceInput\n}\n\ninput UpdateInteractionPersonInput {\n  contactId: PHID!\n  personId: OID!\n}\n\ninput UpdateInteractionNotesSourceInput {\n  id: PHID!\n  title: String!\n}",
+              "template": "Change an interaction; a field left out is unchanged",
+              "reducer": "const {\n  id,\n  kind,\n  status,\n  at,\n  timeZone,\n  summary,\n  people,\n  teamMembers,\n  notesSource,\n} = action.input;\nconst interaction = state.interactions.find((i) => i.id === id);\nif (!interaction)\n  throw new InteractionNotFoundError(`Interaction ${id} not found`);\nconst nextAt = at === undefined ? interaction.at : at;\nconst nextZone = timeZone === undefined ? interaction.timeZone : timeZone;\ncheckWhen(\n  kind ?? interaction.kind,\n  status ?? interaction.status,\n  nextAt ?? null,\n  nextZone ?? null,\n);\nif (kind != null) interaction.kind = kind;\nif (status != null) interaction.status = status;\ninteraction.at = nextAt ?? null;\ninteraction.timeZone = nextZone ?? null;\nif (summary !== undefined) interaction.summary = summary;\nif (people != null)\n  interaction.people = people.map((p) => ({\n    contactId: p.contactId,\n    personId: p.personId,\n  }));\nif (teamMembers != null) interaction.teamMembers = teamMembers;\nif (notesSource !== undefined)\n  interaction.notesSource = notesSource\n    ? { id: notesSource.id, title: notesSource.title }\n    : null;",
+              "errors": [
+                {
+                  "id": "4a7cee8a-4864-4854-b946-34f5c50e1e7a",
+                  "name": "InteractionNotFoundError",
+                  "code": "INTERACTION_NOT_FOUND",
+                  "description": "No interaction has this id",
+                  "template": ""
+                },
+                {
+                  "id": "bd0053dc-3c7b-4d5a-8085-4a07a9702dc9",
+                  "name": "MeetingNeedsTimeError",
+                  "code": "MEETING_NEEDS_TIME",
+                  "description": "A scheduled or held meeting needs an instant and a time zone",
+                  "template": ""
+                },
+                {
+                  "id": "f4cf4f31-19ff-4885-a40b-feebbeafbdfb",
+                  "name": "InvalidTimeZoneError",
+                  "code": "INVALID_TIME_ZONE",
+                  "description": "The time zone is not a well-formed IANA name",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "b369dbd3-bdae-4ca0-80cf-8dca7d66d9f3",
+              "name": "REMOVE_INTERACTION",
+              "description": "Remove an interaction",
+              "schema": "input RemoveInteractionInput {\n  id: OID!\n}",
+              "template": "Remove an interaction",
+              "reducer": "const { id } = action.input;\nif (!state.interactions.some((interaction) => interaction.id === id))\n  throw new InteractionNotFoundError(`Interaction ${id} not found`);\nstate.interactions = state.interactions.filter(\n  (interaction) => interaction.id !== id,\n);",
+              "errors": [
+                {
+                  "id": "b3f05057-4553-4cda-8d75-193d486aa40f",
+                  "name": "InteractionNotFoundError",
+                  "code": "INTERACTION_NOT_FOUND",
+                  "description": "No interaction has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "f0b94738-20f1-4f7f-aa18-6b4a1194d695",
+              "name": "LINK_CONTACT",
+              "description": "Link a contact, or one person at it, to the relationship with a role",
+              "schema": "input LinkContactInput {\n  id: OID!\n  contactId: PHID!\n  personId: OID\n  role: String\n}",
+              "template": "Link a contact, or one person at it, to the relationship with a role",
+              "reducer": "const { id, contactId, personId, role } = action.input;\nif (state.contactLinks.some((link) => link.id === id))\n  throw new DuplicateContactLinkIdError(\n    `ContactLink ${id} already exists`,\n  );\nstate.contactLinks.push({\n  id,\n  contactId,\n  personId: personId ?? null,\n  role: role ?? null,\n});",
+              "errors": [
+                {
+                  "id": "17a20f06-1f5e-45a7-a337-dbe9fc3f99a6",
+                  "name": "DuplicateContactLinkIdError",
+                  "code": "DUPLICATE_CONTACT_LINK_ID",
+                  "description": "A contact link with this id already exists",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "ebf4175f-2ec7-4645-9f3e-371aacec59f9",
+              "name": "UNLINK_CONTACT",
+              "description": "Remove a contact link",
+              "schema": "input UnlinkContactInput {\n  id: OID!\n}",
+              "template": "Remove a contact link",
+              "reducer": "const { id } = action.input;\nif (!state.contactLinks.some((link) => link.id === id))\n  throw new ContactLinkNotFoundError(`ContactLink ${id} not found`);\nstate.contactLinks = state.contactLinks.filter((link) => link.id !== id);",
+              "errors": [
+                {
+                  "id": "9ba3b3e5-e0ec-42fe-8661-da97d3b96c92",
+                  "name": "ContactLinkNotFoundError",
+                  "code": "CONTACT_LINK_NOT_FOUND",
+                  "description": "No contact link has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "af194412-e88f-4737-87b7-3f84819a03cb",
+              "name": "ADD_REFERENCE",
+              "description": "Reference a vault note, source, comparable or another BD document",
+              "schema": "input AddReferenceInput {\n  id: OID!\n  kind: ReferenceKind!\n  documentId: PHID!\n  title: String!\n}",
+              "template": "Reference a vault note, source, comparable or another BD document",
+              "reducer": "const { id, kind, documentId, title } = action.input;\nif (state.references.some((reference) => reference.id === id))\n  throw new DuplicateReferenceIdError(`Reference ${id} already exists`);\n{\n  const existing = state.references.find(\n    (reference) =>\n      reference.documentId === documentId && reference.kind === kind,\n  );\n  if (existing)\n    throw new DuplicateReferenceError(\n      `\"${existing.title}\" is already linked.`,\n    );\n}\nstate.references.push({ id, kind, documentId, title });",
+              "errors": [
+                {
+                  "id": "4fafb68d-817d-4ff3-a64f-8fb6b2435597",
+                  "name": "DuplicateReferenceIdError",
+                  "code": "DUPLICATE_REFERENCE_ID",
+                  "description": "A reference with this id already exists",
+                  "template": ""
+                },
+                {
+                  "id": "2fc09655-e63d-4461-9f1c-9f81db9e1f1b",
+                  "name": "DuplicateReferenceError",
+                  "code": "DUPLICATE_REFERENCE",
+                  "description": "The same document is already referenced with the same kind",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "af785207-99a9-4e8e-890e-3abc40bbb07e",
+              "name": "REMOVE_REFERENCE",
+              "description": "Remove a reference",
+              "schema": "input RemoveReferenceInput {\n  id: OID!\n}",
+              "template": "Remove a reference",
+              "reducer": "const { id } = action.input;\nif (!state.references.some((reference) => reference.id === id))\n  throw new ReferenceNotFoundError(`Reference ${id} not found`);\nstate.references = state.references.filter(\n  (reference) => reference.id !== id,\n);",
+              "errors": [
+                {
+                  "id": "58a14497-6315-42a9-90e1-2060ce14aada",
+                  "name": "ReferenceNotFoundError",
+                  "code": "REFERENCE_NOT_FOUND",
+                  "description": "No reference has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "2cb5fb7a-34de-4ede-8ba1-fa97977c85f0",
+              "name": "ADD_CONFIDENTIAL_ITEM",
+              "description": "Record a confidential note, optionally about one contact",
+              "schema": "input AddConfidentialItemInput {\n  id: OID!\n  subjectContactId: PHID\n  text: String!\n  addedBy: EthereumAddress!\n  addedAt: DateTime!\n}",
+              "template": "Record a confidential note, optionally about one contact",
+              "reducer": "const { id, subjectContactId, text, addedBy, addedAt } = action.input;\nif (state.confidentialItems.some((item) => item.id === id))\n  throw new DuplicateConfidentialItemIdError(\n    `ConfidentialItem ${id} already exists`,\n  );\nstate.confidentialItems.push({\n  id,\n  subjectContactId: subjectContactId ?? null,\n  text,\n  addedBy,\n  addedAt,\n});",
+              "errors": [
+                {
+                  "id": "95b95138-2be9-4262-ab71-679ab0612025",
+                  "name": "DuplicateConfidentialItemIdError",
+                  "code": "DUPLICATE_CONFIDENTIAL_ITEM_ID",
+                  "description": "A confidential item with this id already exists",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "17a3f31a-2f59-4be7-b8e2-aeb0741d77f1",
+              "name": "REMOVE_CONFIDENTIAL_ITEM",
+              "description": "Remove a confidential item",
+              "schema": "input RemoveConfidentialItemInput {\n  id: OID!\n}",
+              "template": "Remove a confidential item",
+              "reducer": "const { id } = action.input;\nif (!state.confidentialItems.some((item) => item.id === id))\n  throw new ConfidentialItemNotFoundError(\n    `ConfidentialItem ${id} not found`,\n  );\nstate.confidentialItems = state.confidentialItems.filter(\n  (item) => item.id !== id,\n);",
+              "errors": [
+                {
+                  "id": "10f0f367-ed50-4336-8dac-ca60e37133d7",
+                  "name": "ConfidentialItemNotFoundError",
+                  "code": "CONFIDENTIAL_ITEM_NOT_FOUND",
+                  "description": "No confidential item has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            }
+          ]
+        }
+      ],
+      "version": 1,
+      "changeLog": []
+    }
+  ]
+}

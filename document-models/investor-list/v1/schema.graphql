@@ -1,0 +1,113 @@
+scalar Unknown
+scalar DateTime
+scalar Address
+scalar AttachmentRef
+scalar Amount_Tokens
+scalar EthereumAddress
+scalar EmailAddress
+scalar Amount_Percentage
+scalar Date
+scalar URL
+scalar Amount_Money
+scalar OLabel
+scalar Currency
+scalar PHID
+scalar OID
+scalar Amount_Fiat
+scalar Amount_Currency
+scalar Amount_Crypto
+scalar Amount
+scalar Upload
+
+type InvestorListState {
+  rows: [InvestorRow!]!
+}
+
+type InvestorRow {
+  id: OID!
+  name: String!
+  website: String
+  sourceList: String
+  state: InvestorRowState!
+  exclusionReason: String
+  thesisNote: VaultRef
+  comparables: [VaultRef!]!
+  organisationId: PHID
+  leadId: PHID
+}
+
+enum InvestorRowState {
+  LISTED
+  SHORTLISTED
+  EXCLUDED
+  ENGAGED
+}
+
+type VaultRef {
+  id: PHID!
+  title: String!
+}
+
+# rows
+
+input AddRowsInput {
+  rows: [AddRowsRowInput!]!
+}
+
+input AddRowsRowInput {
+  id: OID!
+  name: String!
+  website: String
+  sourceList: String
+}
+
+input UpdateRowInput {
+  id: OID!
+  name: String
+  website: String
+  sourceList: String
+}
+
+input ShortlistRowInput {
+  id: OID!
+}
+
+input ExcludeRowInput {
+  id: OID!
+  reason: String!
+}
+
+input RelistRowInput {
+  id: OID!
+}
+
+input SetRowThesisInput {
+  id: OID!
+  thesisNote: SetRowThesisNoteInput
+}
+
+input SetRowThesisNoteInput {
+  id: PHID!
+  title: String!
+}
+
+input LinkRowComparableInput {
+  rowId: OID!
+  comparableId: PHID!
+  title: String!
+}
+
+input UnlinkRowComparableInput {
+  rowId: OID!
+  comparableId: PHID!
+}
+
+input MarkRowEngagedInput {
+  id: OID!
+  organisationId: PHID!
+  leadId: PHID!
+}
+
+input RemoveRowInput {
+  id: OID!
+}

@@ -1,0 +1,133 @@
+import type { IconName } from "../../../design-system/icons.js";
+import type { PlaceCounts } from "./drive-plan.js";
+
+export type PlaceId =
+  | "overview"
+  | "leads"
+  | "proposals"
+  | "funding"
+  | "investors"
+  | "organisations"
+  | "decisions"
+  | "playbook"
+  | "agent"
+  | "settings";
+
+export interface Place {
+  id: PlaceId;
+  label: string;
+  icon: IconName;
+  /** What the empty state says the place will hold. */
+  empty: string;
+}
+
+/** The ten places, in sidebar order. The Agent and Settings sit at the sidebar's foot. */
+export const PLACES: readonly Place[] = [
+  {
+    id: "overview",
+    label: "Overview",
+    icon: "overview",
+    empty: "What needs attention, and what is coming up, will appear here.",
+  },
+  {
+    id: "leads",
+    label: "Leads",
+    icon: "leads",
+    empty: "Your leads will appear here.",
+  },
+  {
+    id: "proposals",
+    label: "Proposals",
+    icon: "proposal",
+    empty: "Every proposal will appear here, with what it waits on.",
+  },
+  {
+    id: "funding",
+    label: "Funding",
+    icon: "funding",
+    empty: "Funding opportunities will appear here, by deadline.",
+  },
+  {
+    id: "investors",
+    label: "Investors",
+    icon: "investors",
+    empty: "Your investor list will appear here.",
+  },
+  {
+    id: "organisations",
+    label: "Organisations",
+    icon: "organisations",
+    empty: "Organisations and the people you know there will appear here.",
+  },
+  {
+    id: "decisions",
+    label: "Decisions",
+    icon: "decisions",
+    empty: "Questions waiting for an answer will appear here.",
+  },
+  {
+    id: "playbook",
+    label: "Playbook",
+    icon: "playbook",
+    empty: "Your positioning and messages will appear here.",
+  },
+  {
+    id: "agent",
+    label: "Agent",
+    icon: "sparkles",
+    empty: "Ask about your leads, funding and the vault.",
+  },
+  {
+    id: "settings",
+    label: "Settings",
+    icon: "settings",
+    empty: "Team, time zone and vault settings will appear here.",
+  },
+];
+
+const BY_ID = Object.fromEntries(PLACES.map((p) => [p.id, p])) as Record<
+  PlaceId,
+  Place
+>;
+
+export function placeById(id: PlaceId): Place {
+  return BY_ID[id];
+}
+
+/** The count to show beside a place, or undefined when it has none. */
+export function countFor(id: PlaceId, counts: PlaceCounts): number | undefined {
+  if (
+    id === "leads" ||
+    id === "proposals" ||
+    id === "funding" ||
+    id === "decisions"
+  )
+    return counts[id];
+  return undefined;
+}
+
+export type SaveState = "setting-up" | "up-to-date" | "offline";
+
+/** The save state's label, icon and CSS modifier. Offline wins over the rest. */
+export function saveStateView(state: SaveState): {
+  label: string;
+  icon: IconName;
+  className: string;
+} {
+  switch (state) {
+    case "offline":
+      return {
+        label: "Offline",
+        icon: "cloud-off",
+        className: "pb-save-state is-offline",
+      };
+    case "setting-up":
+      return {
+        label: "Setting up",
+        icon: "cloud",
+        className: "pb-save-state is-saving",
+      };
+    default:
+      return { label: "Up to date", icon: "cloud", className: "pb-save-state" };
+  }
+}

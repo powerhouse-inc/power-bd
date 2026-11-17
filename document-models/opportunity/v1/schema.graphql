@@ -1,0 +1,603 @@
+scalar Unknown
+scalar DateTime
+scalar Address
+scalar AttachmentRef
+scalar Amount_Tokens
+scalar EthereumAddress
+scalar EmailAddress
+scalar Amount_Percentage
+scalar Date
+scalar URL
+scalar Amount_Money
+scalar OLabel
+scalar Currency
+scalar PHID
+scalar OID
+scalar Amount_Fiat
+scalar Amount_Currency
+scalar Amount_Crypto
+scalar Amount
+scalar Upload
+
+type OpportunityState {
+  name: String
+  funderId: PHID
+  programme: VaultRef
+  roundLabel: String
+  roundOpenedAt: DateTime
+  instrument: Instrument
+  amount: Amount_Money
+  currency: Currency
+  fundingRate: Amount_Percentage
+  whereToApply: String
+  rolling: Boolean!
+  owner: EthereumAddress
+  fit: Fit
+  fitReasoning: VaultRef
+  status: OpportunityStatus!
+  statusReason: String
+  closedAt: DateTime
+  expectedOpening: Date
+  decideBy: Date
+  blocked: Blocked
+  goNoGoDecisions: [GoNoGoDecision!]!
+  steps: [Step!]!
+  conditions: [Condition!]!
+  attemptLimit: AttemptLimit
+  applyingEntity: VaultRef
+  submissions: [Submission!]!
+  coordinatorId: PHID
+  partners: [Partner!]!
+  nextSteps: [NextStep!]!
+  interactions: [Interaction!]!
+  contactLinks: [ContactLink!]!
+  references: [Reference!]!
+  confidentialItems: [ConfidentialItem!]!
+}
+
+type VaultRef {
+  id: PHID!
+  title: String!
+}
+
+enum Instrument {
+  GRANT
+  FELLOWSHIP
+  ACCELERATOR
+  CONSORTIUM_CALL
+  EQUITY
+  IN_KIND
+  PRIZE
+  MIXED
+}
+
+enum Fit {
+  BEST
+  GOOD
+  LATER
+  UNLIKELY
+}
+
+enum OpportunityStatus {
+  WATCHING
+  TO_EVALUATE
+  DECIDING
+  PREPARING
+  SUBMITTED
+  NEXT_STAGE
+  AWARDED
+  REJECTED
+  WITHDRAWN
+  NO_GO
+}
+
+type Blocked {
+  decisionId: PHID
+  text: String
+}
+
+enum GoNoGo {
+  GO
+  NO_GO
+}
+
+type GoNoGoDecision {
+  id: OID!
+  decision: GoNoGo!
+  decidedBy: EthereumAddress!
+  reason: String!
+  attemptsLeft: Int
+  decidedAt: DateTime!
+}
+
+enum StepKind {
+  LETTER_OF_INTENT
+  CUT_OFF
+  STAGE
+  FULL_PROPOSAL
+  INTERVIEW
+  EXPECTED_RESULT
+  OTHER
+}
+
+type Step {
+  id: OID!
+  kind: StepKind!
+  label: String!
+  at: DateTime!
+  timeZone: String!
+  targeted: Boolean!
+  source: String!
+  checkedAt: DateTime!
+}
+
+enum ConditionKind {
+  ELIGIBILITY
+  COUNTRY
+  LEGAL_FORM
+  READINESS
+  PURPOSE
+  CO_FUNDING
+  CONSORTIUM
+  OTHER
+}
+
+enum ConditionState {
+  MET
+  NOT_MET
+  UNKNOWN
+  WAITING_ON_DECISION
+}
+
+type Condition {
+  id: OID!
+  kind: ConditionKind!
+  text: String!
+  state: ConditionState!
+  decisionIds: [PHID!]!
+  factNotes: [VaultRef!]!
+  source: String!
+  checkedAt: DateTime!
+}
+
+type AttemptLimit {
+  max: Int!
+  withdrawnCounts: Boolean!
+  source: String!
+  checkedAt: DateTime!
+}
+
+enum SubmissionResult {
+  PASSED
+  AWARDED
+  UNSUCCESSFUL
+  WITHDRAWN
+}
+
+type SubmissionOutcome {
+  result: SubmissionResult!
+  amount: Amount_Money
+  currency: Currency
+  text: String
+  receivedAt: DateTime!
+}
+
+type Submission {
+  id: OID!
+  stepId: OID
+  submittedAt: DateTime!
+  where: String
+  submittedBy: EthereumAddress!
+  outcome: SubmissionOutcome
+}
+
+enum PartnerStatus {
+  ASKED
+  INTERESTED
+  COMMITTED
+  SIGNED
+}
+
+type Partner {
+  id: OID!
+  organisationId: PHID!
+  role: String
+  country: String
+  status: PartnerStatus!
+  leadId: PHID
+}
+
+type PersonRef {
+  contactId: PHID!
+  personId: OID!
+}
+
+type NextStep {
+  id: OID!
+  text: String!
+  owner: EthereumAddress
+  dueDate: Date
+  doneAt: DateTime
+}
+
+enum InteractionKind {
+  EMAIL
+  CALL
+  MEETING
+  EVENT
+  MESSAGE
+  OTHER
+}
+
+enum InteractionStatus {
+  SCHEDULED
+  HELD
+  CANCELLED
+}
+
+type Interaction {
+  id: OID!
+  kind: InteractionKind!
+  status: InteractionStatus!
+  at: DateTime
+  timeZone: String
+  summary: String
+  people: [PersonRef!]!
+  teamMembers: [EthereumAddress!]!
+  notesSource: VaultRef
+}
+
+type ContactLink {
+  id: OID!
+  contactId: PHID!
+  personId: OID
+  role: String
+}
+
+enum ReferenceKind {
+  RESEARCH
+  NOTE
+  SOURCE
+  COMPARABLE
+  OPPORTUNITY
+  LEAD
+  DECISION
+  OTHER
+}
+
+type Reference {
+  id: OID!
+  kind: ReferenceKind!
+  documentId: PHID!
+  title: String!
+}
+
+type ConfidentialItem {
+  id: OID!
+  subjectContactId: PHID
+  text: String!
+  addedBy: EthereumAddress!
+  addedAt: DateTime!
+}
+
+# details
+
+input SetOpportunityDetailsInput {
+  name: String
+  funderId: PHID
+  programme: SetOpportunityDetailsProgrammeInput
+  roundLabel: String
+  roundOpenedAt: DateTime
+  instrument: Instrument
+  amount: Amount_Money
+  currency: Currency
+  fundingRate: Amount_Percentage
+  whereToApply: String
+  rolling: Boolean
+}
+
+input SetOpportunityDetailsProgrammeInput {
+  id: PHID!
+  title: String!
+}
+
+input SetOwnerInput {
+  owner: EthereumAddress
+}
+
+input SetFitInput {
+  fit: Fit
+  reasoning: SetFitReasoningInput
+}
+
+input SetFitReasoningInput {
+  id: PHID!
+  title: String!
+}
+
+# status
+
+input SetOpportunityStatusInput {
+  status: OpportunityStatus!
+  reason: String
+  changedAt: DateTime!
+}
+
+input DecideGoNoGoInput {
+  id: OID!
+  decision: GoNoGo!
+  decidedBy: EthereumAddress
+  reason: String!
+  attemptsLeft: Int
+  decidedAt: DateTime!
+}
+
+input SetBlockedInput {
+  decisionId: PHID
+  text: String
+}
+
+input ClearBlockedInput {
+  _empty: Boolean
+}
+
+input SetDecideByInput {
+  decideBy: Date
+}
+
+input SetExpectedOpeningInput {
+  expectedOpening: Date
+}
+
+# dates
+
+input AddStepInput {
+  id: OID!
+  kind: StepKind!
+  label: String!
+  at: DateTime!
+  timeZone: String!
+  source: String
+  checkedAt: DateTime
+}
+
+input UpdateStepInput {
+  id: OID!
+  kind: StepKind
+  label: String
+  at: DateTime
+  timeZone: String
+  source: String
+  checkedAt: DateTime
+}
+
+input RemoveStepInput {
+  id: OID!
+}
+
+input TargetCutOffInput {
+  id: OID!
+}
+
+# conditions
+
+input AddConditionInput {
+  id: OID!
+  kind: ConditionKind!
+  text: String!
+  state: ConditionState
+  decisionIds: [PHID!]
+  factNotes: [AddConditionFactNoteInput!]
+  source: String
+  checkedAt: DateTime
+}
+
+input AddConditionFactNoteInput {
+  id: PHID!
+  title: String!
+}
+
+input UpdateConditionInput {
+  id: OID!
+  kind: ConditionKind
+  text: String
+  decisionIds: [PHID!]
+  factNotes: [UpdateConditionFactNoteInput!]
+  source: String
+  checkedAt: DateTime
+}
+
+input UpdateConditionFactNoteInput {
+  id: PHID!
+  title: String!
+}
+
+input RemoveConditionInput {
+  id: OID!
+}
+
+input MarkConditionInput {
+  id: OID!
+  state: ConditionState!
+  checkedAt: DateTime!
+}
+
+# limits
+
+input SetAttemptLimitInput {
+  max: Int!
+  withdrawnCounts: Boolean!
+  source: String
+  checkedAt: DateTime
+}
+
+input ClearAttemptLimitInput {
+  _empty: Boolean
+}
+
+input SetApplyingEntityInput {
+  entity: SetApplyingEntityEntityInput
+}
+
+input SetApplyingEntityEntityInput {
+  id: PHID!
+  title: String!
+}
+
+# submissions
+
+input MarkSubmissionInput {
+  id: OID!
+  stepId: OID
+  submittedAt: DateTime!
+  where: String
+  submittedBy: EthereumAddress!
+}
+
+input RecordSubmissionOutcomeInput {
+  id: OID!
+  result: SubmissionResult!
+  amount: Amount_Money
+  currency: Currency
+  text: String
+  receivedAt: DateTime!
+}
+
+# consortium
+
+input SetCoordinatorInput {
+  coordinatorId: PHID
+}
+
+input AddPartnerInput {
+  id: OID!
+  organisationId: PHID!
+  role: String
+  country: String
+  status: PartnerStatus
+  leadId: PHID
+}
+
+input UpdatePartnerInput {
+  id: OID!
+  organisationId: PHID
+  role: String
+  country: String
+  status: PartnerStatus
+  leadId: PHID
+}
+
+input RemovePartnerInput {
+  id: OID!
+}
+
+# relationship
+
+input AddNextStepInput {
+  id: OID!
+  text: String!
+  owner: EthereumAddress
+  dueDate: Date
+}
+
+input UpdateNextStepInput {
+  id: OID!
+  text: String
+  owner: EthereumAddress
+  dueDate: Date
+}
+
+input CompleteNextStepInput {
+  id: OID!
+  doneAt: DateTime!
+}
+
+input ReopenNextStepInput {
+  id: OID!
+}
+
+input RemoveNextStepInput {
+  id: OID!
+}
+
+input AddInteractionInput {
+  id: OID!
+  kind: InteractionKind!
+  status: InteractionStatus!
+  at: DateTime
+  timeZone: String
+  summary: String
+  people: [AddInteractionPersonInput!]
+  teamMembers: [EthereumAddress!]
+  notesSource: AddInteractionNotesSourceInput
+}
+
+input AddInteractionPersonInput {
+  contactId: PHID!
+  personId: OID!
+}
+
+input AddInteractionNotesSourceInput {
+  id: PHID!
+  title: String!
+}
+
+input UpdateInteractionInput {
+  id: OID!
+  kind: InteractionKind
+  status: InteractionStatus
+  at: DateTime
+  timeZone: String
+  summary: String
+  people: [UpdateInteractionPersonInput!]
+  teamMembers: [EthereumAddress!]
+  notesSource: UpdateInteractionNotesSourceInput
+}
+
+input UpdateInteractionPersonInput {
+  contactId: PHID!
+  personId: OID!
+}
+
+input UpdateInteractionNotesSourceInput {
+  id: PHID!
+  title: String!
+}
+
+input RemoveInteractionInput {
+  id: OID!
+}
+
+input LinkContactInput {
+  id: OID!
+  contactId: PHID!
+  personId: OID
+  role: String
+}
+
+input UnlinkContactInput {
+  id: OID!
+}
+
+input AddReferenceInput {
+  id: OID!
+  kind: ReferenceKind!
+  documentId: PHID!
+  title: String!
+}
+
+input RemoveReferenceInput {
+  id: OID!
+}
+
+input AddConfidentialItemInput {
+  id: OID!
+  subjectContactId: PHID
+  text: String!
+  addedBy: EthereumAddress!
+  addedAt: DateTime!
+}
+
+input RemoveConfidentialItemInput {
+  id: OID!
+}

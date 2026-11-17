@@ -1,0 +1,659 @@
+scalar Unknown
+scalar DateTime
+scalar Address
+scalar AttachmentRef
+scalar Amount_Tokens
+scalar EthereumAddress
+scalar EmailAddress
+scalar Amount_Percentage
+scalar Date
+scalar URL
+scalar Amount_Money
+scalar OLabel
+scalar Currency
+scalar PHID
+scalar OID
+scalar Amount_Fiat
+scalar Amount_Currency
+scalar Amount_Crypto
+scalar Amount
+scalar Upload
+
+type ProposalState {
+  title: String
+  code: String
+  leadId: PHID
+  recipient: Recipient
+  contractingEntity: VaultRef
+  currency: Currency
+  validUntil: Date
+  revisesProposalId: PHID
+  bindingOnSignature: Boolean!
+  processesPersonalData: Boolean!
+  status: ProposalStatus!
+  approvedBy: EthereumAddress
+  approvedAt: DateTime
+  sentBy: EthereumAddress
+  sentAt: DateTime
+  sentCopy: FileRef
+  chosenOptionId: OID
+  answeredAt: DateTime
+  reason: String
+  signedCopy: FileRef
+  supersededByProposalId: PHID
+  references: [Reference!]!
+  packages: [Package!]!
+  deliverables: [Deliverable!]!
+  options: [Option!]!
+  paymentSteps: [PaymentStep!]!
+  actors: [Actor!]!
+  useCases: [UseCase!]!
+  boundaries: [Boundary!]!
+  sections: [Section!]!
+  clauses: [Clause!]!
+  annexes: [Annex!]!
+  figures: [Figure!]!
+}
+
+type Recipient {
+  contactId: PHID!
+  personId: OID
+}
+
+type VaultRef {
+  id: PHID!
+  title: String!
+}
+
+type FileRef {
+  ref: AttachmentRef!
+  name: String!
+  type: String!
+}
+
+enum ProposalStatus {
+  DRAFT
+  APPROVED
+  SENT
+  ACCEPTED
+  DECLINED
+  WITHDRAWN
+  SUPERSEDED
+}
+
+enum ReferenceKind {
+  RESEARCH
+  NOTE
+  SOURCE
+  COMPARABLE
+  OPPORTUNITY
+  LEAD
+  DECISION
+  OTHER
+}
+
+type Reference {
+  id: OID!
+  kind: ReferenceKind!
+  documentId: PHID!
+  title: String!
+}
+
+type Package {
+  id: OID!
+  code: String!
+  name: String!
+  summary: String
+  requires: [OID!]!
+  price: Amount_Money
+  targetDate: Date
+}
+
+enum Pricing {
+  FIXED
+  INCLUDED
+  RECURRING
+  RATE
+}
+
+enum RecurringPeriod {
+  MONTH
+  QUARTER
+  YEAR
+}
+
+enum RateUnit {
+  HOUR
+  DAY
+}
+
+type DeliverablePrice {
+  pricing: Pricing!
+  amount: Amount_Money
+  upperAmount: Amount_Money
+  period: RecurringPeriod
+  unit: RateUnit
+  until: Date
+  note: String
+}
+
+type Deliverable {
+  id: OID!
+  code: String!
+  packageId: OID!
+  title: String!
+  body: String
+  price: DeliverablePrice
+}
+
+type Adjustment {
+  id: OID!
+  label: String!
+  amount: Amount_Money!
+  condition: String
+}
+
+type Option {
+  id: OID!
+  label: String!
+  packageIds: [OID!]!
+  adjustments: [Adjustment!]!
+}
+
+enum PaymentTrigger {
+  ON_SIGNATURE
+  ON_ACCEPTANCE
+  ON_DATE
+}
+
+type PaymentStep {
+  id: OID!
+  label: String!
+  trigger: PaymentTrigger!
+  percentage: Amount_Percentage!
+  date: Date
+}
+
+type Actor {
+  id: OID!
+  code: String!
+  name: String!
+  description: String
+}
+
+type UseCase {
+  id: OID!
+  code: String!
+  actorId: OID!
+  packageId: OID!
+  title: String!
+  body: String
+}
+
+enum BoundaryKind {
+  ASSUMPTION
+  CLIENT_INPUT
+  EXCLUSION
+  GUARANTEE
+}
+
+type Boundary {
+  id: OID!
+  kind: BoundaryKind!
+  packageId: OID
+  text: String!
+  value: String
+}
+
+enum SectionKind {
+  PROSE
+  SCOPE
+  ASSUMPTIONS
+  DELIVERABLES
+  PRICING
+  SCHEDULE
+  ACCEPTANCE
+  TERMS
+  ANNEXES
+}
+
+type Section {
+  id: OID!
+  kind: SectionKind!
+  title: String
+  body: String
+  positioningId: OID
+}
+
+enum ClauseKind {
+  CONTRACTING_PARTY
+  LIABILITY
+  CONFIDENTIALITY
+  INTELLECTUAL_PROPERTY
+  TERMINATION
+  GOVERNING_LAW
+  FINAL_PROVISIONS
+  OTHER
+}
+
+type Clause {
+  id: OID!
+  kind: ClauseKind!
+  title: String!
+  body: String
+}
+
+enum AnnexKind {
+  DATA_PROCESSING
+  FORM
+  OTHER
+}
+
+type Annex {
+  id: OID!
+  kind: AnnexKind!
+  title: String!
+  body: String
+  partOfAgreement: Boolean!
+}
+
+enum FigureAnchorKind {
+  SECTION
+  USE_CASE
+}
+
+type Figure {
+  id: OID!
+  anchorKind: FigureAnchorKind!
+  anchorId: OID!
+  file: FileRef!
+  caption: String
+}
+
+# details
+
+input SetProposalDetailsInput {
+  title: String
+  code: String
+  currency: Currency
+  validUntil: Date
+  bindingOnSignature: Boolean
+  processesPersonalData: Boolean
+  revisesProposalId: PHID
+}
+
+input SetProposalPartiesInput {
+  leadId: PHID
+  recipient: SetProposalPartiesRecipientInput
+  contractingEntity: SetProposalPartiesContractingEntityInput
+}
+
+input SetProposalPartiesRecipientInput {
+  contactId: PHID!
+  personId: OID
+}
+
+input SetProposalPartiesContractingEntityInput {
+  id: PHID!
+  title: String!
+}
+
+# status
+
+input ApproveProposalInput {
+  approvedBy: EthereumAddress!
+  approvedAt: DateTime!
+}
+
+input ReopenProposalInput {
+  _empty: Boolean
+}
+
+input MarkProposalSentInput {
+  sentBy: EthereumAddress!
+  sentAt: DateTime!
+  copy: MarkProposalSentCopyInput
+}
+
+input MarkProposalSentCopyInput {
+  ref: AttachmentRef!
+  name: String!
+  type: String!
+}
+
+input SetSentCopyInput {
+  file: SetSentCopyFileInput
+}
+
+input SetSentCopyFileInput {
+  ref: AttachmentRef!
+  name: String!
+  type: String!
+}
+
+input RecordProposalAnswerInput {
+  accepted: Boolean!
+  chosenOptionId: OID
+  reason: String
+  answeredAt: DateTime!
+}
+
+input SetSignedCopyInput {
+  file: SetSignedCopyFileInput
+}
+
+input SetSignedCopyFileInput {
+  ref: AttachmentRef!
+  name: String!
+  type: String!
+}
+
+input WithdrawProposalInput {
+  reason: String!
+}
+
+input SupersedeProposalInput {
+  supersededByProposalId: PHID!
+}
+
+# references
+
+input AddReferenceInput {
+  id: OID!
+  kind: ReferenceKind!
+  documentId: PHID!
+  title: String!
+}
+
+input RemoveReferenceInput {
+  id: OID!
+}
+
+# packages
+
+input AddPackageInput {
+  id: OID!
+  code: String!
+  name: String!
+  summary: String
+  requires: [OID!]
+  price: Amount_Money
+  currency: Currency
+  targetDate: Date
+}
+
+input UpdatePackageInput {
+  id: OID!
+  code: String
+  name: String
+  summary: String
+  requires: [OID!]
+  price: Amount_Money
+  currency: Currency
+  targetDate: Date
+}
+
+input RemovePackageInput {
+  id: OID!
+}
+
+input ReorderPackagesInput {
+  ids: [OID!]!
+}
+
+# deliverables
+
+input AddDeliverableInput {
+  id: OID!
+  code: String!
+  packageId: OID!
+  title: String!
+  body: String
+}
+
+input UpdateDeliverableInput {
+  id: OID!
+  code: String
+  packageId: OID
+  title: String
+  body: String
+}
+
+input SetDeliverablePriceInput {
+  id: OID!
+  pricing: Pricing!
+  amount: Amount_Money
+  upperAmount: Amount_Money
+  currency: Currency
+  period: RecurringPeriod
+  unit: RateUnit
+  until: Date
+  note: String
+}
+
+input RemoveDeliverableInput {
+  id: OID!
+}
+
+input ReorderDeliverablesInput {
+  ids: [OID!]!
+}
+
+# options
+
+input AddOptionInput {
+  id: OID!
+  label: String!
+  packageIds: [OID!]!
+}
+
+input UpdateOptionInput {
+  id: OID!
+  label: String
+  packageIds: [OID!]
+}
+
+input RemoveOptionInput {
+  id: OID!
+}
+
+input AddAdjustmentInput {
+  optionId: OID!
+  id: OID!
+  label: String!
+  amount: Amount_Money!
+  currency: Currency
+  condition: String
+}
+
+input RemoveAdjustmentInput {
+  optionId: OID!
+  id: OID!
+}
+
+# payment
+
+input AddPaymentStepInput {
+  id: OID!
+  label: String!
+  trigger: PaymentTrigger!
+  percentage: Amount_Percentage!
+  date: Date
+}
+
+input UpdatePaymentStepInput {
+  id: OID!
+  label: String
+  trigger: PaymentTrigger
+  percentage: Amount_Percentage
+  date: Date
+}
+
+input RemovePaymentStepInput {
+  id: OID!
+}
+
+# scope
+
+input AddActorInput {
+  id: OID!
+  code: String!
+  name: String!
+  description: String
+}
+
+input UpdateActorInput {
+  id: OID!
+  code: String
+  name: String
+  description: String
+}
+
+input RemoveActorInput {
+  id: OID!
+}
+
+input AddUseCaseInput {
+  id: OID!
+  code: String!
+  actorId: OID!
+  packageId: OID!
+  title: String!
+  body: String
+}
+
+input UpdateUseCaseInput {
+  id: OID!
+  code: String
+  actorId: OID
+  packageId: OID
+  title: String
+  body: String
+}
+
+input RemoveUseCaseInput {
+  id: OID!
+}
+
+input AddBoundaryInput {
+  id: OID!
+  kind: BoundaryKind!
+  packageId: OID
+  text: String!
+  value: String
+}
+
+input UpdateBoundaryInput {
+  id: OID!
+  kind: BoundaryKind
+  packageId: OID
+  text: String
+  value: String
+}
+
+input RemoveBoundaryInput {
+  id: OID!
+}
+
+# content
+
+input AddSectionInput {
+  id: OID!
+  kind: SectionKind!
+  title: String
+  body: String
+  positioningId: OID
+}
+
+input UpdateSectionInput {
+  id: OID!
+  title: String
+  body: String
+  positioningId: OID
+}
+
+input RemoveSectionInput {
+  id: OID!
+}
+
+input ReorderSectionsInput {
+  ids: [OID!]!
+}
+
+input AddClauseInput {
+  id: OID!
+  kind: ClauseKind!
+  title: String!
+  body: String
+}
+
+input UpdateClauseInput {
+  id: OID!
+  kind: ClauseKind
+  title: String
+  body: String
+}
+
+input RemoveClauseInput {
+  id: OID!
+}
+
+input ReorderClausesInput {
+  ids: [OID!]!
+}
+
+input AddAnnexInput {
+  id: OID!
+  kind: AnnexKind!
+  title: String!
+  body: String
+  partOfAgreement: Boolean
+}
+
+input UpdateAnnexInput {
+  id: OID!
+  kind: AnnexKind
+  title: String
+  body: String
+  partOfAgreement: Boolean
+}
+
+input RemoveAnnexInput {
+  id: OID!
+}
+
+input AddFigureInput {
+  id: OID!
+  anchorKind: FigureAnchorKind!
+  anchorId: OID!
+  file: AddFigureFileInput!
+  caption: String
+}
+
+input AddFigureFileInput {
+  ref: AttachmentRef!
+  name: String!
+  type: String!
+}
+
+input UpdateFigureInput {
+  id: OID!
+  file: UpdateFigureFileInput
+  caption: String
+}
+
+input UpdateFigureFileInput {
+  ref: AttachmentRef!
+  name: String!
+  type: String!
+}
+
+input RemoveFigureInput {
+  id: OID!
+}
+
+input ReorderFiguresInput {
+  anchorKind: FigureAnchorKind!
+  anchorId: OID!
+  ids: [OID!]!
+}

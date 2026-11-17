@@ -6,3 +6,5 @@
 
 /* The package's own tokens and rules, for its editors and routes: ph build
      ships them in the package's stylesheet. Theme Connect in hosts/connect/style.css. */
+@import "./design-system/tokens.css";
+@import "./design-system/components.css";

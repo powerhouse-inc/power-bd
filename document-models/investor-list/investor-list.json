@@ -1,0 +1,346 @@
+{
+  "id": "powerbd/investor-list",
+  "name": "Investor List",
+  "author": {
+    "name": "Powerhouse",
+    "website": "https://powerhouse.inc"
+  },
+  "extension": "",
+  "description": "The team's one list of investors: a row per investor organisation, shortlisted or excluded with a reason, with its research notes, and marked engaged once a relationship starts. One per drive.",
+  "specifications": [
+    {
+      "state": {
+        "local": {
+          "schema": "",
+          "examples": [],
+          "initialValue": ""
+        },
+        "global": {
+          "schema": "type InvestorListState {\n  rows: [InvestorRow!]!\n}\n\ntype InvestorRow {\n  id: OID!\n  name: String!\n  website: String\n  sourceList: String\n  state: InvestorRowState!\n  exclusionReason: String\n  thesisNote: VaultRef\n  comparables: [VaultRef!]!\n  organisationId: PHID\n  leadId: PHID\n}\n\nenum InvestorRowState {\n  LISTED\n  SHORTLISTED\n  EXCLUDED\n  ENGAGED\n}\n\ntype VaultRef {\n  id: PHID!\n  title: String!\n}",
+          "examples": [],
+          "initialValue": "{\"rows\":[]}"
+        }
+      },
+      "modules": [
+        {
+          "id": "4ce1f341-f27b-486d-bfd7-67cb26af2d57",
+          "name": "rows",
+          "description": "The investor rows: import, shortlist and exclusion, research notes, and engagement",
+          "operations": [
+            {
+              "id": "e01eb0d8-c8ee-4a39-afa1-375ede977d38",
+              "name": "ADD_ROWS",
+              "description": "Add many rows in one action, for an import; every row starts as listed",
+              "schema": "input AddRowsInput {\n  rows: [AddRowsRowInput!]!\n}\n\ninput AddRowsRowInput {\n  id: OID!\n  name: String!\n  website: String\n  sourceList: String\n}",
+              "template": "Add many rows in one action, for an import; every row starts as listed",
+              "reducer": "const { rows } = action.input;\nconst batchIds = new Set<string>();\nfor (const row of rows) {\n  if (batchIds.has(row.id))\n    throw new RepeatedRowIdError(\n      `Row ${row.id} appears more than once in the batch`,\n    );\n  batchIds.add(row.id);\n  if (state.rows.some((existing) => existing.id === row.id))\n    throw new DuplicateRowIdError(`Row ${row.id} already exists`);\n  if (row.name.trim() === \"\")\n    throw new RowNameRequiredError(\"A row needs its organisation's name\");\n}\nfor (const row of rows) {\n  state.rows.push({\n    id: row.id,\n    name: row.name,\n    website: row.website ?? null,\n    sourceList: row.sourceList ?? null,\n    state: \"LISTED\",\n    exclusionReason: null,\n    thesisNote: null,\n    comparables: [],\n    organisationId: null,\n    leadId: null,\n  });\n}",
+              "errors": [
+                {
+                  "id": "f8b764ac-c18f-48b9-9612-ab1a8867ee1c",
+                  "name": "RepeatedRowIdError",
+                  "code": "REPEATED_ROW_ID",
+                  "description": "The same row id appears more than once in the batch",
+                  "template": ""
+                },
+                {
+                  "id": "2d8d930d-ef7c-49dd-8b0e-affa6d38b593",
+                  "name": "DuplicateRowIdError",
+                  "code": "DUPLICATE_ROW_ID",
+                  "description": "A row with this id already exists",
+                  "template": ""
+                },
+                {
+                  "id": "98db8ddd-fc6d-43d7-9dfc-ec9f32bb466d",
+                  "name": "RowNameRequiredError",
+                  "code": "ROW_NAME_REQUIRED",
+                  "description": "A row needs its organisation's name",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "15d6c809-84a3-4796-8159-cb9a9cb6b3c6",
+              "name": "UPDATE_ROW",
+              "description": "Change a row's organisation name, website or the list it came from",
+              "schema": "input UpdateRowInput {\n  id: OID!\n  name: String\n  website: String\n  sourceList: String\n}",
+              "template": "Change a row's organisation name, website or the list it came from",
+              "reducer": "const { id, name, website, sourceList } = action.input;\nconst row = openRow(state, id);\nif (name != null && name.trim() === \"\")\n  throw new RowNameRequiredError(\"A row needs its organisation's name\");\nif (name != null) row.name = name;\nif (website !== undefined) row.website = website;\nif (sourceList !== undefined) row.sourceList = sourceList;",
+              "errors": [
+                {
+                  "id": "6007e164-c135-4164-a3fb-547c50e57a99",
+                  "name": "RowNotFoundError",
+                  "code": "ROW_NOT_FOUND",
+                  "description": "No row has this id",
+                  "template": ""
+                },
+                {
+                  "id": "956ffff3-0bc1-4500-b88c-9e7273a22940",
+                  "name": "RowEngagedError",
+                  "code": "ROW_ENGAGED",
+                  "description": "An engaged row is final",
+                  "template": ""
+                },
+                {
+                  "id": "01d470f9-5eb9-4387-8424-4ab67cbe6761",
+                  "name": "RowNameRequiredError",
+                  "code": "ROW_NAME_REQUIRED",
+                  "description": "A row needs its organisation's name",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "7dd8a5e3-15ec-43cc-8338-7df41e626732",
+              "name": "SHORTLIST_ROW",
+              "description": "Put a row on the shortlist",
+              "schema": "input ShortlistRowInput {\n  id: OID!\n}",
+              "template": "Put a row on the shortlist",
+              "reducer": "const row = openRow(state, action.input.id);\nrow.state = \"SHORTLISTED\";\nrow.exclusionReason = null;",
+              "errors": [
+                {
+                  "id": "2fe1860d-370b-46fb-8779-60505d460edd",
+                  "name": "RowNotFoundError",
+                  "code": "ROW_NOT_FOUND",
+                  "description": "No row has this id",
+                  "template": ""
+                },
+                {
+                  "id": "0e2f3e63-50e7-48b5-9e91-55a584d8f9a0",
+                  "name": "RowEngagedError",
+                  "code": "ROW_ENGAGED",
+                  "description": "An engaged row is final",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "c6bf3600-a3a6-4f4b-9928-13fe32d6de0a",
+              "name": "EXCLUDE_ROW",
+              "description": "Exclude a row, with the reason",
+              "schema": "input ExcludeRowInput {\n  id: OID!\n  reason: String!\n}",
+              "template": "Exclude a row, with the reason",
+              "reducer": "const row = openRow(state, action.input.id);\nif (action.input.reason.trim() === \"\")\n  throw new ExclusionReasonRequiredError(\"Excluding a row needs a reason\");\nrow.state = \"EXCLUDED\";\nrow.exclusionReason = action.input.reason;",
+              "errors": [
+                {
+                  "id": "4e178a7b-a7b3-4b5f-b3aa-4f2bce0b3a22",
+                  "name": "RowNotFoundError",
+                  "code": "ROW_NOT_FOUND",
+                  "description": "No row has this id",
+                  "template": ""
+                },
+                {
+                  "id": "9f9a5984-16be-42f5-ac01-bee0e92aad5e",
+                  "name": "RowEngagedError",
+                  "code": "ROW_ENGAGED",
+                  "description": "An engaged row is final",
+                  "template": ""
+                },
+                {
+                  "id": "43939d94-34e2-4424-8ce0-1e32ab5302b5",
+                  "name": "ExclusionReasonRequiredError",
+                  "code": "EXCLUSION_REASON_REQUIRED",
+                  "description": "Excluding a row needs a reason",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "75616a5e-1322-4b4d-aa8b-8c36f279ef58",
+              "name": "RELIST_ROW",
+              "description": "Return a shortlisted or excluded row to listed",
+              "schema": "input RelistRowInput {\n  id: OID!\n}",
+              "template": "Return a shortlisted or excluded row to listed",
+              "reducer": "const row = openRow(state, action.input.id);\nrow.state = \"LISTED\";\nrow.exclusionReason = null;",
+              "errors": [
+                {
+                  "id": "cfa8cf01-7a67-436f-8eb3-08e94e804d5c",
+                  "name": "RowNotFoundError",
+                  "code": "ROW_NOT_FOUND",
+                  "description": "No row has this id",
+                  "template": ""
+                },
+                {
+                  "id": "b7ce8f8a-4f68-44e3-98cf-0b18c924acf3",
+                  "name": "RowEngagedError",
+                  "code": "ROW_ENGAGED",
+                  "description": "An engaged row is final",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "d085399a-b566-4042-9c27-f2e0c9105084",
+              "name": "SET_ROW_THESIS",
+              "description": "Point a row at the vault note that holds the investor's thesis, or clear it",
+              "schema": "input SetRowThesisInput {\n  id: OID!\n  thesisNote: SetRowThesisNoteInput\n}\n\ninput SetRowThesisNoteInput {\n  id: PHID!\n  title: String!\n}",
+              "template": "Point a row at the vault note that holds the investor's thesis, or clear it",
+              "reducer": "const row = openRow(state, action.input.id);\nrow.thesisNote = action.input.thesisNote ?? null;",
+              "errors": [
+                {
+                  "id": "9e8f81cf-ad21-4b60-8417-569b957fe678",
+                  "name": "RowNotFoundError",
+                  "code": "ROW_NOT_FOUND",
+                  "description": "No row has this id",
+                  "template": ""
+                },
+                {
+                  "id": "cd5e64bc-f63b-494c-9920-8751d1b479b3",
+                  "name": "RowEngagedError",
+                  "code": "ROW_ENGAGED",
+                  "description": "An engaged row is final",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "2f6f53a0-6dc5-46c8-8bc8-28e8a3023bcb",
+              "name": "LINK_ROW_COMPARABLE",
+              "description": "Point a row at a comparable, a vault note, that the investor funded",
+              "schema": "input LinkRowComparableInput {\n  rowId: OID!\n  comparableId: PHID!\n  title: String!\n}",
+              "template": "Point a row at a comparable the investor funded",
+              "reducer": "const { rowId, comparableId, title } = action.input;\nconst row = openRow(state, rowId);\nif (row.comparables.some((comparable) => comparable.id === comparableId))\n  throw new ComparableAlreadyLinkedError(\n    `This note is already linked to \"${row.name}\".`,\n  );\nrow.comparables.push({ id: comparableId, title });",
+              "errors": [
+                {
+                  "id": "36ed999e-fb6a-49b6-9cfc-48ad6181fb1c",
+                  "name": "RowNotFoundError",
+                  "code": "ROW_NOT_FOUND",
+                  "description": "No row has this id",
+                  "template": ""
+                },
+                {
+                  "id": "a04ac775-7a29-4070-8345-2e9b17fa630f",
+                  "name": "RowEngagedError",
+                  "code": "ROW_ENGAGED",
+                  "description": "An engaged row is final",
+                  "template": ""
+                },
+                {
+                  "id": "b81cb409-82f0-462d-9d60-8429a1005958",
+                  "name": "ComparableAlreadyLinkedError",
+                  "code": "COMPARABLE_ALREADY_LINKED",
+                  "description": "The row already links to this comparable",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "0a6bb35f-a119-4caf-a056-f1c5a868a8bd",
+              "name": "UNLINK_ROW_COMPARABLE",
+              "description": "Take a comparable off a row",
+              "schema": "input UnlinkRowComparableInput {\n  rowId: OID!\n  comparableId: PHID!\n}",
+              "template": "Remove a comparable from a row",
+              "reducer": "const { rowId, comparableId } = action.input;\nconst row = openRow(state, rowId);\nconst index = row.comparables.findIndex(\n  (comparable) => comparable.id === comparableId,\n);\nif (index === -1)\n  throw new ComparableNotLinkedError(\n    `This note is not linked to \"${row.name}\".`,\n  );\nrow.comparables.splice(index, 1);",
+              "errors": [
+                {
+                  "id": "e6ee8890-deea-4db9-95dd-1b132b55ae56",
+                  "name": "RowNotFoundError",
+                  "code": "ROW_NOT_FOUND",
+                  "description": "No row has this id",
+                  "template": ""
+                },
+                {
+                  "id": "aa519d5c-5373-40d9-bfb0-c0a04f3d3750",
+                  "name": "RowEngagedError",
+                  "code": "ROW_ENGAGED",
+                  "description": "An engaged row is final",
+                  "template": ""
+                },
+                {
+                  "id": "98157710-0404-475c-a602-309f7cca6855",
+                  "name": "ComparableNotLinkedError",
+                  "code": "COMPARABLE_NOT_LINKED",
+                  "description": "The row does not link to this comparable",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "211fda50-752b-4d4f-bcaa-66e2b15a3a51",
+              "name": "MARK_ROW_ENGAGED",
+              "description": "Record that a relationship started: the row's organisation and its investor lead",
+              "schema": "input MarkRowEngagedInput {\n  id: OID!\n  organisationId: PHID!\n  leadId: PHID!\n}",
+              "template": "Record that a relationship started: the row's organisation and its investor lead",
+              "reducer": "const { id, organisationId, leadId } = action.input;\nconst row = openRow(state, id);\nif (organisationId.trim() === \"\")\n  throw new OrganisationRequiredError(\n    \"Engaging a row needs its organisation\",\n  );\nif (leadId.trim() === \"\")\n  throw new LeadRequiredError(\"Engaging a row needs its investor lead\");\nrow.state = \"ENGAGED\";\nrow.organisationId = organisationId;\nrow.leadId = leadId;",
+              "errors": [
+                {
+                  "id": "ba5fd6be-b0b9-4ece-9a91-abc6e6e75943",
+                  "name": "RowNotFoundError",
+                  "code": "ROW_NOT_FOUND",
+                  "description": "No row has this id",
+                  "template": ""
+                },
+                {
+                  "id": "2544ddd7-0bfb-4e2d-9587-6d2fba7ee9e5",
+                  "name": "RowEngagedError",
+                  "code": "ROW_ENGAGED",
+                  "description": "An engaged row is final",
+                  "template": ""
+                },
+                {
+                  "id": "78ac84c6-a27a-4a77-9c2d-e37156736b87",
+                  "name": "OrganisationRequiredError",
+                  "code": "ORGANISATION_REQUIRED",
+                  "description": "Engaging a row needs its organisation",
+                  "template": ""
+                },
+                {
+                  "id": "82233436-bab7-485e-9165-d2f08cc2f8d4",
+                  "name": "LeadRequiredError",
+                  "code": "LEAD_REQUIRED",
+                  "description": "Engaging a row needs its investor lead",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "2d2439e9-f4ab-48b6-832d-a01f8bea0d0d",
+              "name": "REMOVE_ROW",
+              "description": "Delete a row that is not engaged",
+              "schema": "input RemoveRowInput {\n  id: OID!\n}",
+              "template": "Delete a row that is not engaged",
+              "reducer": "const row = openRow(state, action.input.id);\nstate.rows.splice(state.rows.indexOf(row), 1);",
+              "errors": [
+                {
+                  "id": "312a659d-a9bc-4977-be8c-4a831e1105f5",
+                  "name": "RowNotFoundError",
+                  "code": "ROW_NOT_FOUND",
+                  "description": "No row has this id",
+                  "template": ""
+                },
+                {
+                  "id": "3d9bd33e-6b72-445a-9b9d-4f70a2d38771",
+                  "name": "RowEngagedError",
+                  "code": "ROW_ENGAGED",
+                  "description": "An engaged row is final",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            }
+          ]
+        }
+      ],
+      "version": 1,
+      "changeLog": []
+    }
+  ]
+}

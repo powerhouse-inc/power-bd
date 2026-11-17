@@ -1,0 +1,573 @@
+import type { DocumentModelGlobalState } from "document-model";
+
+export const documentModel: DocumentModelGlobalState = {
+  id: "powerbd/playbook",
+  name: "Playbook",
+  author: {
+    name: "Powerhouse",
+    website: "https://powerhouse.inc",
+  },
+  extension: "",
+  description:
+    "What the team says about itself: positioning that a person approves, the proof cases that back it, and the claims we must never make. One per drive; outreach is drafted from it and checked against it.",
+  specifications: [
+    {
+      state: {
+        local: {
+          schema: "",
+          examples: [],
+          initialValue: "",
+        },
+        global: {
+          schema:
+            "type PlaybookState {\n  positioning: [Positioning!]!\n  proofCases: [ProofCase!]!\n  neverClaims: [NeverClaim!]!\n}\n\ntype Positioning {\n  id: OID!\n  title: String!\n  text: String!\n  status: PositioningStatus!\n  approvedBy: EthereumAddress\n  approvedAt: DateTime\n  comparables: [VaultRef!]!\n  proofCaseIds: [OID!]!\n}\n\nenum PositioningStatus {\n  DRAFT\n  APPROVED\n  RETIRED\n}\n\ntype ProofCase {\n  id: OID!\n  title: String!\n  summary: String\n  evidence: [VaultRef!]!\n  mayBeNamedPublicly: Boolean!\n  comparables: [VaultRef!]!\n}\n\ntype NeverClaim {\n  id: OID!\n  claim: String!\n  reason: String\n  phrases: [String!]!\n}\n\ntype VaultRef {\n  id: PHID!\n  title: String!\n}",
+          examples: [],
+          initialValue: '{"positioning":[],"proofCases":[],"neverClaims":[]}',
+        },
+      },
+      modules: [
+        {
+          id: "7bb3c7be-fc75-4c8d-a027-8e9f2e88ac71",
+          name: "positioning",
+          description:
+            "What we say about ourselves, who approved it and what supports it",
+          operations: [
+            {
+              id: "e1d5656e-dde2-4a74-a511-a532fbbcf8dc",
+              name: "ADD_POSITIONING",
+              description: "Write new positioning, which starts as a draft",
+              schema:
+                "input AddPositioningInput {\n  id: OID!\n  title: String!\n  text: String!\n}",
+              template: "Write new positioning, which starts as a draft",
+              reducer:
+                'const { id, title, text } = action.input;\nif (state.positioning.some((item) => item.id === id))\n  throw new DuplicatePositioningIdError(`Positioning ${id} already exists`);\nstate.positioning.push({\n  id,\n  title,\n  text,\n  status: "DRAFT",\n  approvedBy: null,\n  approvedAt: null,\n  comparables: [],\n  proofCaseIds: [],\n});',
+              errors: [
+                {
+                  id: "1228677d-0abf-410b-87c0-466750ee96ae",
+                  name: "DuplicatePositioningIdError",
+                  code: "DUPLICATE_POSITIONING_ID",
+                  description: "Positioning with this id already exists",
+                  template: "",
+                },
+              ],
+              examples: [],
+              scope: "global",
+            },
+            {
+              id: "3fe54140-8d17-4209-9ae6-da54b9465067",
+              name: "UPDATE_POSITIONING",
+              description:
+                "Change the title or the text; approved positioning returns to draft and loses its approval",
+              schema:
+                "input UpdatePositioningInput {\n  id: OID!\n  title: String\n  text: String\n}",
+              template:
+                "Change the title or the text; approved positioning returns to draft and loses its approval",
+              reducer:
+                'const { id, title, text } = action.input;\nconst positioning = openPositioning(state, id);\nif (title != null) positioning.title = title;\nif (text != null) positioning.text = text;\nif (positioning.status === "APPROVED") {\n  positioning.status = "DRAFT";\n  positioning.approvedBy = null;\n  positioning.approvedAt = null;\n}',
+              errors: [
+                {
+                  id: "dd45af14-34be-49ff-ad6f-9e3443aba5a3",
+                  name: "PositioningNotFoundError",
+                  code: "POSITIONING_NOT_FOUND",
+                  description: "No positioning has this id",
+                  template: "",
+                },
+                {
+                  id: "130a0d97-e185-4454-9b0b-047f23f1c76c",
+                  name: "PositioningRetiredError",
+                  code: "POSITIONING_RETIRED",
+                  description: "Retired positioning is final",
+                  template: "",
+                },
+              ],
+              examples: [],
+              scope: "global",
+            },
+            {
+              id: "751502af-a4b7-4ed8-ab98-18b4fcd2cc1c",
+              name: "APPROVE_POSITIONING",
+              description:
+                "A person approves a draft, so that outreach may be drafted from it",
+              schema:
+                "input ApprovePositioningInput {\n  id: OID!\n  approvedBy: EthereumAddress!\n  approvedAt: DateTime!\n}",
+              template:
+                "A person approves a draft, so that outreach may be drafted from it",
+              reducer:
+                'const { id, approvedBy, approvedAt } = action.input;\nconst positioning = state.positioning.find((item) => item.id === id);\nif (!positioning)\n  throw new PositioningNotFoundError(`Positioning ${id} not found`);\nif (positioning.status !== "DRAFT")\n  throw new PositioningNotDraftError("Only a draft can be approved");\npositioning.status = "APPROVED";\npositioning.approvedBy = approvedBy;\npositioning.approvedAt = approvedAt;',
+              errors: [
+                {
+                  id: "910f7649-b24d-40bd-9bf8-5ead874f7c87",
+                  name: "PositioningNotFoundError",
+                  code: "POSITIONING_NOT_FOUND",
+                  description: "No positioning has this id",
+                  template: "",
+                },
+                {
+                  id: "d5cbfb83-f4d6-429a-92a5-c9a7a73189c8",
+                  name: "PositioningNotDraftError",
+                  code: "POSITIONING_NOT_DRAFT",
+                  description: "Only a draft can be approved",
+                  template: "",
+                },
+              ],
+              examples: [],
+              scope: "global",
+            },
+            {
+              id: "026870e8-9406-42b3-98a8-63aca06adb4e",
+              name: "RETIRE_POSITIONING",
+              description: "Retire positioning that no longer holds, for good",
+              schema: "input RetirePositioningInput {\n  id: OID!\n}",
+              template: "Retire positioning that no longer holds, for good",
+              reducer:
+                'openPositioning(state, action.input.id).status = "RETIRED";',
+              errors: [
+                {
+                  id: "a84d0cc6-8400-4f4d-b871-64d8c14ac89c",
+                  name: "PositioningNotFoundError",
+                  code: "POSITIONING_NOT_FOUND",
+                  description: "No positioning has this id",
+                  template: "",
+                },
+                {
+                  id: "13b7a4d0-b6b5-4add-9710-d82489c6026a",
+                  name: "PositioningRetiredError",
+                  code: "POSITIONING_RETIRED",
+                  description: "Retired positioning is final",
+                  template: "",
+                },
+              ],
+              examples: [],
+              scope: "global",
+            },
+            {
+              id: "107a2f51-3490-40be-9536-1c6eda3230a7",
+              name: "LINK_POSITIONING_COMPARABLE",
+              description:
+                "Point positioning at a comparable, a vault note, that supports it",
+              schema:
+                "input LinkPositioningComparableInput {\n  positioningId: OID!\n  comparableId: PHID!\n  title: String!\n}",
+              template:
+                "Point positioning at a comparable, a vault note, that supports it",
+              reducer:
+                'const { positioningId, comparableId, title } = action.input;\nconst positioning = openPositioning(state, positioningId);\nif (positioning.comparables.some((item) => item.id === comparableId))\n  throw new ComparableAlreadyLinkedError(\n    `This note is already linked to positioning "${positioning.title}".`,\n  );\npositioning.comparables.push({ id: comparableId, title });',
+              errors: [
+                {
+                  id: "65c78cfa-c8d8-4ef5-8837-8f9ad24ddcd7",
+                  name: "PositioningNotFoundError",
+                  code: "POSITIONING_NOT_FOUND",
+                  description: "No positioning has this id",
+                  template: "",
+                },
+                {
+                  id: "df521a68-47b6-48ad-8cf7-1fc6c5fbf5e9",
+                  name: "PositioningRetiredError",
+                  code: "POSITIONING_RETIRED",
+                  description: "Retired positioning is final",
+                  template: "",
+                },
+                {
+                  id: "7d72dafd-e2df-4a45-b719-330bfae45207",
+                  name: "ComparableAlreadyLinkedError",
+                  code: "COMPARABLE_ALREADY_LINKED",
+                  description:
+                    "The positioning already links to this comparable",
+                  template: "",
+                },
+              ],
+              examples: [],
+              scope: "global",
+            },
+            {
+              id: "1050eb6c-67c7-49d6-9bae-22f68c24be00",
+              name: "UNLINK_POSITIONING_COMPARABLE",
+              description: "Take a comparable off positioning",
+              schema:
+                "input UnlinkPositioningComparableInput {\n  positioningId: OID!\n  comparableId: PHID!\n}",
+              template: "Take a comparable off positioning",
+              reducer:
+                'const { positioningId, comparableId } = action.input;\nconst positioning = openPositioning(state, positioningId);\nconst index = positioning.comparables.findIndex(\n  (item) => item.id === comparableId,\n);\nif (index === -1)\n  throw new ComparableNotLinkedError(\n    `This note is not linked to positioning "${positioning.title}".`,\n  );\npositioning.comparables.splice(index, 1);',
+              errors: [
+                {
+                  id: "4c46dd7b-db88-4f7c-9eba-3f6d88a1aa22",
+                  name: "PositioningNotFoundError",
+                  code: "POSITIONING_NOT_FOUND",
+                  description: "No positioning has this id",
+                  template: "",
+                },
+                {
+                  id: "44bebb73-8e67-4727-a97e-1e583d7e76a1",
+                  name: "PositioningRetiredError",
+                  code: "POSITIONING_RETIRED",
+                  description: "Retired positioning is final",
+                  template: "",
+                },
+                {
+                  id: "81c21b8e-679f-4fa3-9a05-e209d36b2165",
+                  name: "ComparableNotLinkedError",
+                  code: "COMPARABLE_NOT_LINKED",
+                  description:
+                    "The positioning does not link to this comparable",
+                  template: "",
+                },
+              ],
+              examples: [],
+              scope: "global",
+            },
+            {
+              id: "47b89a6d-626f-45cd-bc3f-7e721d4ebaa7",
+              name: "LINK_POSITIONING_PROOF",
+              description:
+                "Point positioning at a proof case of this playbook that supports it",
+              schema:
+                "input LinkPositioningProofInput {\n  positioningId: OID!\n  proofCaseId: OID!\n}",
+              template:
+                "Point positioning at a proof case of this playbook that supports it",
+              reducer:
+                'const { positioningId, proofCaseId } = action.input;\nconst positioning = openPositioning(state, positioningId);\nif (!state.proofCases.some((item) => item.id === proofCaseId))\n  throw new ProofCaseNotFoundError(`Proof case ${proofCaseId} not found`);\nif (positioning.proofCaseIds.includes(proofCaseId))\n  throw new ProofCaseAlreadyLinkedError(\n    `Proof case "${state.proofCases.find((item) => item.id === proofCaseId)?.title}" is already linked to positioning "${positioning.title}".`,\n  );\npositioning.proofCaseIds.push(proofCaseId);',
+              errors: [
+                {
+                  id: "434a4862-eb80-483b-8835-1c1023ea4661",
+                  name: "PositioningNotFoundError",
+                  code: "POSITIONING_NOT_FOUND",
+                  description: "No positioning has this id",
+                  template: "",
+                },
+                {
+                  id: "77f2aad7-a8e7-4af0-85dc-06ba613c02cc",
+                  name: "PositioningRetiredError",
+                  code: "POSITIONING_RETIRED",
+                  description: "Retired positioning is final",
+                  template: "",
+                },
+                {
+                  id: "15f7dc54-49d2-45bf-b77b-87f4e277275d",
+                  name: "ProofCaseNotFoundError",
+                  code: "PROOF_CASE_NOT_FOUND",
+                  description: "No proof case has this id",
+                  template: "",
+                },
+                {
+                  id: "d3387eaf-670a-4da0-baad-747dcf4114fc",
+                  name: "ProofCaseAlreadyLinkedError",
+                  code: "PROOF_CASE_ALREADY_LINKED",
+                  description:
+                    "The positioning already links to this proof case",
+                  template: "",
+                },
+              ],
+              examples: [],
+              scope: "global",
+            },
+            {
+              id: "820a82c7-974b-41d4-8fd4-84e1dbfd3870",
+              name: "UNLINK_POSITIONING_PROOF",
+              description: "Take a proof case off positioning",
+              schema:
+                "input UnlinkPositioningProofInput {\n  positioningId: OID!\n  proofCaseId: OID!\n}",
+              template: "Take a proof case off positioning",
+              reducer:
+                'const { positioningId, proofCaseId } = action.input;\nconst positioning = openPositioning(state, positioningId);\nconst index = positioning.proofCaseIds.indexOf(proofCaseId);\nif (index === -1)\n  throw new ProofCaseNotLinkedError(\n    `That proof case is not linked to positioning "${positioning.title}".`,\n  );\npositioning.proofCaseIds.splice(index, 1);',
+              errors: [
+                {
+                  id: "4f3af01d-6eab-4c1c-afc9-22fceddc3833",
+                  name: "PositioningNotFoundError",
+                  code: "POSITIONING_NOT_FOUND",
+                  description: "No positioning has this id",
+                  template: "",
+                },
+                {
+                  id: "5e74970c-5a36-4db9-a92f-f17436fd960c",
+                  name: "PositioningRetiredError",
+                  code: "POSITIONING_RETIRED",
+                  description: "Retired positioning is final",
+                  template: "",
+                },
+                {
+                  id: "e9f33225-c95a-46a3-a456-26ce65191d9a",
+                  name: "ProofCaseNotLinkedError",
+                  code: "PROOF_CASE_NOT_LINKED",
+                  description:
+                    "The positioning does not link to this proof case",
+                  template: "",
+                },
+              ],
+              examples: [],
+              scope: "global",
+            },
+          ],
+        },
+        {
+          id: "55addf02-915f-4969-862c-c920904a90d9",
+          name: "proofs",
+          description:
+            "The proof cases that back what we say, with their evidence in the vault",
+          operations: [
+            {
+              id: "d7b1cf2c-c74a-428d-b37b-53926e5dca56",
+              name: "ADD_PROOF_CASE",
+              description:
+                "Add a proof case, saying whether it may be named publicly",
+              schema:
+                "input AddProofCaseInput {\n  id: OID!\n  title: String!\n  summary: String\n  mayBeNamedPublicly: Boolean!\n}",
+              template:
+                "Add a proof case, saying whether it may be named publicly",
+              reducer:
+                "const { id, title, summary, mayBeNamedPublicly } = action.input;\nif (state.proofCases.some((proofCase) => proofCase.id === id))\n  throw new DuplicateProofCaseIdError(`Proof case ${id} already exists`);\nstate.proofCases.push({\n  id,\n  title,\n  summary: summary ?? null,\n  evidence: [],\n  mayBeNamedPublicly,\n  comparables: [],\n});",
+              errors: [
+                {
+                  id: "fc8911a3-e862-40eb-b55d-9abf058abe02",
+                  name: "DuplicateProofCaseIdError",
+                  code: "DUPLICATE_PROOF_CASE_ID",
+                  description: "A proof case with this id already exists",
+                  template: "",
+                },
+              ],
+              examples: [],
+              scope: "global",
+            },
+            {
+              id: "28ddaac5-77d1-43c5-84a6-3862efbbbb60",
+              name: "UPDATE_PROOF_CASE",
+              description:
+                "Change a proof case's title or summary, or whether it may be named publicly",
+              schema:
+                "input UpdateProofCaseInput {\n  id: OID!\n  title: String\n  summary: String\n  mayBeNamedPublicly: Boolean\n}",
+              template:
+                "Change a proof case's title or summary, or whether it may be named publicly",
+              reducer:
+                "const { id, title, summary, mayBeNamedPublicly } = action.input;\nconst proofCase = state.proofCases.find((candidate) => candidate.id === id);\nif (!proofCase)\n  throw new ProofCaseNotFoundError(`Proof case ${id} not found`);\nif (title != null) proofCase.title = title;\nif (summary !== undefined) proofCase.summary = summary;\nif (mayBeNamedPublicly != null)\n  proofCase.mayBeNamedPublicly = mayBeNamedPublicly;",
+              errors: [
+                {
+                  id: "58ef85c6-ff16-43a6-86e5-b333f87a3309",
+                  name: "ProofCaseNotFoundError",
+                  code: "PROOF_CASE_NOT_FOUND",
+                  description: "No proof case has this id",
+                  template: "",
+                },
+              ],
+              examples: [],
+              scope: "global",
+            },
+            {
+              id: "94a0fb82-f5fb-4a92-ab6f-ca85965dd921",
+              name: "REMOVE_PROOF_CASE",
+              description:
+                "Remove a proof case, and unlink it from all positioning",
+              schema: "input RemoveProofCaseInput {\n  id: OID!\n}",
+              template:
+                "Remove a proof case, and unlink it from all positioning",
+              reducer:
+                "const proofCase = findProofCase(state, action.input.id);\nstate.proofCases.splice(state.proofCases.indexOf(proofCase), 1);\nfor (const positioning of state.positioning)\n  positioning.proofCaseIds = positioning.proofCaseIds.filter(\n    (proofCaseId) => proofCaseId !== action.input.id,\n  );",
+              errors: [
+                {
+                  id: "acc44e20-f77a-4747-bcb9-a04bac3ec7b6",
+                  name: "ProofCaseNotFoundError",
+                  code: "PROOF_CASE_NOT_FOUND",
+                  description: "No proof case has this id",
+                  template: "",
+                },
+              ],
+              examples: [],
+              scope: "global",
+            },
+            {
+              id: "83b0e123-1bc4-48ac-ade4-833fdfab939a",
+              name: "ADD_PROOF_EVIDENCE",
+              description:
+                "Point a proof case at a vault note or source that backs it",
+              schema:
+                "input AddProofEvidenceInput {\n  proofCaseId: OID!\n  evidenceId: PHID!\n  title: String!\n}",
+              template:
+                "Point a proof case at a vault note or source that backs it",
+              reducer:
+                "const { proofCaseId, evidenceId, title } = action.input;\nconst proofCase = findProofCase(state, proofCaseId);\nif (proofCase.evidence.some((evidence) => evidence.id === evidenceId))\n  throw new DuplicateEvidenceIdError(\n    `Evidence ${evidenceId} already exists`,\n  );\nproofCase.evidence.push({ id: evidenceId, title });",
+              errors: [
+                {
+                  id: "548323ad-c310-4c3e-bd81-f8a8f94d04c7",
+                  name: "ProofCaseNotFoundError",
+                  code: "PROOF_CASE_NOT_FOUND",
+                  description: "No proof case has this id",
+                  template: "",
+                },
+                {
+                  id: "633b65bb-ee51-4ac3-809c-8c1ff688501e",
+                  name: "DuplicateEvidenceIdError",
+                  code: "DUPLICATE_EVIDENCE_ID",
+                  description: "The proof case already has this evidence",
+                  template: "",
+                },
+              ],
+              examples: [],
+              scope: "global",
+            },
+            {
+              id: "dbadb7fa-65e2-4af9-aaa5-23d50db01f26",
+              name: "REMOVE_PROOF_EVIDENCE",
+              description: "Take evidence off a proof case",
+              schema:
+                "input RemoveProofEvidenceInput {\n  proofCaseId: OID!\n  evidenceId: PHID!\n}",
+              template: "Take evidence off a proof case",
+              reducer:
+                "const { proofCaseId, evidenceId } = action.input;\nconst proofCase = findProofCase(state, proofCaseId);\nconst index = proofCase.evidence.findIndex(\n  (evidence) => evidence.id === evidenceId,\n);\nif (index === -1)\n  throw new EvidenceNotFoundError(`Evidence ${evidenceId} not found`);\nproofCase.evidence.splice(index, 1);",
+              errors: [
+                {
+                  id: "38ef9de9-776a-4c5d-92ca-5b58687b7717",
+                  name: "ProofCaseNotFoundError",
+                  code: "PROOF_CASE_NOT_FOUND",
+                  description: "No proof case has this id",
+                  template: "",
+                },
+                {
+                  id: "7bc68dfb-26fb-418f-8b1c-09b23030ba18",
+                  name: "EvidenceNotFoundError",
+                  code: "EVIDENCE_NOT_FOUND",
+                  description: "The proof case has no evidence with this id",
+                  template: "",
+                },
+              ],
+              examples: [],
+              scope: "global",
+            },
+            {
+              id: "2af2803e-2786-42bc-9836-f2911bc19a5f",
+              name: "LINK_PROOF_COMPARABLE",
+              description:
+                "Point a proof case at a comparable, a vault note, that supports it",
+              schema:
+                "input LinkProofComparableInput {\n  proofCaseId: OID!\n  comparableId: PHID!\n  title: String!\n}",
+              template:
+                "Point a proof case at a comparable, a vault note, that supports it",
+              reducer:
+                'const { proofCaseId, comparableId, title } = action.input;\nconst proofCase = findProofCase(state, proofCaseId);\nif (\n  proofCase.comparables.some((comparable) => comparable.id === comparableId)\n)\n  throw new ComparableAlreadyLinkedError(\n    `This note is already linked to proof case "${proofCase.title}".`,\n  );\nproofCase.comparables.push({ id: comparableId, title });',
+              errors: [
+                {
+                  id: "075d9cb9-c6f8-4f6f-934c-5db6463cd454",
+                  name: "ProofCaseNotFoundError",
+                  code: "PROOF_CASE_NOT_FOUND",
+                  description: "No proof case has this id",
+                  template: "",
+                },
+                {
+                  id: "211d5b3f-6f73-4716-9a13-0e07dbde39cc",
+                  name: "ComparableAlreadyLinkedError",
+                  code: "COMPARABLE_ALREADY_LINKED",
+                  description:
+                    "The proof case already links to this comparable",
+                  template: "",
+                },
+              ],
+              examples: [],
+              scope: "global",
+            },
+            {
+              id: "58e66474-e346-4d8f-aeae-f0c2382bbf23",
+              name: "UNLINK_PROOF_COMPARABLE",
+              description: "Take a comparable off a proof case",
+              schema:
+                "input UnlinkProofComparableInput {\n  proofCaseId: OID!\n  comparableId: PHID!\n}",
+              template: "Take a comparable off a proof case",
+              reducer:
+                'const { proofCaseId, comparableId } = action.input;\nconst proofCase = findProofCase(state, proofCaseId);\nconst index = proofCase.comparables.findIndex(\n  (comparable) => comparable.id === comparableId,\n);\nif (index === -1)\n  throw new ComparableNotLinkedError(\n    `This note is not linked to proof case "${proofCase.title}".`,\n  );\nproofCase.comparables.splice(index, 1);',
+              errors: [
+                {
+                  id: "553d22d3-9e46-4b00-afcd-fc0be422881a",
+                  name: "ProofCaseNotFoundError",
+                  code: "PROOF_CASE_NOT_FOUND",
+                  description: "No proof case has this id",
+                  template: "",
+                },
+                {
+                  id: "479829da-7c7b-4a47-b449-13918f3c9740",
+                  name: "ComparableNotLinkedError",
+                  code: "COMPARABLE_NOT_LINKED",
+                  description:
+                    "The proof case does not link to this comparable",
+                  template: "",
+                },
+              ],
+              examples: [],
+              scope: "global",
+            },
+          ],
+        },
+        {
+          id: "c881b65a-6edc-4b7d-9426-8def3848959f",
+          name: "claims",
+          description:
+            "The never-claim list: what we must not say, why, and the phrases that would say it",
+          operations: [
+            {
+              id: "c31f0795-bf32-46ac-ada1-c7e9816343ae",
+              name: "ADD_NEVER_CLAIM",
+              description:
+                "Add a claim we must never make, with the phrases that would make it",
+              schema:
+                "input AddNeverClaimInput {\n  id: OID!\n  claim: String!\n  reason: String\n  phrases: [String!]!\n}",
+              template:
+                "Add a claim we must never make, with the phrases that would make it",
+              reducer:
+                "const { id, claim, reason, phrases } = action.input;\nif (state.neverClaims.some((item) => item.id === id))\n  throw new DuplicateNeverClaimIdError(\n    `Never-claim item ${id} already exists`,\n  );\nstate.neverClaims.push({ id, claim, reason: reason ?? null, phrases });",
+              errors: [
+                {
+                  id: "673e3980-5d2c-45d8-a94f-42b0f99920ad",
+                  name: "DuplicateNeverClaimIdError",
+                  code: "DUPLICATE_NEVER_CLAIM_ID",
+                  description: "A never-claim item with this id already exists",
+                  template: "",
+                },
+              ],
+              examples: [],
+              scope: "global",
+            },
+            {
+              id: "234288d7-ceb0-483c-b954-91d021aceab4",
+              name: "UPDATE_NEVER_CLAIM",
+              description:
+                "Change the claim, the reason or the phrases of a never-claim item",
+              schema:
+                "input UpdateNeverClaimInput {\n  id: OID!\n  claim: String\n  reason: String\n  phrases: [String!]\n}",
+              template:
+                "Change the claim, the reason or the phrases of a never-claim item",
+              reducer:
+                "const { id, claim, reason, phrases } = action.input;\nconst item = state.neverClaims.find((candidate) => candidate.id === id);\nif (!item)\n  throw new NeverClaimNotFoundError(`Never-claim item ${id} not found`);\nif (claim != null) item.claim = claim;\nif (reason !== undefined) item.reason = reason;\nif (phrases != null) item.phrases = phrases;",
+              errors: [
+                {
+                  id: "dd38dab5-80c7-45cb-a745-7abc2e40ae91",
+                  name: "NeverClaimNotFoundError",
+                  code: "NEVER_CLAIM_NOT_FOUND",
+                  description: "No never-claim item has this id",
+                  template: "",
+                },
+              ],
+              examples: [],
+              scope: "global",
+            },
+            {
+              id: "1369d892-6d24-4d34-8140-1e0a6af382cf",
+              name: "REMOVE_NEVER_CLAIM",
+              description: "Take a claim off the never-claim list",
+              schema: "input RemoveNeverClaimInput {\n  id: OID!\n}",
+              template: "Take a claim off the never-claim list",
+              reducer:
+                "const { id } = action.input;\nconst index = state.neverClaims.findIndex(\n  (candidate) => candidate.id === id,\n);\nif (index === -1)\n  throw new NeverClaimNotFoundError(`Never-claim item ${id} not found`);\nstate.neverClaims.splice(index, 1);",
+              errors: [
+                {
+                  id: "83eec95d-bfbe-4292-90ae-66d7bead28f8",
+                  name: "NeverClaimNotFoundError",
+                  code: "NEVER_CLAIM_NOT_FOUND",
+                  description: "No never-claim item has this id",
+                  template: "",
+                },
+              ],
+              examples: [],
+              scope: "global",
+            },
+          ],
+        },
+      ],
+      version: 1,
+      changeLog: [],
+    },
+  ],
+};

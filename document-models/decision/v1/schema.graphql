@@ -1,0 +1,101 @@
+scalar Unknown
+scalar DateTime
+scalar Address
+scalar AttachmentRef
+scalar Amount_Tokens
+scalar EthereumAddress
+scalar EmailAddress
+scalar Amount_Percentage
+scalar Date
+scalar URL
+scalar Amount_Money
+scalar OLabel
+scalar Currency
+scalar PHID
+scalar OID
+scalar Amount_Fiat
+scalar Amount_Currency
+scalar Amount_Crypto
+scalar Amount
+scalar Upload
+
+type DecisionState {
+  question: String
+  context: String
+  owner: EthereumAddress
+  decideBy: Date
+  status: DecisionStatus!
+  answer: String
+  answeredBy: EthereumAddress
+  answeredAt: DateTime
+  reason: String
+  references: [Reference!]!
+}
+
+enum DecisionStatus {
+  OPEN
+  ANSWERED
+  WITHDRAWN
+}
+
+enum ReferenceKind {
+  RESEARCH
+  NOTE
+  SOURCE
+  COMPARABLE
+  OPPORTUNITY
+  LEAD
+  DECISION
+  OTHER
+}
+
+type Reference {
+  id: OID!
+  kind: ReferenceKind!
+  documentId: PHID!
+  title: String!
+}
+
+# details
+
+input SetQuestionInput {
+  question: String!
+  context: String
+}
+
+input SetDecisionOwnerInput {
+  owner: EthereumAddress
+}
+
+input SetDecideByInput {
+  decideBy: Date
+}
+
+# status
+
+input AnswerDecisionInput {
+  answer: String!
+  answeredBy: EthereumAddress!
+  answeredAt: DateTime!
+}
+
+input ReopenDecisionInput {
+  reason: String
+}
+
+input WithdrawDecisionInput {
+  reason: String
+}
+
+# references
+
+input AddReferenceInput {
+  id: OID!
+  kind: ReferenceKind!
+  documentId: PHID!
+  title: String!
+}
+
+input RemoveReferenceInput {
+  id: OID!
+}

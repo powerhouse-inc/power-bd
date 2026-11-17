@@ -1,0 +1,171 @@
+scalar Unknown
+scalar DateTime
+scalar Address
+scalar AttachmentRef
+scalar Amount_Tokens
+scalar EthereumAddress
+scalar EmailAddress
+scalar Amount_Percentage
+scalar Date
+scalar URL
+scalar Amount_Money
+scalar OLabel
+scalar Currency
+scalar PHID
+scalar OID
+scalar Amount_Fiat
+scalar Amount_Currency
+scalar Amount_Crypto
+scalar Amount
+scalar Upload
+
+type PlaybookState {
+  positioning: [Positioning!]!
+  proofCases: [ProofCase!]!
+  neverClaims: [NeverClaim!]!
+}
+
+type Positioning {
+  id: OID!
+  title: String!
+  text: String!
+  status: PositioningStatus!
+  approvedBy: EthereumAddress
+  approvedAt: DateTime
+  comparables: [VaultRef!]!
+  proofCaseIds: [OID!]!
+}
+
+enum PositioningStatus {
+  DRAFT
+  APPROVED
+  RETIRED
+}
+
+type ProofCase {
+  id: OID!
+  title: String!
+  summary: String
+  evidence: [VaultRef!]!
+  mayBeNamedPublicly: Boolean!
+  comparables: [VaultRef!]!
+}
+
+type NeverClaim {
+  id: OID!
+  claim: String!
+  reason: String
+  phrases: [String!]!
+}
+
+type VaultRef {
+  id: PHID!
+  title: String!
+}
+
+# positioning
+
+input AddPositioningInput {
+  id: OID!
+  title: String!
+  text: String!
+}
+
+input UpdatePositioningInput {
+  id: OID!
+  title: String
+  text: String
+}
+
+input ApprovePositioningInput {
+  id: OID!
+  approvedBy: EthereumAddress!
+  approvedAt: DateTime!
+}
+
+input RetirePositioningInput {
+  id: OID!
+}
+
+input LinkPositioningComparableInput {
+  positioningId: OID!
+  comparableId: PHID!
+  title: String!
+}
+
+input UnlinkPositioningComparableInput {
+  positioningId: OID!
+  comparableId: PHID!
+}
+
+input LinkPositioningProofInput {
+  positioningId: OID!
+  proofCaseId: OID!
+}
+
+input UnlinkPositioningProofInput {
+  positioningId: OID!
+  proofCaseId: OID!
+}
+
+# proofs
+
+input AddProofCaseInput {
+  id: OID!
+  title: String!
+  summary: String
+  mayBeNamedPublicly: Boolean!
+}
+
+input UpdateProofCaseInput {
+  id: OID!
+  title: String
+  summary: String
+  mayBeNamedPublicly: Boolean
+}
+
+input RemoveProofCaseInput {
+  id: OID!
+}
+
+input AddProofEvidenceInput {
+  proofCaseId: OID!
+  evidenceId: PHID!
+  title: String!
+}
+
+input RemoveProofEvidenceInput {
+  proofCaseId: OID!
+  evidenceId: PHID!
+}
+
+input LinkProofComparableInput {
+  proofCaseId: OID!
+  comparableId: PHID!
+  title: String!
+}
+
+input UnlinkProofComparableInput {
+  proofCaseId: OID!
+  comparableId: PHID!
+}
+
+# claims
+
+input AddNeverClaimInput {
+  id: OID!
+  claim: String!
+  reason: String
+  phrases: [String!]!
+}
+
+input UpdateNeverClaimInput {
+  id: OID!
+  claim: String
+  reason: String
+  phrases: [String!]
+}
+
+input RemoveNeverClaimInput {
+  id: OID!
+}

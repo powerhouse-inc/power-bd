@@ -10,6 +10,11 @@ export default defineConfig({
       include: [
         "document-models/**/src/reducers/**",
         "document-models/**/v*/modules/**",
+        "editors/power-bd/kit/**",
+      ],
+      exclude: [
+        "editors/power-bd/kit/**/*.test.ts",
+        "editors/power-bd/kit/**/fixtures.ts",
       ],
       thresholds: {
         lines: 95,

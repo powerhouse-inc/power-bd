@@ -1,0 +1,389 @@
+scalar Unknown
+scalar DateTime
+scalar Address
+scalar AttachmentRef
+scalar Amount_Tokens
+scalar EthereumAddress
+scalar EmailAddress
+scalar Amount_Percentage
+scalar Date
+scalar URL
+scalar Amount_Money
+scalar OLabel
+scalar Currency
+scalar PHID
+scalar OID
+scalar Amount_Fiat
+scalar Amount_Currency
+scalar Amount_Crypto
+scalar Amount
+scalar Upload
+
+type LeadState {
+  name: String
+  kind: LeadKind
+  organisationId: PHID
+  owner: EthereumAddress
+  status: LeadStatus!
+  parkedFrom: LeadStatus
+  statusReason: String
+  closedAt: DateTime
+  angles: [Angle!]!
+  messages: [Message!]!
+  nextSteps: [NextStep!]!
+  interactions: [Interaction!]!
+  contactLinks: [ContactLink!]!
+  references: [Reference!]!
+  confidentialItems: [ConfidentialItem!]!
+}
+
+enum LeadKind {
+  SALES
+  PARTNERSHIP
+  EXCHANGE
+  INVESTOR
+}
+
+enum LeadStatus {
+  TO_CONTACT
+  IN_TOUCH
+  MEETING_SET
+  MET
+  PROPOSAL
+  WON
+  LOST
+  PARKED
+}
+
+type Angle {
+  id: OID!
+  summary: String!
+  fit: Fit!
+  positioningId: OID
+}
+
+enum Fit {
+  BEST
+  GOOD
+  LATER
+  UNLIKELY
+}
+
+type Message {
+  id: OID!
+  channel: MessageChannel!
+  recipient: PersonRef
+  subject: String
+  body: String!
+  angleId: OID
+  status: MessageStatus!
+  draftedBy: EthereumAddress!
+  draftedAt: DateTime!
+  approvedBy: EthereumAddress
+  approvedAt: DateTime
+  sentBy: EthereumAddress
+  sentAt: DateTime
+}
+
+enum MessageChannel {
+  EMAIL
+  LINKEDIN
+  OTHER
+}
+
+enum MessageStatus {
+  DRAFT
+  APPROVED
+  SENT
+  DISCARDED
+}
+
+type PersonRef {
+  contactId: PHID!
+  personId: OID!
+}
+
+type VaultRef {
+  id: PHID!
+  title: String!
+}
+
+type NextStep {
+  id: OID!
+  text: String!
+  owner: EthereumAddress
+  dueDate: Date
+  doneAt: DateTime
+}
+
+enum InteractionKind {
+  EMAIL
+  CALL
+  MEETING
+  EVENT
+  MESSAGE
+  OTHER
+}
+
+enum InteractionStatus {
+  SCHEDULED
+  HELD
+  CANCELLED
+}
+
+type Interaction {
+  id: OID!
+  kind: InteractionKind!
+  status: InteractionStatus!
+  at: DateTime
+  timeZone: String
+  summary: String
+  people: [PersonRef!]!
+  teamMembers: [EthereumAddress!]!
+  notesSource: VaultRef
+}
+
+type ContactLink {
+  id: OID!
+  contactId: PHID!
+  personId: OID
+  role: String
+}
+
+enum ReferenceKind {
+  RESEARCH
+  NOTE
+  SOURCE
+  COMPARABLE
+  OPPORTUNITY
+  LEAD
+  DECISION
+  OTHER
+}
+
+type Reference {
+  id: OID!
+  kind: ReferenceKind!
+  documentId: PHID!
+  title: String!
+}
+
+type ConfidentialItem {
+  id: OID!
+  subjectContactId: PHID
+  text: String!
+  addedBy: EthereumAddress!
+  addedAt: DateTime!
+}
+
+# details
+
+input SetLeadDetailsInput {
+  name: String
+  kind: LeadKind
+  organisationId: PHID
+}
+
+input SetOwnerInput {
+  owner: EthereumAddress
+}
+
+# status
+
+input SetLeadStatusInput {
+  status: LeadStatus!
+  reason: String
+  changedAt: DateTime!
+}
+
+input ParkLeadInput {
+  reason: String!
+  parkedAt: DateTime!
+}
+
+input UnparkLeadInput {
+  _empty: Boolean
+}
+
+# angles
+
+input AddAngleInput {
+  id: OID!
+  summary: String!
+  fit: Fit!
+  positioningId: OID
+}
+
+input UpdateAngleInput {
+  id: OID!
+  summary: String
+  fit: Fit
+  positioningId: OID
+}
+
+input RemoveAngleInput {
+  id: OID!
+}
+
+# messages
+
+input DraftMessageInput {
+  id: OID!
+  channel: MessageChannel!
+  recipient: DraftMessageRecipientInput
+  subject: String
+  body: String!
+  angleId: OID
+  draftedBy: EthereumAddress!
+  draftedAt: DateTime!
+}
+
+input DraftMessageRecipientInput {
+  contactId: PHID!
+  personId: OID!
+}
+
+input UpdateMessageInput {
+  id: OID!
+  channel: MessageChannel
+  recipient: UpdateMessageRecipientInput
+  subject: String
+  body: String
+  angleId: OID
+}
+
+input UpdateMessageRecipientInput {
+  contactId: PHID!
+  personId: OID!
+}
+
+input ApproveMessageInput {
+  id: OID!
+  approvedBy: EthereumAddress!
+  approvedAt: DateTime!
+}
+
+input ReopenMessageInput {
+  id: OID!
+}
+
+input MarkMessageSentInput {
+  id: OID!
+  sentBy: EthereumAddress!
+  sentAt: DateTime!
+}
+
+input DiscardMessageInput {
+  id: OID!
+}
+
+# relationship
+
+input AddNextStepInput {
+  id: OID!
+  text: String!
+  owner: EthereumAddress
+  dueDate: Date
+}
+
+input UpdateNextStepInput {
+  id: OID!
+  text: String
+  owner: EthereumAddress
+  dueDate: Date
+}
+
+input CompleteNextStepInput {
+  id: OID!
+  doneAt: DateTime!
+}
+
+input ReopenNextStepInput {
+  id: OID!
+}
+
+input RemoveNextStepInput {
+  id: OID!
+}
+
+input AddInteractionInput {
+  id: OID!
+  kind: InteractionKind!
+  status: InteractionStatus!
+  at: DateTime
+  timeZone: String
+  summary: String
+  people: [AddInteractionPersonInput!]
+  teamMembers: [EthereumAddress!]
+  notesSource: AddInteractionNotesSourceInput
+}
+
+input AddInteractionPersonInput {
+  contactId: PHID!
+  personId: OID!
+}
+
+input AddInteractionNotesSourceInput {
+  id: PHID!
+  title: String!
+}
+
+input UpdateInteractionInput {
+  id: OID!
+  kind: InteractionKind
+  status: InteractionStatus
+  at: DateTime
+  timeZone: String
+  summary: String
+  people: [UpdateInteractionPersonInput!]
+  teamMembers: [EthereumAddress!]
+  notesSource: UpdateInteractionNotesSourceInput
+}
+
+input UpdateInteractionPersonInput {
+  contactId: PHID!
+  personId: OID!
+}
+
+input UpdateInteractionNotesSourceInput {
+  id: PHID!
+  title: String!
+}
+
+input RemoveInteractionInput {
+  id: OID!
+}
+
+input LinkContactInput {
+  id: OID!
+  contactId: PHID!
+  personId: OID
+  role: String
+}
+
+input UnlinkContactInput {
+  id: OID!
+}
+
+input AddReferenceInput {
+  id: OID!
+  kind: ReferenceKind!
+  documentId: PHID!
+  title: String!
+}
+
+input RemoveReferenceInput {
+  id: OID!
+}
+
+input AddConfidentialItemInput {
+  id: OID!
+  subjectContactId: PHID
+  text: String!
+  addedBy: EthereumAddress!
+  addedAt: DateTime!
+}
+
+input RemoveConfidentialItemInput {
+  id: OID!
+}

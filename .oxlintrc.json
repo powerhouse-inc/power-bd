@@ -10,6 +10,8 @@
     "**/.vite/**",
     // Codegen writes these over on every run; lint fixes in them are lost or break it.
     "**/gen/**",
+    // Bundled from design-system/showcase.ts by `bun run design`.
+    "design-system/showcase.js",
     "/index.ts",
     "/main.tsx",
     "reactor/index.ts",

@@ -1,0 +1,20 @@
+import type { EditorProps } from "document-model";
+import {
+  useSelectedPlaybookDocument,
+  type PlaybookAction,
+  type PlaybookDocument,
+} from "document-models/playbook";
+import { RecordFrame } from "../power-bd/components/RecordFrame.js";
+import { PlaybookDetail } from "../power-bd/records/playbook/PlaybookDetail.js";
+
+/** A thin editor: Connect's toolbar and the playbook page, in the design system's root. */
+export default function Editor({
+  document,
+}: EditorProps<PlaybookDocument, PlaybookAction>) {
+  const [, dispatch] = useSelectedPlaybookDocument();
+  return (
+    <RecordFrame document={document} kind="playbook">
+      <PlaybookDetail state={document.state.global} dispatch={dispatch} />
+    </RecordFrame>
+  );
+}

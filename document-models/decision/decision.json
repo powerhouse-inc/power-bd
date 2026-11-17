@@ -1,0 +1,193 @@
+{
+  "id": "powerbd/decision",
+  "name": "Decision",
+  "author": {
+    "name": "Powerhouse",
+    "website": "https://powerhouse.inc"
+  },
+  "extension": "",
+  "description": "One company decision: an open question, who owns it, the day it is needed by, and the answer a person gave. What it gates is not stored here; conditions and blocked opportunities point at it.",
+  "specifications": [
+    {
+      "state": {
+        "local": {
+          "schema": "",
+          "examples": [],
+          "initialValue": ""
+        },
+        "global": {
+          "schema": "type DecisionState {\n  question: String\n  context: String\n  owner: EthereumAddress\n  decideBy: Date\n  status: DecisionStatus!\n  answer: String\n  answeredBy: EthereumAddress\n  answeredAt: DateTime\n  reason: String\n  references: [Reference!]!\n}\n\nenum DecisionStatus {\n  OPEN\n  ANSWERED\n  WITHDRAWN\n}\n\nenum ReferenceKind {\n  RESEARCH\n  NOTE\n  SOURCE\n  COMPARABLE\n  OPPORTUNITY\n  LEAD\n  DECISION\n  OTHER\n}\n\ntype Reference {\n  id: OID!\n  kind: ReferenceKind!\n  documentId: PHID!\n  title: String!\n}",
+          "examples": [],
+          "initialValue": "{\"question\":null,\"context\":null,\"owner\":null,\"decideBy\":null,\"status\":\"OPEN\",\"answer\":null,\"answeredBy\":null,\"answeredAt\":null,\"reason\":null,\"references\":[]}"
+        }
+      },
+      "modules": [
+        {
+          "id": "004b0637-8e07-4903-a0c7-0a448d507ddb",
+          "name": "details",
+          "description": "The question, who owns it and the day it is needed by",
+          "operations": [
+            {
+              "id": "f816d2c5-e85a-44b9-aa19-7de9cdb65b0c",
+              "name": "SET_QUESTION",
+              "description": "Set the question. The context changes only when it is given, and null clears it",
+              "schema": "input SetQuestionInput {\n  question: String!\n  context: String\n}",
+              "template": "Set the question. The context changes only when it is given, and null clears it",
+              "reducer": "const { question, context } = action.input;\nstate.question = question;\nif (context !== undefined) state.context = context;",
+              "errors": [],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "8d212f19-391a-4775-b7e8-2e825782a64d",
+              "name": "SET_DECISION_OWNER",
+              "description": "Give the decision to a team member. Null leaves it without an owner",
+              "schema": "input SetDecisionOwnerInput {\n  owner: EthereumAddress\n}",
+              "template": "Give the decision to a team member. Null leaves it without an owner",
+              "reducer": "const { owner } = action.input;\nif (owner !== undefined) state.owner = owner;",
+              "errors": [],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "4a73aaf6-18ad-43e5-9e1b-d1b3aadb0e6e",
+              "name": "SET_DECIDE_BY",
+              "description": "Set the day the decision is needed by. Null removes it",
+              "schema": "input SetDecideByInput {\n  decideBy: Date\n}",
+              "template": "Set the day the decision is needed by. Null removes it",
+              "reducer": "const { decideBy } = action.input;\nif (decideBy !== undefined) state.decideBy = decideBy;",
+              "errors": [],
+              "examples": [],
+              "scope": "global"
+            }
+          ]
+        },
+        {
+          "id": "7a4e5761-c455-43ea-946b-a537d7f40182",
+          "name": "status",
+          "description": "Answering, reopening and withdrawing the decision",
+          "operations": [
+            {
+              "id": "899fd1ca-3997-4c79-83a6-c5b17ee5ed2e",
+              "name": "ANSWER_DECISION",
+              "description": "Record the answer a person gave, with who gave it and when. People-only: an agent never answers a decision",
+              "schema": "input AnswerDecisionInput {\n  answer: String!\n  answeredBy: EthereumAddress!\n  answeredAt: DateTime!\n}",
+              "template": "Record the answer a person gave, with who gave it and when. People-only: an agent never answers a decision",
+              "reducer": "const { answer, answeredBy, answeredAt } = action.input;\nif (state.status !== \"OPEN\")\n  throw new DecisionNotOpenError(\"Only an open decision can be answered\");\nif (answer.trim() === \"\")\n  throw new AnswerRequiredError(\"The answer needs text\");\nstate.status = \"ANSWERED\";\nstate.answer = answer;\nstate.answeredBy = answeredBy;\nstate.answeredAt = answeredAt;",
+              "errors": [
+                {
+                  "id": "337c5fdd-f40a-4590-9847-92ea667949c6",
+                  "name": "DecisionNotOpenError",
+                  "code": "DECISION_NOT_OPEN",
+                  "description": "Only an open decision can be answered",
+                  "template": ""
+                },
+                {
+                  "id": "4269123e-e979-4ffc-80eb-e076b7584687",
+                  "name": "AnswerRequiredError",
+                  "code": "ANSWER_REQUIRED",
+                  "description": "The answer needs text",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "7189af29-f89b-47ea-b0f4-a8c0e5d70a72",
+              "name": "REOPEN_DECISION",
+              "description": "Open an answered decision again. The answer leaves the state and stays in the signed history",
+              "schema": "input ReopenDecisionInput {\n  reason: String\n}",
+              "template": "Open an answered decision again. The answer leaves the state and stays in the signed history",
+              "reducer": "if (state.status !== \"ANSWERED\")\n  throw new DecisionNotAnsweredError(\n    \"Only an answered decision can be reopened\",\n  );\nstate.status = \"OPEN\";\nstate.answer = null;\nstate.answeredBy = null;\nstate.answeredAt = null;\nstate.reason = action.input.reason ?? null;",
+              "errors": [
+                {
+                  "id": "6acf980a-b97e-4eaf-bae5-75b1fec7029b",
+                  "name": "DecisionNotAnsweredError",
+                  "code": "DECISION_NOT_ANSWERED",
+                  "description": "Only an answered decision can be reopened",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "49574206-1bc5-4578-84ec-72472932ff4c",
+              "name": "WITHDRAW_DECISION",
+              "description": "Withdraw an open decision that is no longer needed. Withdrawal is final",
+              "schema": "input WithdrawDecisionInput {\n  reason: String\n}",
+              "template": "Withdraw an open decision that is no longer needed. Withdrawal is final",
+              "reducer": "if (state.status !== \"OPEN\")\n  throw new DecisionNotOpenError(\"Only an open decision can be withdrawn\");\nstate.status = \"WITHDRAWN\";\nstate.reason = action.input.reason ?? null;",
+              "errors": [
+                {
+                  "id": "cd896c9e-9174-4efe-bc32-8e27afc841fe",
+                  "name": "DecisionNotOpenError",
+                  "code": "DECISION_NOT_OPEN",
+                  "description": "Only an open decision can be withdrawn",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            }
+          ]
+        },
+        {
+          "id": "487e83a6-6623-49d9-8658-6a6d55559af3",
+          "name": "references",
+          "description": "Vault notes, sources and other BD records linked to the decision",
+          "operations": [
+            {
+              "id": "662762b9-0e32-4bb4-a741-875be816c5be",
+              "name": "ADD_REFERENCE",
+              "description": "Link a vault note, a source or another BD record, with its kind and its title",
+              "schema": "input AddReferenceInput {\n  id: OID!\n  kind: ReferenceKind!\n  documentId: PHID!\n  title: String!\n}",
+              "template": "Link a vault note, a source or another BD record, with its kind and its title",
+              "reducer": "const { id, kind, documentId, title } = action.input;\nif (state.references.some((reference) => reference.id === id))\n  throw new DuplicateReferenceIdError(`Reference ${id} already exists`);\n{\n  const existing = state.references.find(\n    (reference) =>\n      reference.documentId === documentId && reference.kind === kind,\n  );\n  if (existing)\n    throw new DuplicateReferenceError(\n      `\"${existing.title}\" is already linked.`,\n    );\n}\nstate.references.push({ id, kind, documentId, title });",
+              "errors": [
+                {
+                  "id": "afdbdc4d-5cfc-4e48-af7c-fb94bbf6b5d3",
+                  "name": "DuplicateReferenceIdError",
+                  "code": "DUPLICATE_REFERENCE_ID",
+                  "description": "A reference with this id already exists",
+                  "template": ""
+                },
+                {
+                  "id": "9aa5cc59-7105-46b5-b24f-6222c4980583",
+                  "name": "DuplicateReferenceError",
+                  "code": "DUPLICATE_REFERENCE",
+                  "description": "The same document is already referenced with the same kind",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "da447934-f1bf-4f54-bcfd-8c4f0d8fc81a",
+              "name": "REMOVE_REFERENCE",
+              "description": "Remove a link",
+              "schema": "input RemoveReferenceInput {\n  id: OID!\n}",
+              "template": "Remove a link",
+              "reducer": "const index = state.references.findIndex(\n  (reference) => reference.id === action.input.id,\n);\nif (index === -1)\n  throw new ReferenceNotFoundError(\n    `Reference ${action.input.id} not found`,\n  );\nstate.references.splice(index, 1);",
+              "errors": [
+                {
+                  "id": "1713c615-b6b0-4900-8a88-0f0dcb8a6e94",
+                  "name": "ReferenceNotFoundError",
+                  "code": "REFERENCE_NOT_FOUND",
+                  "description": "No reference has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            }
+          ]
+        }
+      ],
+      "version": 1,
+      "changeLog": []
+    }
+  ]
+}

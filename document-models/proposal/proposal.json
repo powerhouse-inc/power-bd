@@ -1,0 +1,1912 @@
+{
+  "id": "powerbd/proposal",
+  "name": "Proposal",
+  "author": {
+    "name": "Powerhouse",
+    "website": "https://powerhouse.inc"
+  },
+  "extension": "",
+  "description": "One proposal sent to a client on a lead: what is offered and on which terms, how far it has got, the client's answer, and the copy that was sent and the signed copy as files. A revision is a new proposal that replaces the sent one.",
+  "specifications": [
+    {
+      "state": {
+        "local": {
+          "schema": "",
+          "examples": [],
+          "initialValue": ""
+        },
+        "global": {
+          "schema": "type ProposalState {\n  title: String\n  code: String\n  leadId: PHID\n  recipient: Recipient\n  contractingEntity: VaultRef\n  currency: Currency\n  validUntil: Date\n  revisesProposalId: PHID\n  bindingOnSignature: Boolean!\n  processesPersonalData: Boolean!\n  status: ProposalStatus!\n  approvedBy: EthereumAddress\n  approvedAt: DateTime\n  sentBy: EthereumAddress\n  sentAt: DateTime\n  sentCopy: FileRef\n  chosenOptionId: OID\n  answeredAt: DateTime\n  reason: String\n  signedCopy: FileRef\n  supersededByProposalId: PHID\n  references: [Reference!]!\n  packages: [Package!]!\n  deliverables: [Deliverable!]!\n  options: [Option!]!\n  paymentSteps: [PaymentStep!]!\n  actors: [Actor!]!\n  useCases: [UseCase!]!\n  boundaries: [Boundary!]!\n  sections: [Section!]!\n  clauses: [Clause!]!\n  annexes: [Annex!]!\n  figures: [Figure!]!\n}\n\ntype Recipient {\n  contactId: PHID!\n  personId: OID\n}\n\ntype VaultRef {\n  id: PHID!\n  title: String!\n}\n\ntype FileRef {\n  ref: AttachmentRef!\n  name: String!\n  type: String!\n}\n\nenum ProposalStatus {\n  DRAFT\n  APPROVED\n  SENT\n  ACCEPTED\n  DECLINED\n  WITHDRAWN\n  SUPERSEDED\n}\n\nenum ReferenceKind {\n  RESEARCH\n  NOTE\n  SOURCE\n  COMPARABLE\n  OPPORTUNITY\n  LEAD\n  DECISION\n  OTHER\n}\n\ntype Reference {\n  id: OID!\n  kind: ReferenceKind!\n  documentId: PHID!\n  title: String!\n}\n\ntype Package {\n  id: OID!\n  code: String!\n  name: String!\n  summary: String\n  requires: [OID!]!\n  price: Amount_Money\n  targetDate: Date\n}\n\nenum Pricing {\n  FIXED\n  INCLUDED\n  RECURRING\n  RATE\n}\n\nenum RecurringPeriod {\n  MONTH\n  QUARTER\n  YEAR\n}\n\nenum RateUnit {\n  HOUR\n  DAY\n}\n\ntype DeliverablePrice {\n  pricing: Pricing!\n  amount: Amount_Money\n  upperAmount: Amount_Money\n  period: RecurringPeriod\n  unit: RateUnit\n  until: Date\n  note: String\n}\n\ntype Deliverable {\n  id: OID!\n  code: String!\n  packageId: OID!\n  title: String!\n  body: String\n  price: DeliverablePrice\n}\n\ntype Adjustment {\n  id: OID!\n  label: String!\n  amount: Amount_Money!\n  condition: String\n}\n\ntype Option {\n  id: OID!\n  label: String!\n  packageIds: [OID!]!\n  adjustments: [Adjustment!]!\n}\n\nenum PaymentTrigger {\n  ON_SIGNATURE\n  ON_ACCEPTANCE\n  ON_DATE\n}\n\ntype PaymentStep {\n  id: OID!\n  label: String!\n  trigger: PaymentTrigger!\n  percentage: Amount_Percentage!\n  date: Date\n}\n\ntype Actor {\n  id: OID!\n  code: String!\n  name: String!\n  description: String\n}\n\ntype UseCase {\n  id: OID!\n  code: String!\n  actorId: OID!\n  packageId: OID!\n  title: String!\n  body: String\n}\n\nenum BoundaryKind {\n  ASSUMPTION\n  CLIENT_INPUT\n  EXCLUSION\n  GUARANTEE\n}\n\ntype Boundary {\n  id: OID!\n  kind: BoundaryKind!\n  packageId: OID\n  text: String!\n  value: String\n}\n\nenum SectionKind {\n  PROSE\n  SCOPE\n  ASSUMPTIONS\n  DELIVERABLES\n  PRICING\n  SCHEDULE\n  ACCEPTANCE\n  TERMS\n  ANNEXES\n}\n\ntype Section {\n  id: OID!\n  kind: SectionKind!\n  title: String\n  body: String\n  positioningId: OID\n}\n\nenum ClauseKind {\n  CONTRACTING_PARTY\n  LIABILITY\n  CONFIDENTIALITY\n  INTELLECTUAL_PROPERTY\n  TERMINATION\n  GOVERNING_LAW\n  FINAL_PROVISIONS\n  OTHER\n}\n\ntype Clause {\n  id: OID!\n  kind: ClauseKind!\n  title: String!\n  body: String\n}\n\nenum AnnexKind {\n  DATA_PROCESSING\n  FORM\n  OTHER\n}\n\ntype Annex {\n  id: OID!\n  kind: AnnexKind!\n  title: String!\n  body: String\n  partOfAgreement: Boolean!\n}\n\nenum FigureAnchorKind {\n  SECTION\n  USE_CASE\n}\n\ntype Figure {\n  id: OID!\n  anchorKind: FigureAnchorKind!\n  anchorId: OID!\n  file: FileRef!\n  caption: String\n}",
+          "examples": [],
+          "initialValue": "{\"title\":null,\"code\":null,\"leadId\":null,\"recipient\":null,\"contractingEntity\":null,\"currency\":null,\"validUntil\":null,\"revisesProposalId\":null,\"bindingOnSignature\":false,\"processesPersonalData\":false,\"status\":\"DRAFT\",\"approvedBy\":null,\"approvedAt\":null,\"sentBy\":null,\"sentAt\":null,\"sentCopy\":null,\"chosenOptionId\":null,\"answeredAt\":null,\"reason\":null,\"signedCopy\":null,\"supersededByProposalId\":null,\"references\":[],\"packages\":[],\"deliverables\":[],\"options\":[],\"paymentSteps\":[],\"actors\":[],\"useCases\":[],\"boundaries\":[],\"sections\":[],\"clauses\":[],\"annexes\":[],\"figures\":[]}"
+        }
+      },
+      "modules": [
+        {
+          "id": "8bf5fe37-4128-47b3-a382-aee80f5e7e01",
+          "name": "details",
+          "description": "What the proposal is, and who it is between",
+          "operations": [
+            {
+              "id": "72861738-5ca6-4181-8727-43c9c8a7795b",
+              "name": "SET_PROPOSAL_DETAILS",
+              "description": "Set the title, the code, the currency, the valid-until date, the two flags and the proposal this one revises; a field left out is unchanged",
+              "schema": "input SetProposalDetailsInput {\n  title: String\n  code: String\n  currency: Currency\n  validUntil: Date\n  bindingOnSignature: Boolean\n  processesPersonalData: Boolean\n  revisesProposalId: PHID\n}",
+              "template": "Set the title, the code, the currency, the valid-until date, the two flags and the proposal this one revises; a field left out is unchanged",
+              "reducer": "if (state.status !== \"DRAFT\")\n  throw new ProposalNotDraftError(\"Only a draft proposal can be edited\");\nconst input = action.input;\nif (\n  input.currency !== undefined &&\n  input.currency !== state.currency &&\n  hasAmount(state)\n)\n  throw new CurrencyLockedError(\n    \"The currency cannot change while an amount exists\",\n  );\nif (input.title !== undefined) state.title = input.title;\nif (input.code !== undefined) state.code = input.code;\nif (input.currency !== undefined) state.currency = input.currency;\nif (input.validUntil !== undefined) state.validUntil = input.validUntil;\nif (input.revisesProposalId !== undefined)\n  state.revisesProposalId = input.revisesProposalId;\nif (input.bindingOnSignature != null)\n  state.bindingOnSignature = input.bindingOnSignature;\nif (input.processesPersonalData != null)\n  state.processesPersonalData = input.processesPersonalData;",
+              "errors": [
+                {
+                  "id": "af5f5793-f715-4593-b7fc-1f7eb8c5d50b",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "fcc1ddad-d93b-4492-b2de-a1b663c3a0ff",
+                  "name": "CurrencyLockedError",
+                  "code": "CURRENCY_LOCKED",
+                  "description": "The currency cannot change while an amount exists",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "8c6ed986-f1cf-4fc3-933c-e8650fbd36b1",
+              "name": "SET_PROPOSAL_PARTIES",
+              "description": "Set the lead, the recipient and our contracting entity; a field left out is unchanged",
+              "schema": "input SetProposalPartiesInput {\n  leadId: PHID\n  recipient: SetProposalPartiesRecipientInput\n  contractingEntity: SetProposalPartiesContractingEntityInput\n}\n\ninput SetProposalPartiesRecipientInput {\n  contactId: PHID!\n  personId: OID\n}\n\ninput SetProposalPartiesContractingEntityInput {\n  id: PHID!\n  title: String!\n}",
+              "template": "Set the lead, the recipient and our contracting entity; a field left out is unchanged",
+              "reducer": "if (state.status !== \"DRAFT\")\n  throw new ProposalNotDraftError(\"Only a draft proposal can be edited\");\nconst input = action.input;\nif (input.leadId !== undefined) state.leadId = input.leadId;\nif (input.recipient !== undefined)\n  state.recipient = input.recipient && {\n    contactId: input.recipient.contactId,\n    personId: input.recipient.personId ?? null,\n  };\nif (input.contractingEntity !== undefined)\n  state.contractingEntity = input.contractingEntity && {\n    id: input.contractingEntity.id,\n    title: input.contractingEntity.title,\n  };",
+              "errors": [
+                {
+                  "id": "106495ae-c2e0-4635-92d5-65ed87b17d87",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            }
+          ]
+        },
+        {
+          "id": "f27d0188-0eb8-4f2b-8b50-2d9a30a28b24",
+          "name": "status",
+          "description": "Approval, sending, the client's answer, withdrawal and replacement, with the copy that was sent and the signed copy",
+          "operations": [
+            {
+              "id": "6f785748-6866-4261-9000-a51b89d5cfc8",
+              "name": "APPROVE_PROPOSAL",
+              "description": "Approve a draft for sending; only a person may do this",
+              "schema": "input ApproveProposalInput {\n  approvedBy: EthereumAddress!\n  approvedAt: DateTime!\n}",
+              "template": "Approve a draft for sending; only a person may do this",
+              "reducer": "if (state.status !== \"DRAFT\")\n  throw new ProposalNotDraftError(\"Only a draft proposal can be approved\");\nif (state.leadId == null)\n  throw new LeadRequiredError(\"Approval needs a lead\");\nif (state.contractingEntity == null)\n  throw new ContractingEntityRequiredError(\n    \"Approval needs a contracting entity\",\n  );\nif (state.currency == null)\n  throw new CurrencyRequiredError(\"Approval needs a currency\");\nif (state.validUntil == null)\n  throw new ValidUntilRequiredError(\"Approval needs a valid-until date\");\nif (!state.options.some((option) => option.packageIds.length > 0))\n  throw new ApprovalOptionRequiredError(\n    \"Approval needs an option with at least one package\",\n  );\nstate.status = \"APPROVED\";\nstate.approvedBy = action.input.approvedBy;\nstate.approvedAt = action.input.approvedAt;",
+              "errors": [
+                {
+                  "id": "78ea0b45-46ad-41a4-949a-eb1282ca6437",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be approved",
+                  "template": ""
+                },
+                {
+                  "id": "bb75b976-bcc9-42e2-bec5-37530480c668",
+                  "name": "LeadRequiredError",
+                  "code": "LEAD_REQUIRED",
+                  "description": "Approval needs a lead",
+                  "template": ""
+                },
+                {
+                  "id": "c57bbde9-6098-4124-b2f5-e473b3d641eb",
+                  "name": "ContractingEntityRequiredError",
+                  "code": "CONTRACTING_ENTITY_REQUIRED",
+                  "description": "Approval needs a contracting entity",
+                  "template": ""
+                },
+                {
+                  "id": "0e3654e8-c034-4e20-8d25-083049a94820",
+                  "name": "CurrencyRequiredError",
+                  "code": "CURRENCY_REQUIRED",
+                  "description": "Approval needs a currency",
+                  "template": ""
+                },
+                {
+                  "id": "7bc8de45-395e-4a73-aa96-ac9e7ad0cf8f",
+                  "name": "ValidUntilRequiredError",
+                  "code": "VALID_UNTIL_REQUIRED",
+                  "description": "Approval needs a valid-until date",
+                  "template": ""
+                },
+                {
+                  "id": "6d5db62d-f3d7-40a6-be69-b9caa87d41df",
+                  "name": "ApprovalOptionRequiredError",
+                  "code": "APPROVAL_OPTION_REQUIRED",
+                  "description": "Approval needs an option with at least one package",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "0d92493d-82e3-4b5f-941b-6401767d6af1",
+              "name": "REOPEN_PROPOSAL",
+              "description": "Return an approved proposal to draft and clear its approval",
+              "schema": "input ReopenProposalInput {\n  _empty: Boolean\n}",
+              "template": "Return an approved proposal to draft and clear its approval",
+              "reducer": "if (state.status !== \"APPROVED\")\n  throw new ProposalNotApprovedError(\n    \"Only an approved proposal can be reopened\",\n  );\nstate.status = \"DRAFT\";\nstate.approvedBy = null;\nstate.approvedAt = null;",
+              "errors": [
+                {
+                  "id": "fe9801bc-52d7-4213-847f-da1f279aea6f",
+                  "name": "ProposalNotApprovedError",
+                  "code": "PROPOSAL_NOT_APPROVED",
+                  "description": "Only an approved proposal can be reopened",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "8e306343-e46a-486a-a73a-c789f6db0950",
+              "name": "MARK_PROPOSAL_SENT",
+              "description": "Record that a person sent an approved proposal, with the copy that was sent when there is one; only a person may do this",
+              "schema": "input MarkProposalSentInput {\n  sentBy: EthereumAddress!\n  sentAt: DateTime!\n  copy: MarkProposalSentCopyInput\n}\n\ninput MarkProposalSentCopyInput {\n  ref: AttachmentRef!\n  name: String!\n  type: String!\n}",
+              "template": "Record that a person sent an approved proposal, with the copy that was sent when there is one; only a person may do this",
+              "reducer": "if (state.status !== \"APPROVED\")\n  throw new ProposalNotApprovedError(\n    \"Only an approved proposal can be marked sent\",\n  );\nconst copy = action.input.copy ? checkedFile(action.input.copy) : null;\nstate.status = \"SENT\";\nstate.sentBy = action.input.sentBy;\nstate.sentAt = action.input.sentAt;\nstate.sentCopy = copy;",
+              "errors": [
+                {
+                  "id": "2b960b45-11ca-4e06-b032-99ff009ff462",
+                  "name": "ProposalNotApprovedError",
+                  "code": "PROPOSAL_NOT_APPROVED",
+                  "description": "Only an approved proposal can be marked sent",
+                  "template": ""
+                },
+                {
+                  "id": "e585a9e9-2c24-4b5a-9149-70c88aaa3447",
+                  "name": "FileNameRequiredError",
+                  "code": "FILE_NAME_REQUIRED",
+                  "description": "A file needs a name",
+                  "template": ""
+                },
+                {
+                  "id": "6bff3829-f1ff-45ab-8a33-4b87cbbc1774",
+                  "name": "FileTypeRequiredError",
+                  "code": "FILE_TYPE_REQUIRED",
+                  "description": "A file needs a type",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "21276387-06bd-4810-bb17-831d93d6ba79",
+              "name": "SET_SENT_COPY",
+              "description": "Set, replace or clear the copy that was sent; no file clears it",
+              "schema": "input SetSentCopyInput {\n  file: SetSentCopyFileInput\n}\n\ninput SetSentCopyFileInput {\n  ref: AttachmentRef!\n  name: String!\n  type: String!\n}",
+              "template": "Set, replace or clear the copy that was sent; no file clears it",
+              "reducer": "if (![\"SENT\", \"ACCEPTED\", \"DECLINED\"].includes(state.status))\n  throw new SentCopyNotAllowedError(\n    \"The copy that was sent can change only while the proposal is sent, accepted or declined\",\n  );\nstate.sentCopy = action.input.file ? checkedFile(action.input.file) : null;",
+              "errors": [
+                {
+                  "id": "a1a661bb-55e5-47c1-980f-1654d07dc0d4",
+                  "name": "SentCopyNotAllowedError",
+                  "code": "SENT_COPY_NOT_ALLOWED",
+                  "description": "The copy that was sent can change only while the proposal is sent, accepted or declined",
+                  "template": ""
+                },
+                {
+                  "id": "579b58fd-2d56-41b3-a90e-ceb981ab34ef",
+                  "name": "FileNameRequiredError",
+                  "code": "FILE_NAME_REQUIRED",
+                  "description": "A file needs a name",
+                  "template": ""
+                },
+                {
+                  "id": "ff6e8da8-0ec0-48b1-afba-dd153e17c1dd",
+                  "name": "FileTypeRequiredError",
+                  "code": "FILE_TYPE_REQUIRED",
+                  "description": "A file needs a type",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "07ea0630-09a0-4a74-beae-0045e901b569",
+              "name": "RECORD_PROPOSAL_ANSWER",
+              "description": "Record the client's answer, once: accepted with the option chosen, or declined with a reason",
+              "schema": "input RecordProposalAnswerInput {\n  accepted: Boolean!\n  chosenOptionId: OID\n  reason: String\n  answeredAt: DateTime!\n}",
+              "template": "Record the client's answer, once: accepted with the option chosen, or declined with a reason",
+              "reducer": "const { accepted, chosenOptionId, reason, answeredAt } = action.input;\nif (state.status === \"ACCEPTED\" || state.status === \"DECLINED\")\n  throw new AnswerAlreadyRecordedError(\n    \"The client's answer is recorded once\",\n  );\nif (state.status !== \"SENT\")\n  throw new ProposalNotSentError(\n    \"An answer is recorded on a sent proposal\",\n  );\nif (!accepted && (reason == null || reason.trim() === \"\"))\n  throw new DeclineReasonRequiredError(\n    \"A declined proposal needs a reason\",\n  );\nif (\n  accepted &&\n  !state.options.some((option) => option.id === chosenOptionId)\n)\n  throw new ChosenOptionNotFoundError(\n    \"An accepted answer needs an option that exists\",\n  );\nstate.status = accepted ? \"ACCEPTED\" : \"DECLINED\";\nstate.chosenOptionId = accepted ? chosenOptionId! : null;\nstate.reason = accepted ? null : reason!;\nstate.answeredAt = answeredAt;",
+              "errors": [
+                {
+                  "id": "1b5beaa6-3c01-42dc-9361-4a30d359cb42",
+                  "name": "AnswerAlreadyRecordedError",
+                  "code": "ANSWER_ALREADY_RECORDED",
+                  "description": "The client's answer is recorded once",
+                  "template": ""
+                },
+                {
+                  "id": "2e2ab732-f70b-4746-9f44-c77df87d585e",
+                  "name": "ProposalNotSentError",
+                  "code": "PROPOSAL_NOT_SENT",
+                  "description": "An answer is recorded on a sent proposal",
+                  "template": ""
+                },
+                {
+                  "id": "446d9ea8-cff1-4db6-8b1e-2af797247cf0",
+                  "name": "DeclineReasonRequiredError",
+                  "code": "DECLINE_REASON_REQUIRED",
+                  "description": "A declined proposal needs a reason",
+                  "template": ""
+                },
+                {
+                  "id": "776f8dd7-4b93-4c1d-ae4e-cb96495e3f71",
+                  "name": "ChosenOptionNotFoundError",
+                  "code": "CHOSEN_OPTION_NOT_FOUND",
+                  "description": "An accepted answer needs an option that exists",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "a2d9a778-cf33-4228-9afb-8c3fe2d79006",
+              "name": "SET_SIGNED_COPY",
+              "description": "Set, replace or clear the signed copy; no file clears it",
+              "schema": "input SetSignedCopyInput {\n  file: SetSignedCopyFileInput\n}\n\ninput SetSignedCopyFileInput {\n  ref: AttachmentRef!\n  name: String!\n  type: String!\n}",
+              "template": "Set, replace or clear the signed copy; no file clears it",
+              "reducer": "if (state.status !== \"ACCEPTED\")\n  throw new SignedCopyNotAllowedError(\n    \"The signed copy can change only while the proposal is accepted\",\n  );\nstate.signedCopy = action.input.file\n  ? checkedFile(action.input.file)\n  : null;",
+              "errors": [
+                {
+                  "id": "e18ae0cc-2070-4ff9-81f3-164a967f9239",
+                  "name": "SignedCopyNotAllowedError",
+                  "code": "SIGNED_COPY_NOT_ALLOWED",
+                  "description": "The signed copy can change only while the proposal is accepted",
+                  "template": ""
+                },
+                {
+                  "id": "51a7ebc7-ba91-4859-8a3c-4538f365a7d9",
+                  "name": "FileNameRequiredError",
+                  "code": "FILE_NAME_REQUIRED",
+                  "description": "A file needs a name",
+                  "template": ""
+                },
+                {
+                  "id": "43abb098-efa6-402d-8dd3-937c660cc7f2",
+                  "name": "FileTypeRequiredError",
+                  "code": "FILE_TYPE_REQUIRED",
+                  "description": "A file needs a type",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "71e040a7-0540-457c-9b73-6188fafd8ebf",
+              "name": "WITHDRAW_PROPOSAL",
+              "description": "Withdraw a draft, approved or sent proposal we no longer stand behind, with the reason. Withdrawal is final",
+              "schema": "input WithdrawProposalInput {\n  reason: String!\n}",
+              "template": "Withdraw a draft, approved or sent proposal we no longer stand behind, with the reason. Withdrawal is final",
+              "reducer": "if (![\"DRAFT\", \"APPROVED\", \"SENT\"].includes(state.status))\n  throw new ProposalFinalError(\n    \"An accepted, declined, withdrawn or superseded proposal cannot be withdrawn\",\n  );\nif (action.input.reason.trim() === \"\")\n  throw new WithdrawReasonRequiredError(\n    \"Withdrawing a proposal needs a reason\",\n  );\nstate.status = \"WITHDRAWN\";\nstate.reason = action.input.reason;",
+              "errors": [
+                {
+                  "id": "223f9679-7ab6-40e2-a897-dee5668b0453",
+                  "name": "ProposalFinalError",
+                  "code": "PROPOSAL_FINAL",
+                  "description": "An accepted, declined, withdrawn or superseded proposal cannot be withdrawn",
+                  "template": ""
+                },
+                {
+                  "id": "cd0130a2-ef90-44a8-8da7-2003ea2421c1",
+                  "name": "WithdrawReasonRequiredError",
+                  "code": "WITHDRAW_REASON_REQUIRED",
+                  "description": "Withdrawing a proposal needs a reason",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "bd7e47d2-0f96-485a-a8ef-db88e327a044",
+              "name": "SUPERSEDE_PROPOSAL",
+              "description": "Mark a sent or declined proposal as replaced, naming the proposal that replaces it",
+              "schema": "input SupersedeProposalInput {\n  supersededByProposalId: PHID!\n}",
+              "template": "Mark a sent or declined proposal as replaced, naming the proposal that replaces it",
+              "reducer": "if (state.status !== \"SENT\" && state.status !== \"DECLINED\")\n  throw new ProposalNotSupersedableError(\n    \"Only a sent or declined proposal can be superseded\",\n  );\nif (action.input.supersededByProposalId.trim() === \"\")\n  throw new ReplacementRequiredError(\n    \"Superseding a proposal needs the proposal that replaces it\",\n  );\nstate.status = \"SUPERSEDED\";\nstate.supersededByProposalId = action.input.supersededByProposalId;",
+              "errors": [
+                {
+                  "id": "4a914555-92ec-494c-a685-6ade39fd2529",
+                  "name": "ProposalNotSupersedableError",
+                  "code": "PROPOSAL_NOT_SUPERSEDABLE",
+                  "description": "Only a sent or declined proposal can be superseded",
+                  "template": ""
+                },
+                {
+                  "id": "2422b2a3-efc4-40c0-8224-fd037d871a17",
+                  "name": "ReplacementRequiredError",
+                  "code": "REPLACEMENT_REQUIRED",
+                  "description": "Superseding a proposal needs the proposal that replaces it",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            }
+          ]
+        },
+        {
+          "id": "ba1d5cda-f9f1-4652-aa87-b4a9cd018a0a",
+          "name": "references",
+          "description": "Vault notes, sources and other BD records linked to the proposal",
+          "operations": [
+            {
+              "id": "8a563d70-8197-4a9a-aa9f-d717fd70d199",
+              "name": "ADD_REFERENCE",
+              "description": "Link a vault note, a source or another BD record, with its kind and its title",
+              "schema": "input AddReferenceInput {\n  id: OID!\n  kind: ReferenceKind!\n  documentId: PHID!\n  title: String!\n}",
+              "template": "Link a vault note, a source or another BD record, with its kind and its title",
+              "reducer": "const { id, kind, documentId, title } = action.input;\nif (state.status !== \"DRAFT\")\n  throw new ProposalNotDraftError(\"Only a draft proposal can be edited\");\nif (state.references.some((reference) => reference.id === id))\n  throw new DuplicateReferenceIdError(`Reference ${id} already exists`);\n{\n  const existing = state.references.find(\n    (reference) =>\n      reference.documentId === documentId && reference.kind === kind,\n  );\n  if (existing)\n    throw new DuplicateReferenceError(\n      `\"${existing.title}\" is already linked.`,\n    );\n}\nstate.references.push({ id, kind, documentId, title });",
+              "errors": [
+                {
+                  "id": "d0f84594-ccdb-4cbd-87b6-7dab2417fd42",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "d95fad69-c781-4f7b-b644-dc129daede16",
+                  "name": "DuplicateReferenceIdError",
+                  "code": "DUPLICATE_REFERENCE_ID",
+                  "description": "A reference with this id already exists",
+                  "template": ""
+                },
+                {
+                  "id": "5915993a-6544-466a-a74a-ba2b1a3390eb",
+                  "name": "DuplicateReferenceError",
+                  "code": "DUPLICATE_REFERENCE",
+                  "description": "The same document is already referenced with the same kind",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "dad3e2d5-06d8-40dc-8ab4-291e02765057",
+              "name": "REMOVE_REFERENCE",
+              "description": "Remove a link",
+              "schema": "input RemoveReferenceInput {\n  id: OID!\n}",
+              "template": "Remove a link",
+              "reducer": "if (state.status !== \"DRAFT\")\n  throw new ProposalNotDraftError(\"Only a draft proposal can be edited\");\nconst index = state.references.findIndex(\n  (reference) => reference.id === action.input.id,\n);\nif (index === -1)\n  throw new ReferenceNotFoundError(\n    `Reference ${action.input.id} not found`,\n  );\nstate.references.splice(index, 1);",
+              "errors": [
+                {
+                  "id": "58d7273d-286b-4d7c-8c5c-89729fb03f45",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "5af7ec67-ebc6-4279-9a69-85511eb7fec6",
+                  "name": "ReferenceNotFoundError",
+                  "code": "REFERENCE_NOT_FOUND",
+                  "description": "No reference has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            }
+          ]
+        },
+        {
+          "id": "d38d4f6a-540e-4f81-ab04-f5731512d255",
+          "name": "packages",
+          "description": "The pieces of work a proposal is built from",
+          "operations": [
+            {
+              "id": "dca6cbb8-89d1-42bc-9ce4-04e69425599b",
+              "name": "ADD_PACKAGE",
+              "description": "Add a package, with the packages it requires and a price when it is priced as a whole",
+              "schema": "input AddPackageInput {\n  id: OID!\n  code: String!\n  name: String!\n  summary: String\n  requires: [OID!]\n  price: Amount_Money\n  currency: Currency\n  targetDate: Date\n}",
+              "template": "Add a package, with the packages it requires and a price when it is priced as a whole",
+              "reducer": "const { id, code, name, summary, requires, price, currency, targetDate } =\n  action.input;\nif (state.status !== \"DRAFT\")\n  throw new ProposalNotDraftError(\"Only a draft proposal can be edited\");\nif (state.packages.some((pkg) => pkg.id === id))\n  throw new DuplicatePackageIdError(`Package ${id} already exists`);\nif (state.packages.some((pkg) => pkg.code === code))\n  throw new DuplicatePackageCodeError(\n    `Package code ${code} is already used`,\n  );\nconst required = requires ?? [];\nfor (const requiredId of required) {\n  if (requiredId === id)\n    throw new PackageRequiresItselfError(\"A package cannot require itself\");\n  if (!state.packages.some((pkg) => pkg.id === requiredId))\n    throw new UnknownRequiredPackageError(\n      `Required package ${requiredId} not found`,\n    );\n}\ncheckAmountCurrency(state, [price], currency);\nstate.packages.push({\n  id,\n  code,\n  name,\n  summary: summary ?? null,\n  requires: required,\n  price: price ?? null,\n  targetDate: targetDate ?? null,\n});",
+              "errors": [
+                {
+                  "id": "9b78ec21-26c9-4836-bfa1-17b91246f955",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "132e48c9-848a-4656-a04f-13b65837b50b",
+                  "name": "DuplicatePackageIdError",
+                  "code": "DUPLICATE_PACKAGE_ID",
+                  "description": "A package with this id already exists",
+                  "template": ""
+                },
+                {
+                  "id": "475e0e51-6d57-44aa-8f2a-48269ee677d0",
+                  "name": "DuplicatePackageCodeError",
+                  "code": "DUPLICATE_PACKAGE_CODE",
+                  "description": "A package with this code already exists",
+                  "template": ""
+                },
+                {
+                  "id": "6bc48d37-f40e-4654-b489-fd115a8262a1",
+                  "name": "UnknownRequiredPackageError",
+                  "code": "UNKNOWN_REQUIRED_PACKAGE",
+                  "description": "A required package does not exist",
+                  "template": ""
+                },
+                {
+                  "id": "40a07c66-63d7-46b3-8f7e-9efcb60215ba",
+                  "name": "PackageRequiresItselfError",
+                  "code": "PACKAGE_REQUIRES_ITSELF",
+                  "description": "A package cannot require itself",
+                  "template": ""
+                },
+                {
+                  "id": "0061fdad-8560-4d34-b563-fa0d27520d07",
+                  "name": "CurrencyNotSetError",
+                  "code": "CURRENCY_NOT_SET",
+                  "description": "An amount needs the proposal's currency to be set first",
+                  "template": ""
+                },
+                {
+                  "id": "248d1f1f-972b-4867-9fea-841d26ec23b1",
+                  "name": "AmountCurrencyMismatchError",
+                  "code": "AMOUNT_CURRENCY_MISMATCH",
+                  "description": "An amount is in the proposal's currency",
+                  "template": ""
+                },
+                {
+                  "id": "4c4df56f-3314-41bd-8efe-7e1c086fb7f7",
+                  "name": "PackagePricedTwiceError",
+                  "code": "PACKAGE_PRICED_TWICE",
+                  "description": "A package with its own price has no fixed-price deliverable",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "a42967b7-f356-4b49-a922-48e196ff84e0",
+              "name": "UPDATE_PACKAGE",
+              "description": "Change a package; a field left out is unchanged and null clears an optional one",
+              "schema": "input UpdatePackageInput {\n  id: OID!\n  code: String\n  name: String\n  summary: String\n  requires: [OID!]\n  price: Amount_Money\n  currency: Currency\n  targetDate: Date\n}",
+              "template": "Change a package; a field left out is unchanged and null clears an optional one",
+              "reducer": "const input = action.input;\nif (state.status !== \"DRAFT\")\n  throw new ProposalNotDraftError(\"Only a draft proposal can be edited\");\nconst pkg = state.packages.find((item) => item.id === input.id);\nif (!pkg) throw new PackageNotFoundError(`Package ${input.id} not found`);\nif (\n  input.code != null &&\n  state.packages.some((p) => p.id !== pkg.id && p.code === input.code)\n)\n  throw new DuplicatePackageCodeError(\n    `Package code ${input.code} is already used`,\n  );\nfor (const requiredId of input.requires ?? []) {\n  if (requiredId === pkg.id)\n    throw new PackageRequiresItselfError(\"A package cannot require itself\");\n  if (!state.packages.some((p) => p.id === requiredId))\n    throw new UnknownRequiredPackageError(\n      `Required package ${requiredId} not found`,\n    );\n}\nif (input.price != null) {\n  checkAmountCurrency(state, [input.price], input.currency);\n  if (\n    state.deliverables.some(\n      (d) => d.packageId === pkg.id && d.price?.pricing === \"FIXED\",\n    )\n  )\n    throw new PackagePricedTwiceError(\n      `Package ${pkg.id} has fixed-price deliverables, so it cannot have a price of its own`,\n    );\n}\nif (input.code != null) pkg.code = input.code;\nif (input.name != null) pkg.name = input.name;\nif (input.summary !== undefined) pkg.summary = input.summary;\nif (input.requires != null) pkg.requires = input.requires;\nif (input.price !== undefined) pkg.price = input.price;\nif (input.targetDate !== undefined) pkg.targetDate = input.targetDate;",
+              "errors": [
+                {
+                  "id": "fa026e1e-6eca-4f58-ade6-e4939c331302",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "836dd38b-4db3-420f-ad1c-2dd215ee9a60",
+                  "name": "PackageNotFoundError",
+                  "code": "PACKAGE_NOT_FOUND",
+                  "description": "No package has this id",
+                  "template": ""
+                },
+                {
+                  "id": "2d526396-0bd0-40da-b5a6-731c6a975ddf",
+                  "name": "DuplicatePackageCodeError",
+                  "code": "DUPLICATE_PACKAGE_CODE",
+                  "description": "A package with this code already exists",
+                  "template": ""
+                },
+                {
+                  "id": "30592e26-a114-4c4c-8a2a-a0b61c76c34a",
+                  "name": "UnknownRequiredPackageError",
+                  "code": "UNKNOWN_REQUIRED_PACKAGE",
+                  "description": "A required package does not exist",
+                  "template": ""
+                },
+                {
+                  "id": "33cf288d-9b48-4440-94b7-03986b1d7ada",
+                  "name": "PackageRequiresItselfError",
+                  "code": "PACKAGE_REQUIRES_ITSELF",
+                  "description": "A package cannot require itself",
+                  "template": ""
+                },
+                {
+                  "id": "86077414-cd27-459c-b6b8-7082f1ee763b",
+                  "name": "CurrencyNotSetError",
+                  "code": "CURRENCY_NOT_SET",
+                  "description": "An amount needs the proposal's currency to be set first",
+                  "template": ""
+                },
+                {
+                  "id": "7fea95d0-0c8f-4dca-acc3-9844f724a45d",
+                  "name": "AmountCurrencyMismatchError",
+                  "code": "AMOUNT_CURRENCY_MISMATCH",
+                  "description": "An amount is in the proposal's currency",
+                  "template": ""
+                },
+                {
+                  "id": "6b512d02-4cf9-4463-8bfd-244a40d00467",
+                  "name": "PackagePricedTwiceError",
+                  "code": "PACKAGE_PRICED_TWICE",
+                  "description": "A package with its own price has no fixed-price deliverable",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "8b112f3e-06db-4805-b64a-b5f25252f581",
+              "name": "REMOVE_PACKAGE",
+              "description": "Remove a package nothing points at",
+              "schema": "input RemovePackageInput {\n  id: OID!\n}",
+              "template": "Remove a package nothing points at",
+              "reducer": "const { id } = action.input;\nif (state.status !== \"DRAFT\")\n  throw new ProposalNotDraftError(\"Only a draft proposal can be edited\");\nconst index = state.packages.findIndex((pkg) => pkg.id === id);\nif (index === -1) throw new PackageNotFoundError(`Package ${id} not found`);\nif (\n  state.deliverables.some((d) => d.packageId === id) ||\n  state.options.some((o) => o.packageIds.includes(id)) ||\n  state.packages.some((p) => p.requires.includes(id)) ||\n  state.useCases.some((u) => u.packageId === id) ||\n  state.boundaries.some((b) => b.packageId === id)\n)\n  throw new PackageInUseError(\n    `Package ${id} is still used by a deliverable, an option or another package`,\n  );\nstate.packages.splice(index, 1);",
+              "errors": [
+                {
+                  "id": "30d04e3f-dc9a-4c29-aec6-e804a1b6a6b4",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "6c3e3008-af49-4c4a-b72e-7afc36f81945",
+                  "name": "PackageNotFoundError",
+                  "code": "PACKAGE_NOT_FOUND",
+                  "description": "No package has this id",
+                  "template": ""
+                },
+                {
+                  "id": "82edf16c-8351-4437-88a6-75b777d629d0",
+                  "name": "PackageInUseError",
+                  "code": "PACKAGE_IN_USE",
+                  "description": "A deliverable, an option or another package points at this package",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "b3ca7a68-c782-462d-b2c3-1323ecde2e79",
+              "name": "REORDER_PACKAGES",
+              "description": "Put the packages in a new order",
+              "schema": "input ReorderPackagesInput {\n  ids: [OID!]!\n}",
+              "template": "Put the packages in a new order",
+              "reducer": "if (state.status !== \"DRAFT\")\n  throw new ProposalNotDraftError(\"Only a draft proposal can be edited\");\nconst { ids } = action.input;\ncheckPermutation(state.packages, ids, () => {\n  throw new PackageOrderMismatchError(\n    \"The new order must list every package exactly once\",\n  );\n});\nstate.packages = ids.map((id) =>\n  state.packages.find((pkg) => pkg.id === id)!,\n);",
+              "errors": [
+                {
+                  "id": "0f43bd70-99df-47ed-bcfa-ca3c58ada1c8",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "007fd4f7-4f4c-4db6-b3eb-fc4d22878640",
+                  "name": "PackageOrderMismatchError",
+                  "code": "PACKAGE_ORDER_MISMATCH",
+                  "description": "The new order must list every package exactly once",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            }
+          ]
+        },
+        {
+          "id": "5f5b1a84-4b6d-48f8-97b1-014b1eae18fe",
+          "name": "deliverables",
+          "description": "What each package delivers, and what each deliverable costs",
+          "operations": [
+            {
+              "id": "62ecaee4-447c-427d-8cc3-902585fde04a",
+              "name": "ADD_DELIVERABLE",
+              "description": "Add a deliverable to a package, unpriced until its price is set",
+              "schema": "input AddDeliverableInput {\n  id: OID!\n  code: String!\n  packageId: OID!\n  title: String!\n  body: String\n}",
+              "template": "Add a deliverable to a package, unpriced until its price is set",
+              "reducer": "const { id, code, packageId, title, body } = action.input;\nif (state.status !== \"DRAFT\")\n  throw new ProposalNotDraftError(\"Only a draft proposal can be edited\");\nif (state.deliverables.some((d) => d.id === id))\n  throw new DuplicateDeliverableIdError(`Deliverable ${id} already exists`);\nif (state.deliverables.some((d) => d.code === code))\n  throw new DuplicateDeliverableCodeError(\n    `Deliverable code ${code} is already used`,\n  );\nif (!state.packages.some((p) => p.id === packageId))\n  throw new PackageNotFoundError(`Package ${packageId} not found`);\nstate.deliverables.push({\n  id,\n  code,\n  packageId,\n  title,\n  body: body ?? null,\n  price: null,\n});",
+              "errors": [
+                {
+                  "id": "c5752d29-a7a0-422f-a1bb-248d1a71730f",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "01b6e552-8873-498d-89e5-5abf57c48489",
+                  "name": "DuplicateDeliverableIdError",
+                  "code": "DUPLICATE_DELIVERABLE_ID",
+                  "description": "A deliverable with this id already exists",
+                  "template": ""
+                },
+                {
+                  "id": "15c49b3d-d5a4-4b26-834c-ab79c68cdb9c",
+                  "name": "DuplicateDeliverableCodeError",
+                  "code": "DUPLICATE_DELIVERABLE_CODE",
+                  "description": "A deliverable with this code already exists",
+                  "template": ""
+                },
+                {
+                  "id": "bb861a35-76c5-40f3-9f50-457c1c1a9d66",
+                  "name": "PackageNotFoundError",
+                  "code": "PACKAGE_NOT_FOUND",
+                  "description": "No package has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "4bbeeaee-a6de-483d-bb33-a89b70134b0b",
+              "name": "UPDATE_DELIVERABLE",
+              "description": "Change a deliverable, or move it to another package; a field left out is unchanged",
+              "schema": "input UpdateDeliverableInput {\n  id: OID!\n  code: String\n  packageId: OID\n  title: String\n  body: String\n}",
+              "template": "Change a deliverable, or move it to another package; a field left out is unchanged",
+              "reducer": "const input = action.input;\nif (state.status !== \"DRAFT\")\n  throw new ProposalNotDraftError(\"Only a draft proposal can be edited\");\nconst deliverable = state.deliverables.find((d) => d.id === input.id);\nif (!deliverable)\n  throw new DeliverableNotFoundError(`Deliverable ${input.id} not found`);\nif (\n  input.code != null &&\n  state.deliverables.some((d) => d.id !== input.id && d.code === input.code)\n)\n  throw new DuplicateDeliverableCodeError(\n    `Deliverable code ${input.code} is already used`,\n  );\nif (input.packageId != null) {\n  const target = state.packages.find((p) => p.id === input.packageId);\n  if (!target)\n    throw new PackageNotFoundError(`Package ${input.packageId} not found`);\n  if (target.price != null && deliverable.price?.pricing === \"FIXED\")\n    throw new PackagePricedTwiceError(\n      `Package ${target.id} has its own price, so it cannot have a fixed-price deliverable`,\n    );\n  deliverable.packageId = input.packageId;\n}\nif (input.code != null) deliverable.code = input.code;\nif (input.title != null) deliverable.title = input.title;\nif (input.body !== undefined) deliverable.body = input.body;",
+              "errors": [
+                {
+                  "id": "72542ffc-0904-4d1a-8919-b724a294ddc6",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "cf2e75ab-db5b-45c3-ba49-24a9416cc458",
+                  "name": "DeliverableNotFoundError",
+                  "code": "DELIVERABLE_NOT_FOUND",
+                  "description": "No deliverable has this id",
+                  "template": ""
+                },
+                {
+                  "id": "f86cb902-9f7a-4718-864e-0af9c5f5f319",
+                  "name": "DuplicateDeliverableCodeError",
+                  "code": "DUPLICATE_DELIVERABLE_CODE",
+                  "description": "A deliverable with this code already exists",
+                  "template": ""
+                },
+                {
+                  "id": "0bd95513-aa59-4e09-a375-84216b0d2ca4",
+                  "name": "PackageNotFoundError",
+                  "code": "PACKAGE_NOT_FOUND",
+                  "description": "No package has this id",
+                  "template": ""
+                },
+                {
+                  "id": "d6eb6d51-407c-4ad9-b46f-dc40ea210819",
+                  "name": "PackagePricedTwiceError",
+                  "code": "PACKAGE_PRICED_TWICE",
+                  "description": "A package with its own price has no fixed-price deliverable",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "d25866c4-8231-455b-a2bf-f96ed33bd23d",
+              "name": "SET_DELIVERABLE_PRICE",
+              "description": "Set the price of a deliverable: fixed, included, recurring or a rate",
+              "schema": "input SetDeliverablePriceInput {\n  id: OID!\n  pricing: Pricing!\n  amount: Amount_Money\n  upperAmount: Amount_Money\n  currency: Currency\n  period: RecurringPeriod\n  unit: RateUnit\n  until: Date\n  note: String\n}",
+              "template": "Set the price of a deliverable: fixed, included, recurring or a rate",
+              "reducer": "const input = action.input;\nif (state.status !== \"DRAFT\")\n  throw new ProposalNotDraftError(\"Only a draft proposal can be edited\");\nconst deliverable = state.deliverables.find((d) => d.id === input.id);\nif (!deliverable)\n  throw new DeliverableNotFoundError(`Deliverable ${input.id} not found`);\nconst { pricing, amount, upperAmount } = input;\nif (pricing === \"INCLUDED\") {\n  if (amount != null || upperAmount != null)\n    throw new IncludedHasNoAmountError(\n      \"An included deliverable has no amount\",\n    );\n} else {\n  if (amount == null)\n    throw new AmountRequiredError(\n      `${{ FIXED: \"A fixed price\", RECURRING: \"A recurring price\", RATE: \"A rate\" }[pricing]} needs an amount`,\n    );\n  if (pricing === \"RECURRING\" && input.period == null)\n    throw new PeriodRequiredError(\"A recurring price needs a period\");\n  if (pricing === \"RATE\" && input.unit == null)\n    throw new UnitRequiredError(\"A rate needs a unit\");\n  if (upperAmount != null && upperAmount < amount)\n    throw new UpperAmountBelowAmountError(\n      \"The upper amount cannot be below the amount\",\n    );\n}\ncheckAmountCurrency(state, [amount, upperAmount], input.currency);\nconst target = state.packages.find((p) => p.id === deliverable.packageId);\nif (pricing === \"FIXED\" && target?.price != null)\n  throw new PackagePricedTwiceError(\n    `Package ${target.id} has its own price, so it cannot have a fixed-price deliverable`,\n  );\ndeliverable.price = {\n  pricing,\n  amount: amount ?? null,\n  upperAmount: upperAmount ?? null,\n  period: pricing === \"RECURRING\" ? input.period! : null,\n  unit: pricing === \"RATE\" ? input.unit! : null,\n  until: pricing === \"RECURRING\" ? (input.until ?? null) : null,\n  note: input.note ?? null,\n};",
+              "errors": [
+                {
+                  "id": "49f9385e-8a80-465e-95a7-e208bff85669",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "97d5f1eb-42c1-4536-9b5b-7df667c96318",
+                  "name": "DeliverableNotFoundError",
+                  "code": "DELIVERABLE_NOT_FOUND",
+                  "description": "No deliverable has this id",
+                  "template": ""
+                },
+                {
+                  "id": "0a102eb3-328d-41ce-bae2-4fc02cf294dd",
+                  "name": "AmountRequiredError",
+                  "code": "AMOUNT_REQUIRED",
+                  "description": "A fixed, recurring or rate price needs an amount",
+                  "template": ""
+                },
+                {
+                  "id": "4d98da71-2b92-4694-8c8f-6d8196a455c2",
+                  "name": "IncludedHasNoAmountError",
+                  "code": "INCLUDED_HAS_NO_AMOUNT",
+                  "description": "An included deliverable has no amount",
+                  "template": ""
+                },
+                {
+                  "id": "a822b182-2953-4a6a-aeb6-a016181f9214",
+                  "name": "PeriodRequiredError",
+                  "code": "PERIOD_REQUIRED",
+                  "description": "A recurring price needs a period",
+                  "template": ""
+                },
+                {
+                  "id": "92e0320f-8e49-4f21-99b6-bddba25d1649",
+                  "name": "UnitRequiredError",
+                  "code": "UNIT_REQUIRED",
+                  "description": "A rate needs a unit",
+                  "template": ""
+                },
+                {
+                  "id": "3040f353-8c5f-4a39-8f1a-f7f16ead8552",
+                  "name": "UpperAmountBelowAmountError",
+                  "code": "UPPER_AMOUNT_BELOW_AMOUNT",
+                  "description": "The upper amount is not below the amount",
+                  "template": ""
+                },
+                {
+                  "id": "2f0c0fb9-d1d6-4463-820a-f27bb41ee6a6",
+                  "name": "CurrencyNotSetError",
+                  "code": "CURRENCY_NOT_SET",
+                  "description": "An amount needs the proposal's currency to be set first",
+                  "template": ""
+                },
+                {
+                  "id": "ab455e56-4428-4ee9-9a0a-4f859da612e9",
+                  "name": "AmountCurrencyMismatchError",
+                  "code": "AMOUNT_CURRENCY_MISMATCH",
+                  "description": "An amount is in the proposal's currency",
+                  "template": ""
+                },
+                {
+                  "id": "0e7870dc-8f7e-4bb5-a5a4-95b99a497808",
+                  "name": "PackagePricedTwiceError",
+                  "code": "PACKAGE_PRICED_TWICE",
+                  "description": "A package with its own price has no fixed-price deliverable",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "80cdcbed-9fa4-446a-afaf-968c50a68c41",
+              "name": "REMOVE_DELIVERABLE",
+              "description": "Remove a deliverable",
+              "schema": "input RemoveDeliverableInput {\n  id: OID!\n}",
+              "template": "Remove a deliverable",
+              "reducer": "if (state.status !== \"DRAFT\")\n  throw new ProposalNotDraftError(\"Only a draft proposal can be edited\");\nconst index = state.deliverables.findIndex((d) => d.id === action.input.id);\nif (index === -1)\n  throw new DeliverableNotFoundError(\n    `Deliverable ${action.input.id} not found`,\n  );\nstate.deliverables.splice(index, 1);",
+              "errors": [
+                {
+                  "id": "51f0dd4a-a8c9-434f-bfca-9272f7c60e19",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "8fcdb057-986f-4877-8725-41879d9b2e7a",
+                  "name": "DeliverableNotFoundError",
+                  "code": "DELIVERABLE_NOT_FOUND",
+                  "description": "No deliverable has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "a0c35fbb-2821-4f0f-901b-b86fc06f3de0",
+              "name": "REORDER_DELIVERABLES",
+              "description": "Put the deliverables in a new order",
+              "schema": "input ReorderDeliverablesInput {\n  ids: [OID!]!\n}",
+              "template": "Put the deliverables in a new order",
+              "reducer": "if (state.status !== \"DRAFT\")\n  throw new ProposalNotDraftError(\"Only a draft proposal can be edited\");\nconst { ids } = action.input;\ncheckPermutation(state.deliverables, ids, () => {\n  throw new DeliverableOrderMismatchError(\n    \"The new order must list every deliverable exactly once\",\n  );\n});\nstate.deliverables = ids.map((id) =>\n  state.deliverables.find((d) => d.id === id)!,\n);",
+              "errors": [
+                {
+                  "id": "a738722b-4c60-4e42-95b8-f1f02cd31d4d",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "95f033f7-a1ec-4e0c-a6e5-52debbed12ba",
+                  "name": "DeliverableOrderMismatchError",
+                  "code": "DELIVERABLE_ORDER_MISMATCH",
+                  "description": "The new order must list every deliverable exactly once",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            }
+          ]
+        },
+        {
+          "id": "9d3d83af-5898-437c-89a0-7c0aa2eb973a",
+          "name": "options",
+          "description": "The choices the client is offered, and their adjustments",
+          "operations": [
+            {
+              "id": "e1d62e4a-0d4b-43e6-b6d5-47e14ff2f7fb",
+              "name": "ADD_OPTION",
+              "description": "Add an option naming the packages it contains",
+              "schema": "input AddOptionInput {\n  id: OID!\n  label: String!\n  packageIds: [OID!]!\n}",
+              "template": "Add an option naming the packages it contains",
+              "reducer": "const { id, label, packageIds } = action.input;\nif (state.status !== \"DRAFT\")\n  throw new ProposalNotDraftError(\"Only a draft proposal can be edited\");\nif (state.options.some((o) => o.id === id))\n  throw new DuplicateOptionIdError(`Option ${id} already exists`);\ncheckPackages(state.packages, packageIds);\nstate.options.push({ id, label, packageIds, adjustments: [] });",
+              "errors": [
+                {
+                  "id": "75df6aa2-51c2-4385-b395-e89ee9b52873",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "2d8fd0b9-2820-489b-87ca-cae2b810f72a",
+                  "name": "DuplicateOptionIdError",
+                  "code": "DUPLICATE_OPTION_ID",
+                  "description": "An option with this id already exists",
+                  "template": ""
+                },
+                {
+                  "id": "27667dbf-58e7-4193-a7cf-6261ea4b96e0",
+                  "name": "UnknownOptionPackageError",
+                  "code": "UNKNOWN_OPTION_PACKAGE",
+                  "description": "An option names a package that does not exist",
+                  "template": ""
+                },
+                {
+                  "id": "584a7c7a-8901-461c-9cc0-c741e51f43d3",
+                  "name": "DuplicateOptionPackageError",
+                  "code": "DUPLICATE_OPTION_PACKAGE",
+                  "description": "An option names a package twice",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "e1efd018-d74d-47ee-88b9-deb4052287cf",
+              "name": "UPDATE_OPTION",
+              "description": "Change an option's label or packages; a field left out is unchanged",
+              "schema": "input UpdateOptionInput {\n  id: OID!\n  label: String\n  packageIds: [OID!]\n}",
+              "template": "Change an option's label or packages; a field left out is unchanged",
+              "reducer": "const { id, label, packageIds } = action.input;\nif (state.status !== \"DRAFT\")\n  throw new ProposalNotDraftError(\"Only a draft proposal can be edited\");\nconst option = state.options.find((o) => o.id === id);\nif (!option) throw new OptionNotFoundError(`Option ${id} not found`);\nif (packageIds != null) checkPackages(state.packages, packageIds);\nif (label != null) option.label = label;\nif (packageIds != null) option.packageIds = packageIds;",
+              "errors": [
+                {
+                  "id": "bbb60e4e-3054-491a-8db7-272acbffddfd",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "885c5e60-2da9-4b2e-8ff5-0d80328a16a4",
+                  "name": "OptionNotFoundError",
+                  "code": "OPTION_NOT_FOUND",
+                  "description": "No option has this id",
+                  "template": ""
+                },
+                {
+                  "id": "6adff2d7-4274-437e-afa3-2fba731cd278",
+                  "name": "UnknownOptionPackageError",
+                  "code": "UNKNOWN_OPTION_PACKAGE",
+                  "description": "An option names a package that does not exist",
+                  "template": ""
+                },
+                {
+                  "id": "0cb06d21-fc23-4e13-a29a-8b0aeb8345dd",
+                  "name": "DuplicateOptionPackageError",
+                  "code": "DUPLICATE_OPTION_PACKAGE",
+                  "description": "An option names a package twice",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "37b62dd1-cb53-403c-94f3-3bbc80dbe914",
+              "name": "REMOVE_OPTION",
+              "description": "Remove an option",
+              "schema": "input RemoveOptionInput {\n  id: OID!\n}",
+              "template": "Remove an option",
+              "reducer": "const { id } = action.input;\nif (state.status !== \"DRAFT\")\n  throw new ProposalNotDraftError(\"Only a draft proposal can be edited\");\nconst index = state.options.findIndex((o) => o.id === id);\nif (index === -1) throw new OptionNotFoundError(`Option ${id} not found`);\nstate.options.splice(index, 1);",
+              "errors": [
+                {
+                  "id": "d11118fb-43f9-4142-94da-b78e30226c42",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "ae8e67b7-36bc-44c8-bc13-05f5f96f346b",
+                  "name": "OptionNotFoundError",
+                  "code": "OPTION_NOT_FOUND",
+                  "description": "No option has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "c7e5f322-dcd9-4849-8a75-15f4e94c50b7",
+              "name": "ADD_ADJUSTMENT",
+              "description": "Add an adjustment to an option; a negative amount is a discount",
+              "schema": "input AddAdjustmentInput {\n  optionId: OID!\n  id: OID!\n  label: String!\n  amount: Amount_Money!\n  currency: Currency\n  condition: String\n}",
+              "template": "Add an adjustment to an option; a negative amount is a discount",
+              "reducer": "const { optionId, id, label, amount, currency, condition } = action.input;\nif (state.status !== \"DRAFT\")\n  throw new ProposalNotDraftError(\"Only a draft proposal can be edited\");\nconst option = state.options.find((o) => o.id === optionId);\nif (!option) throw new OptionNotFoundError(`Option ${optionId} not found`);\nif (state.options.some((o) => o.adjustments.some((a) => a.id === id)))\n  throw new DuplicateAdjustmentIdError(`Adjustment ${id} already exists`);\ncheckAmountCurrency(state, [amount], currency);\noption.adjustments.push({\n  id,\n  label,\n  amount,\n  condition: condition ?? null,\n});",
+              "errors": [
+                {
+                  "id": "f950bf5a-cc78-4d88-b903-dd171b542b29",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "64df3d59-bb9b-46eb-8d83-f14a0d7c5f02",
+                  "name": "OptionNotFoundError",
+                  "code": "OPTION_NOT_FOUND",
+                  "description": "No option has this id",
+                  "template": ""
+                },
+                {
+                  "id": "5f16b1de-5c1c-48ef-837c-f3d53f7fcfe3",
+                  "name": "DuplicateAdjustmentIdError",
+                  "code": "DUPLICATE_ADJUSTMENT_ID",
+                  "description": "An adjustment with this id already exists",
+                  "template": ""
+                },
+                {
+                  "id": "93af177b-a712-4e26-a664-5b5ca298198b",
+                  "name": "CurrencyNotSetError",
+                  "code": "CURRENCY_NOT_SET",
+                  "description": "An amount needs the proposal's currency to be set first",
+                  "template": ""
+                },
+                {
+                  "id": "9c868161-7238-4cda-a7b7-c4589934981b",
+                  "name": "AmountCurrencyMismatchError",
+                  "code": "AMOUNT_CURRENCY_MISMATCH",
+                  "description": "An amount is in the proposal's currency",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "5ddf1da4-4c61-4adf-9bb8-f6432380408b",
+              "name": "REMOVE_ADJUSTMENT",
+              "description": "Remove an adjustment from an option",
+              "schema": "input RemoveAdjustmentInput {\n  optionId: OID!\n  id: OID!\n}",
+              "template": "Remove an adjustment from an option",
+              "reducer": "const { optionId, id } = action.input;\nif (state.status !== \"DRAFT\")\n  throw new ProposalNotDraftError(\"Only a draft proposal can be edited\");\nconst option = state.options.find((o) => o.id === optionId);\nif (!option) throw new OptionNotFoundError(`Option ${optionId} not found`);\nconst index = option.adjustments.findIndex((a) => a.id === id);\nif (index === -1)\n  throw new AdjustmentNotFoundError(\n    `Adjustment ${id} not found in option ${optionId}`,\n  );\noption.adjustments.splice(index, 1);",
+              "errors": [
+                {
+                  "id": "7415c0da-bc5d-4da3-9274-fb2391f8d0da",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "bd63d49e-9e13-4ea0-a912-da1768ea0782",
+                  "name": "OptionNotFoundError",
+                  "code": "OPTION_NOT_FOUND",
+                  "description": "No option has this id",
+                  "template": ""
+                },
+                {
+                  "id": "66204e80-f5af-4377-94f4-d033c77990be",
+                  "name": "AdjustmentNotFoundError",
+                  "code": "ADJUSTMENT_NOT_FOUND",
+                  "description": "No adjustment of this option has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            }
+          ]
+        },
+        {
+          "id": "eacabf27-1bde-4a04-8425-cc8fd72ccc46",
+          "name": "payment",
+          "description": "When the client pays, in percentages",
+          "operations": [
+            {
+              "id": "fa283ab0-7a6e-43f3-8ea6-3e76f7799376",
+              "name": "ADD_PAYMENT_STEP",
+              "description": "Add a payment step",
+              "schema": "input AddPaymentStepInput {\n  id: OID!\n  label: String!\n  trigger: PaymentTrigger!\n  percentage: Amount_Percentage!\n  date: Date\n}",
+              "template": "Add a payment step",
+              "reducer": "const { id, label, trigger, percentage, date } = action.input;\nif (state.status !== \"DRAFT\")\n  throw new ProposalNotDraftError(\"Only a draft proposal can be edited\");\nif (state.paymentSteps.some((s) => s.id === id))\n  throw new DuplicatePaymentStepIdError(\n    `Payment step ${id} already exists`,\n  );\ncheckStep(percentage, trigger, date ?? null);\nstate.paymentSteps.push({\n  id,\n  label,\n  trigger,\n  percentage,\n  date: trigger === \"ON_DATE\" ? date! : null,\n});",
+              "errors": [
+                {
+                  "id": "40950030-5e2c-4ca2-9c34-9d59d8502aac",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "4d7c3009-5ad8-4d92-b93f-0ca790682b86",
+                  "name": "DuplicatePaymentStepIdError",
+                  "code": "DUPLICATE_PAYMENT_STEP_ID",
+                  "description": "A payment step with this id already exists",
+                  "template": ""
+                },
+                {
+                  "id": "0e36d086-7b4d-4048-83ee-204bd8165ddb",
+                  "name": "InvalidPercentageError",
+                  "code": "INVALID_PERCENTAGE",
+                  "description": "A percentage is between 0 and 100",
+                  "template": ""
+                },
+                {
+                  "id": "59e7db9e-13b7-4d4b-a52d-28c15dc19306",
+                  "name": "PaymentDateRequiredError",
+                  "code": "PAYMENT_DATE_REQUIRED",
+                  "description": "A step paid on a date needs the date",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "2a2e061a-a6da-4c55-a8a8-d324428aab73",
+              "name": "UPDATE_PAYMENT_STEP",
+              "description": "Change a payment step; a field left out is unchanged",
+              "schema": "input UpdatePaymentStepInput {\n  id: OID!\n  label: String\n  trigger: PaymentTrigger\n  percentage: Amount_Percentage\n  date: Date\n}",
+              "template": "Change a payment step; a field left out is unchanged",
+              "reducer": "const input = action.input;\nif (state.status !== \"DRAFT\")\n  throw new ProposalNotDraftError(\"Only a draft proposal can be edited\");\nconst step = state.paymentSteps.find((s) => s.id === input.id);\nif (!step)\n  throw new PaymentStepNotFoundError(`Payment step ${input.id} not found`);\nconst trigger = input.trigger ?? step.trigger;\nconst percentage = input.percentage ?? step.percentage;\nconst date = (input.date !== undefined ? input.date : step.date) ?? null;\ncheckStep(percentage, trigger, date);\nstep.label = input.label ?? step.label;\nstep.trigger = trigger;\nstep.percentage = percentage;\nstep.date = trigger === \"ON_DATE\" ? date : null;",
+              "errors": [
+                {
+                  "id": "e4d29189-1e91-4ec1-ab5e-34ebb50504c4",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "95c3768a-f062-477a-a7e1-af51aeecbfff",
+                  "name": "PaymentStepNotFoundError",
+                  "code": "PAYMENT_STEP_NOT_FOUND",
+                  "description": "No payment step has this id",
+                  "template": ""
+                },
+                {
+                  "id": "d30b7e01-88a0-469e-84b4-5e71bcac1b9a",
+                  "name": "InvalidPercentageError",
+                  "code": "INVALID_PERCENTAGE",
+                  "description": "A percentage is between 0 and 100",
+                  "template": ""
+                },
+                {
+                  "id": "92c31b5f-3dad-4c8b-8d01-8a373f3f8afa",
+                  "name": "PaymentDateRequiredError",
+                  "code": "PAYMENT_DATE_REQUIRED",
+                  "description": "A step paid on a date needs the date",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "40adf60d-38b2-4cef-b1dc-916b96ff9a37",
+              "name": "REMOVE_PAYMENT_STEP",
+              "description": "Remove a payment step",
+              "schema": "input RemovePaymentStepInput {\n  id: OID!\n}",
+              "template": "Remove a payment step",
+              "reducer": "if (state.status !== \"DRAFT\")\n  throw new ProposalNotDraftError(\"Only a draft proposal can be edited\");\nconst index = state.paymentSteps.findIndex((s) => s.id === action.input.id);\nif (index === -1)\n  throw new PaymentStepNotFoundError(\n    `Payment step ${action.input.id} not found`,\n  );\nstate.paymentSteps.splice(index, 1);",
+              "errors": [
+                {
+                  "id": "a627038c-ded5-4e72-a56b-4a04170626a6",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "0eeefa73-88aa-4567-b27f-4bb4fda5727b",
+                  "name": "PaymentStepNotFoundError",
+                  "code": "PAYMENT_STEP_NOT_FOUND",
+                  "description": "No payment step has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            }
+          ]
+        },
+        {
+          "id": "a4c722cd-1496-45d2-a4c3-dd81d7b3be1b",
+          "name": "scope",
+          "description": "Actors, use cases and boundaries: who uses what is offered, and where it stops",
+          "operations": [
+            {
+              "id": "02b84304-aa26-486a-9548-e5c980ef692c",
+              "name": "ADD_ACTOR",
+              "description": "Add an actor",
+              "schema": "input AddActorInput {\n  id: OID!\n  code: String!\n  name: String!\n  description: String\n}",
+              "template": "Add an actor",
+              "reducer": "const { id, code, name, description } = action.input;\nif (state.status !== \"DRAFT\")\n  throw new ProposalNotDraftError(\"Only a draft proposal can be edited\");\nif (state.actors.some((actor) => actor.id === id))\n  throw new DuplicateActorIdError(`Actor ${id} already exists`);\nif (state.actors.some((actor) => actor.code === code))\n  throw new DuplicateActorCodeError(`Actor code ${code} is already used`);\nstate.actors.push({ id, code, name, description: description ?? null });",
+              "errors": [
+                {
+                  "id": "e3b3e4fb-9239-420b-830f-602d4253fdf9",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "4e97d171-4412-4a31-a8af-8a49fb14397a",
+                  "name": "DuplicateActorIdError",
+                  "code": "DUPLICATE_ACTOR_ID",
+                  "description": "An actor with this id already exists",
+                  "template": ""
+                },
+                {
+                  "id": "7e33aceb-a191-425c-89c2-64db7a2182bd",
+                  "name": "DuplicateActorCodeError",
+                  "code": "DUPLICATE_ACTOR_CODE",
+                  "description": "Another actor already has this code",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "6e176b6f-a4a2-4127-b28d-ef302bc0abfa",
+              "name": "UPDATE_ACTOR",
+              "description": "Change an actor; a field left out is unchanged",
+              "schema": "input UpdateActorInput {\n  id: OID!\n  code: String\n  name: String\n  description: String\n}",
+              "template": "Change an actor; a field left out is unchanged",
+              "reducer": "const input = action.input;\nif (state.status !== \"DRAFT\")\n  throw new ProposalNotDraftError(\"Only a draft proposal can be edited\");\nconst actor = state.actors.find((item) => item.id === input.id);\nif (!actor) throw new ActorNotFoundError(`Actor ${input.id} not found`);\nif (\n  input.code != null &&\n  state.actors.some((a) => a.id !== actor.id && a.code === input.code)\n)\n  throw new DuplicateActorCodeError(\n    `Actor code ${input.code} is already used`,\n  );\nif (input.code != null) actor.code = input.code;\nif (input.name != null) actor.name = input.name;\nif (input.description !== undefined) actor.description = input.description;",
+              "errors": [
+                {
+                  "id": "1e31f0db-53e9-422e-a874-effa1e1d95e4",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "8c7943f3-8349-4788-9133-08fbf6b792b4",
+                  "name": "ActorNotFoundError",
+                  "code": "ACTOR_NOT_FOUND",
+                  "description": "No actor has this id",
+                  "template": ""
+                },
+                {
+                  "id": "188e7cbc-4188-4359-9875-cf14868f1f6f",
+                  "name": "DuplicateActorCodeError",
+                  "code": "DUPLICATE_ACTOR_CODE",
+                  "description": "Another actor already has this code",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "23fc4717-3884-4360-8da2-69ff3ea393aa",
+              "name": "REMOVE_ACTOR",
+              "description": "Remove an actor no use case points at",
+              "schema": "input RemoveActorInput {\n  id: OID!\n}",
+              "template": "Remove an actor no use case points at",
+              "reducer": "const { id } = action.input;\nif (state.status !== \"DRAFT\")\n  throw new ProposalNotDraftError(\"Only a draft proposal can be edited\");\nconst index = state.actors.findIndex((actor) => actor.id === id);\nif (index === -1) throw new ActorNotFoundError(`Actor ${id} not found`);\nif (state.useCases.some((useCase) => useCase.actorId === id))\n  throw new ActorInUseError(`Actor ${id} is still used by a use case`);\nstate.actors.splice(index, 1);",
+              "errors": [
+                {
+                  "id": "bfad80fa-5d39-4990-aee1-e4504b6b32aa",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "5bcca5bd-7002-4db5-9999-62481f4ede82",
+                  "name": "ActorNotFoundError",
+                  "code": "ACTOR_NOT_FOUND",
+                  "description": "No actor has this id",
+                  "template": ""
+                },
+                {
+                  "id": "6388b1be-a458-4a07-b0af-384856ad4b4f",
+                  "name": "ActorInUseError",
+                  "code": "ACTOR_IN_USE",
+                  "description": "A use case still points at this actor",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "7fd2c71c-4a11-4f58-9c58-afd3acb09b04",
+              "name": "ADD_USE_CASE",
+              "description": "Add a use case for an actor, under a package",
+              "schema": "input AddUseCaseInput {\n  id: OID!\n  code: String!\n  actorId: OID!\n  packageId: OID!\n  title: String!\n  body: String\n}",
+              "template": "Add a use case for an actor, under a package",
+              "reducer": "const { id, code, actorId, packageId, title, body } = action.input;\nif (state.status !== \"DRAFT\")\n  throw new ProposalNotDraftError(\"Only a draft proposal can be edited\");\nif (state.useCases.some((useCase) => useCase.id === id))\n  throw new DuplicateUseCaseIdError(`Use case ${id} already exists`);\nif (state.useCases.some((useCase) => useCase.code === code))\n  throw new DuplicateUseCaseCodeError(\n    `Use case code ${code} is already used`,\n  );\nif (!state.actors.some((actor) => actor.id === actorId))\n  throw new ActorNotFoundError(`Actor ${actorId} not found`);\nif (!state.packages.some((pkg) => pkg.id === packageId))\n  throw new PackageNotFoundError(`Package ${packageId} not found`);\nstate.useCases.push({\n  id,\n  code,\n  actorId,\n  packageId,\n  title,\n  body: body ?? null,\n});",
+              "errors": [
+                {
+                  "id": "7f929148-f9bb-4b42-bc66-4240fdd38115",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "873a7c17-c607-4799-8ac3-deff8b4baffd",
+                  "name": "DuplicateUseCaseIdError",
+                  "code": "DUPLICATE_USE_CASE_ID",
+                  "description": "A use case with this id already exists",
+                  "template": ""
+                },
+                {
+                  "id": "d7b00921-56e7-4f79-9e07-e52188cf87ec",
+                  "name": "DuplicateUseCaseCodeError",
+                  "code": "DUPLICATE_USE_CASE_CODE",
+                  "description": "Another use case already has this code",
+                  "template": ""
+                },
+                {
+                  "id": "1d5a6009-1419-4807-ab2b-553c602eab82",
+                  "name": "ActorNotFoundError",
+                  "code": "ACTOR_NOT_FOUND",
+                  "description": "No actor has this id",
+                  "template": ""
+                },
+                {
+                  "id": "129924af-9b09-4f5e-b97e-57ea5362441c",
+                  "name": "PackageNotFoundError",
+                  "code": "PACKAGE_NOT_FOUND",
+                  "description": "No package has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "ebfd7cc3-3e80-4085-9383-205facc7c0bc",
+              "name": "UPDATE_USE_CASE",
+              "description": "Change a use case; a field left out is unchanged",
+              "schema": "input UpdateUseCaseInput {\n  id: OID!\n  code: String\n  actorId: OID\n  packageId: OID\n  title: String\n  body: String\n}",
+              "template": "Change a use case; a field left out is unchanged",
+              "reducer": "const input = action.input;\nif (state.status !== \"DRAFT\")\n  throw new ProposalNotDraftError(\"Only a draft proposal can be edited\");\nconst useCase = state.useCases.find((item) => item.id === input.id);\nif (!useCase)\n  throw new UseCaseNotFoundError(`Use case ${input.id} not found`);\nif (\n  input.code != null &&\n  state.useCases.some((u) => u.id !== useCase.id && u.code === input.code)\n)\n  throw new DuplicateUseCaseCodeError(\n    `Use case code ${input.code} is already used`,\n  );\nif (\n  input.actorId != null &&\n  !state.actors.some((actor) => actor.id === input.actorId)\n)\n  throw new ActorNotFoundError(`Actor ${input.actorId} not found`);\nif (\n  input.packageId != null &&\n  !state.packages.some((pkg) => pkg.id === input.packageId)\n)\n  throw new PackageNotFoundError(`Package ${input.packageId} not found`);\nif (input.code != null) useCase.code = input.code;\nif (input.actorId != null) useCase.actorId = input.actorId;\nif (input.packageId != null) useCase.packageId = input.packageId;\nif (input.title != null) useCase.title = input.title;\nif (input.body !== undefined) useCase.body = input.body;",
+              "errors": [
+                {
+                  "id": "72daff85-8d75-4d5f-8250-c7184d99e125",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "4fe2b898-2846-4a95-bbb1-492f9e175f3a",
+                  "name": "UseCaseNotFoundError",
+                  "code": "USE_CASE_NOT_FOUND",
+                  "description": "No use case has this id",
+                  "template": ""
+                },
+                {
+                  "id": "2d244ba6-55a3-4e8d-a7ad-adc715fa4da5",
+                  "name": "DuplicateUseCaseCodeError",
+                  "code": "DUPLICATE_USE_CASE_CODE",
+                  "description": "Another use case already has this code",
+                  "template": ""
+                },
+                {
+                  "id": "99867c8d-591b-4901-9c4d-0ea5984924a6",
+                  "name": "ActorNotFoundError",
+                  "code": "ACTOR_NOT_FOUND",
+                  "description": "No actor has this id",
+                  "template": ""
+                },
+                {
+                  "id": "68720a56-e196-4862-839b-26f74ce786a7",
+                  "name": "PackageNotFoundError",
+                  "code": "PACKAGE_NOT_FOUND",
+                  "description": "No package has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "ce88d56a-be31-4a56-8d6d-23a65408ea11",
+              "name": "REMOVE_USE_CASE",
+              "description": "Remove a use case and its figures",
+              "schema": "input RemoveUseCaseInput {\n  id: OID!\n}",
+              "template": "Remove a use case and its figures",
+              "reducer": "const { id } = action.input;\nif (state.status !== \"DRAFT\")\n  throw new ProposalNotDraftError(\"Only a draft proposal can be edited\");\nconst index = state.useCases.findIndex((useCase) => useCase.id === id);\nif (index === -1)\n  throw new UseCaseNotFoundError(`Use case ${id} not found`);\nstate.useCases.splice(index, 1);\nstate.figures = state.figures.filter(\n  (figure) => !(figure.anchorKind === \"USE_CASE\" && figure.anchorId === id),\n);",
+              "errors": [
+                {
+                  "id": "6fa00948-16d4-4889-8b9d-6eb41be8f997",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "ae814c4b-6c41-45ac-a9c5-0e2227f51ffc",
+                  "name": "UseCaseNotFoundError",
+                  "code": "USE_CASE_NOT_FOUND",
+                  "description": "No use case has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "d2d6f0d9-67b6-4a18-8193-e304b99b4559",
+              "name": "ADD_BOUNDARY",
+              "description": "Add an assumption, a client input, an exclusion or a guarantee, for the whole proposal or one package",
+              "schema": "input AddBoundaryInput {\n  id: OID!\n  kind: BoundaryKind!\n  packageId: OID\n  text: String!\n  value: String\n}",
+              "template": "Add an assumption, a client input, an exclusion or a guarantee, for the whole proposal or one package",
+              "reducer": "const { id, kind, packageId, text, value } = action.input;\nif (state.status !== \"DRAFT\")\n  throw new ProposalNotDraftError(\"Only a draft proposal can be edited\");\nif (state.boundaries.some((boundary) => boundary.id === id))\n  throw new DuplicateBoundaryIdError(`Boundary ${id} already exists`);\nif (\n  packageId != null &&\n  !state.packages.some((pkg) => pkg.id === packageId)\n)\n  throw new PackageNotFoundError(`Package ${packageId} not found`);\nstate.boundaries.push({\n  id,\n  kind,\n  packageId: packageId ?? null,\n  text,\n  value: value ?? null,\n});",
+              "errors": [
+                {
+                  "id": "4a252a16-404a-473f-a4d1-acbbdf29e734",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "bb546fd5-3e37-42a2-8031-a7544326ebf4",
+                  "name": "DuplicateBoundaryIdError",
+                  "code": "DUPLICATE_BOUNDARY_ID",
+                  "description": "A boundary with this id already exists",
+                  "template": ""
+                },
+                {
+                  "id": "eef21259-d72d-4bf1-8d3c-7f1572bd603c",
+                  "name": "PackageNotFoundError",
+                  "code": "PACKAGE_NOT_FOUND",
+                  "description": "No package has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "e2a3e8f2-b228-4454-a592-ca73ad79cd53",
+              "name": "UPDATE_BOUNDARY",
+              "description": "Change a boundary; a field left out is unchanged",
+              "schema": "input UpdateBoundaryInput {\n  id: OID!\n  kind: BoundaryKind\n  packageId: OID\n  text: String\n  value: String\n}",
+              "template": "Change a boundary; a field left out is unchanged",
+              "reducer": "const input = action.input;\nif (state.status !== \"DRAFT\")\n  throw new ProposalNotDraftError(\"Only a draft proposal can be edited\");\nconst boundary = state.boundaries.find((item) => item.id === input.id);\nif (!boundary)\n  throw new BoundaryNotFoundError(`Boundary ${input.id} not found`);\nif (\n  input.packageId != null &&\n  !state.packages.some((pkg) => pkg.id === input.packageId)\n)\n  throw new PackageNotFoundError(`Package ${input.packageId} not found`);\nif (input.kind != null) boundary.kind = input.kind;\nif (input.packageId !== undefined) boundary.packageId = input.packageId;\nif (input.text != null) boundary.text = input.text;\nif (input.value !== undefined) boundary.value = input.value;",
+              "errors": [
+                {
+                  "id": "8fd0682b-01c8-46ae-9945-e27151aa14a7",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "3e8fc895-51d2-4454-a065-08b3e12ee95a",
+                  "name": "BoundaryNotFoundError",
+                  "code": "BOUNDARY_NOT_FOUND",
+                  "description": "No boundary has this id",
+                  "template": ""
+                },
+                {
+                  "id": "d204f2d8-fd00-4fda-b52c-9ff2e207d81d",
+                  "name": "PackageNotFoundError",
+                  "code": "PACKAGE_NOT_FOUND",
+                  "description": "No package has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "cf81bb62-6241-4f52-a898-5b8163d9e935",
+              "name": "REMOVE_BOUNDARY",
+              "description": "Remove a boundary",
+              "schema": "input RemoveBoundaryInput {\n  id: OID!\n}",
+              "template": "Remove a boundary",
+              "reducer": "const { id } = action.input;\nif (state.status !== \"DRAFT\")\n  throw new ProposalNotDraftError(\"Only a draft proposal can be edited\");\nconst index = state.boundaries.findIndex((boundary) => boundary.id === id);\nif (index === -1)\n  throw new BoundaryNotFoundError(`Boundary ${id} not found`);\nstate.boundaries.splice(index, 1);",
+              "errors": [
+                {
+                  "id": "b6878cc5-bc28-44dc-8c09-1da4d8e714c8",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "d35572a8-ca9a-4540-8637-5203a0179eb5",
+                  "name": "BoundaryNotFoundError",
+                  "code": "BOUNDARY_NOT_FOUND",
+                  "description": "No boundary has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            }
+          ]
+        },
+        {
+          "id": "99d1c1b2-7290-4cbc-ae82-3f2515ff1ad4",
+          "name": "content",
+          "description": "Sections, clauses, annexes and figures: the written proposal",
+          "operations": [
+            {
+              "id": "fda05027-f48b-4375-8b97-e128a477d687",
+              "name": "ADD_SECTION",
+              "description": "Add a section at the end; a generated kind can be added once",
+              "schema": "input AddSectionInput {\n  id: OID!\n  kind: SectionKind!\n  title: String\n  body: String\n  positioningId: OID\n}",
+              "template": "Add a section at the end; a generated kind can be added once",
+              "reducer": "const { id, kind, title, body, positioningId } = action.input;\ncheckDraft(state);\nif (state.sections.some((section) => section.id === id))\n  throw new DuplicateSectionIdError(`Section ${id} already exists`);\nif (kind !== \"PROSE\" && state.sections.some((s) => s.kind === kind))\n  throw new SectionKindTakenError(\n    `A ${kind} section is already in the proposal`,\n  );\nstate.sections.push({\n  id,\n  kind,\n  title: title ?? null,\n  body: body ?? null,\n  positioningId: positioningId ?? null,\n});",
+              "errors": [
+                {
+                  "id": "b9cb714f-1cc6-4976-b622-a3cac809759f",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "66e35085-6dbf-480d-84a3-508c31f34cc0",
+                  "name": "DuplicateSectionIdError",
+                  "code": "DUPLICATE_SECTION_ID",
+                  "description": "A section with this id already exists",
+                  "template": ""
+                },
+                {
+                  "id": "11515a35-6af1-4f73-90df-52ec27eb94ae",
+                  "name": "SectionKindTakenError",
+                  "code": "SECTION_KIND_TAKEN",
+                  "description": "A generated section kind appears at most once",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "47c7f94c-9270-43e5-a70d-ba55a1a091f0",
+              "name": "UPDATE_SECTION",
+              "description": "Change a section; a field left out is unchanged, and the kind never changes",
+              "schema": "input UpdateSectionInput {\n  id: OID!\n  title: String\n  body: String\n  positioningId: OID\n}",
+              "template": "Change a section; a field left out is unchanged, and the kind never changes",
+              "reducer": "const input = action.input;\ncheckDraft(state);\nconst section = state.sections.find((item) => item.id === input.id);\nif (!section)\n  throw new SectionNotFoundError(`Section ${input.id} not found`);\nif (input.title !== undefined) section.title = input.title;\nif (input.body !== undefined) section.body = input.body;\nif (input.positioningId !== undefined)\n  section.positioningId = input.positioningId;",
+              "errors": [
+                {
+                  "id": "d1c8ec63-c85c-4639-8c42-d8089f39595d",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "cc150020-8643-43dd-9624-c4716a76c937",
+                  "name": "SectionNotFoundError",
+                  "code": "SECTION_NOT_FOUND",
+                  "description": "No section has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "081e6c0c-c626-4b61-aff9-8f17b6487403",
+              "name": "REMOVE_SECTION",
+              "description": "Remove a section and its figures",
+              "schema": "input RemoveSectionInput {\n  id: OID!\n}",
+              "template": "Remove a section and its figures",
+              "reducer": "const { id } = action.input;\ncheckDraft(state);\nconst index = state.sections.findIndex((section) => section.id === id);\nif (index === -1) throw new SectionNotFoundError(`Section ${id} not found`);\nstate.sections.splice(index, 1);\nstate.figures = state.figures.filter(\n  (figure) => !(figure.anchorKind === \"SECTION\" && figure.anchorId === id),\n);",
+              "errors": [
+                {
+                  "id": "5c023667-4b5f-4103-bfbf-178e5ab1cf7d",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "56e61cfe-644c-49c1-9411-be0f8264e942",
+                  "name": "SectionNotFoundError",
+                  "code": "SECTION_NOT_FOUND",
+                  "description": "No section has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "a50fa893-30d7-4a0e-8cfc-e3a0dec6b8f7",
+              "name": "REORDER_SECTIONS",
+              "description": "Set the order of the sections; every id exactly once",
+              "schema": "input ReorderSectionsInput {\n  ids: [OID!]!\n}",
+              "template": "Set the order of the sections; every id exactly once",
+              "reducer": "const { ids } = action.input;\ncheckDraft(state);\ncheckPermutation(state.sections, ids, () => {\n  throw new SectionOrderMismatchError(\n    \"The new order must list every section exactly once\",\n  );\n});\nstate.sections = ids.map((id) => state.sections.find((s) => s.id === id)!);",
+              "errors": [
+                {
+                  "id": "8fffd7b8-af67-4862-a993-e1d419b61a0f",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "18a2d0dc-6682-41e5-981a-f30abe41062e",
+                  "name": "SectionOrderMismatchError",
+                  "code": "SECTION_ORDER_MISMATCH",
+                  "description": "The new order must list every section exactly once",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "131a66de-dc63-44f0-8e01-62fb442bb1cc",
+              "name": "ADD_CLAUSE",
+              "description": "Add a clause at the end",
+              "schema": "input AddClauseInput {\n  id: OID!\n  kind: ClauseKind!\n  title: String!\n  body: String\n}",
+              "template": "Add a clause at the end",
+              "reducer": "const { id, kind, title, body } = action.input;\ncheckDraft(state);\nif (state.clauses.some((clause) => clause.id === id))\n  throw new DuplicateClauseIdError(`Clause ${id} already exists`);\nstate.clauses.push({ id, kind, title, body: body ?? null });",
+              "errors": [
+                {
+                  "id": "70dcc5b2-e6cd-4baf-b06a-1f3527636e38",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "b2bf8b41-944f-4d38-a938-34733745348a",
+                  "name": "DuplicateClauseIdError",
+                  "code": "DUPLICATE_CLAUSE_ID",
+                  "description": "A clause with this id already exists",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "9544710f-a014-44e7-96f3-990c17eac26d",
+              "name": "UPDATE_CLAUSE",
+              "description": "Change a clause; a field left out is unchanged",
+              "schema": "input UpdateClauseInput {\n  id: OID!\n  kind: ClauseKind\n  title: String\n  body: String\n}",
+              "template": "Change a clause; a field left out is unchanged",
+              "reducer": "const input = action.input;\ncheckDraft(state);\nconst clause = state.clauses.find((item) => item.id === input.id);\nif (!clause) throw new ClauseNotFoundError(`Clause ${input.id} not found`);\nif (input.kind != null) clause.kind = input.kind;\nif (input.title != null) clause.title = input.title;\nif (input.body !== undefined) clause.body = input.body;",
+              "errors": [
+                {
+                  "id": "8712e427-b54f-4a7d-aae6-6f35474da769",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "c85d392f-8f12-435f-a176-ba695c3a96f6",
+                  "name": "ClauseNotFoundError",
+                  "code": "CLAUSE_NOT_FOUND",
+                  "description": "No clause has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "c90ed0d7-438a-4043-a9f3-e1300c97bf92",
+              "name": "REMOVE_CLAUSE",
+              "description": "Remove a clause",
+              "schema": "input RemoveClauseInput {\n  id: OID!\n}",
+              "template": "Remove a clause",
+              "reducer": "const { id } = action.input;\ncheckDraft(state);\nconst index = state.clauses.findIndex((clause) => clause.id === id);\nif (index === -1) throw new ClauseNotFoundError(`Clause ${id} not found`);\nstate.clauses.splice(index, 1);",
+              "errors": [
+                {
+                  "id": "ba03d245-d728-4aa6-a9d0-22071a9599b1",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "4e26cbdd-0ec9-45e7-befc-6ab4f5d2ab0b",
+                  "name": "ClauseNotFoundError",
+                  "code": "CLAUSE_NOT_FOUND",
+                  "description": "No clause has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "16cf8b0e-1421-4721-af16-860c0d081557",
+              "name": "REORDER_CLAUSES",
+              "description": "Set the order of the clauses; every id exactly once",
+              "schema": "input ReorderClausesInput {\n  ids: [OID!]!\n}",
+              "template": "Set the order of the clauses; every id exactly once",
+              "reducer": "const { ids } = action.input;\ncheckDraft(state);\ncheckPermutation(state.clauses, ids, () => {\n  throw new ClauseOrderMismatchError(\n    \"The new order must list every clause exactly once\",\n  );\n});\nstate.clauses = ids.map((id) => state.clauses.find((c) => c.id === id)!);",
+              "errors": [
+                {
+                  "id": "69aad475-fc91-41f7-9184-92622f9bd62e",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "82528eef-b695-490f-b1f9-615f79c71c51",
+                  "name": "ClauseOrderMismatchError",
+                  "code": "CLAUSE_ORDER_MISMATCH",
+                  "description": "The new order must list every clause exactly once",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "3ba55cd6-d501-4ae0-950c-e78421f6b9c6",
+              "name": "ADD_ANNEX",
+              "description": "Add an annex at the end",
+              "schema": "input AddAnnexInput {\n  id: OID!\n  kind: AnnexKind!\n  title: String!\n  body: String\n  partOfAgreement: Boolean\n}",
+              "template": "Add an annex at the end",
+              "reducer": "const { id, kind, title, body, partOfAgreement } = action.input;\ncheckDraft(state);\nif (state.annexes.some((annex) => annex.id === id))\n  throw new DuplicateAnnexIdError(`Annex ${id} already exists`);\nstate.annexes.push({\n  id,\n  kind,\n  title,\n  body: body ?? null,\n  partOfAgreement: partOfAgreement ?? false,\n});",
+              "errors": [
+                {
+                  "id": "a356b206-d8f1-4f4f-819c-959599b92f0f",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "091b9eb1-35c0-4ddb-a2a5-d1e06bb23383",
+                  "name": "DuplicateAnnexIdError",
+                  "code": "DUPLICATE_ANNEX_ID",
+                  "description": "An annex with this id already exists",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "ade0e331-7e17-4eb2-ae26-cf29382195df",
+              "name": "UPDATE_ANNEX",
+              "description": "Change an annex; a field left out is unchanged",
+              "schema": "input UpdateAnnexInput {\n  id: OID!\n  kind: AnnexKind\n  title: String\n  body: String\n  partOfAgreement: Boolean\n}",
+              "template": "Change an annex; a field left out is unchanged",
+              "reducer": "const input = action.input;\ncheckDraft(state);\nconst annex = state.annexes.find((item) => item.id === input.id);\nif (!annex) throw new AnnexNotFoundError(`Annex ${input.id} not found`);\nif (input.kind != null) annex.kind = input.kind;\nif (input.title != null) annex.title = input.title;\nif (input.body !== undefined) annex.body = input.body;\nif (input.partOfAgreement != null)\n  annex.partOfAgreement = input.partOfAgreement;",
+              "errors": [
+                {
+                  "id": "370bb030-d0c4-41f3-a55f-dabc45de12d6",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "aa5dfcb9-0241-4fef-887a-2093fa129ff4",
+                  "name": "AnnexNotFoundError",
+                  "code": "ANNEX_NOT_FOUND",
+                  "description": "No annex has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "d5b32a3d-30e4-49dd-ad51-3caa90ec5f5b",
+              "name": "REMOVE_ANNEX",
+              "description": "Remove an annex",
+              "schema": "input RemoveAnnexInput {\n  id: OID!\n}",
+              "template": "Remove an annex",
+              "reducer": "const { id } = action.input;\ncheckDraft(state);\nconst index = state.annexes.findIndex((annex) => annex.id === id);\nif (index === -1) throw new AnnexNotFoundError(`Annex ${id} not found`);\nstate.annexes.splice(index, 1);",
+              "errors": [
+                {
+                  "id": "d66fa80d-ae9b-488b-abb2-c01bc4aa9a55",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "96957695-a0ca-46a7-99b2-456ff958b09a",
+                  "name": "AnnexNotFoundError",
+                  "code": "ANNEX_NOT_FOUND",
+                  "description": "No annex has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "69713ebd-d4b5-4142-a388-1cb74f091ae3",
+              "name": "ADD_FIGURE",
+              "description": "Add a figure to a prose section or a use case, after its other figures",
+              "schema": "input AddFigureInput {\n  id: OID!\n  anchorKind: FigureAnchorKind!\n  anchorId: OID!\n  file: AddFigureFileInput!\n  caption: String\n}\n\ninput AddFigureFileInput {\n  ref: AttachmentRef!\n  name: String!\n  type: String!\n}",
+              "template": "Add a figure to a prose section or a use case, after its other figures",
+              "reducer": "const { id, anchorKind, anchorId, file, caption } = action.input;\ncheckDraft(state);\nif (state.figures.some((figure) => figure.id === id))\n  throw new DuplicateFigureIdError(`Figure ${id} already exists`);\nconst anchored =\n  anchorKind === \"SECTION\"\n    ? state.sections.some((s) => s.id === anchorId && s.kind === \"PROSE\")\n    : state.useCases.some((u) => u.id === anchorId);\nif (!anchored)\n  throw new FigureAnchorNotFoundError(\n    `${anchorId} is not a prose section or a use case of this proposal`,\n  );\nstate.figures.push({\n  id,\n  anchorKind,\n  anchorId,\n  file: checkedFile(file),\n  caption: caption ?? null,\n});",
+              "errors": [
+                {
+                  "id": "56ff4aaf-b841-415f-af81-2f4e383bb18a",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "34c20140-9351-47ca-85c0-fea3ae93bc92",
+                  "name": "DuplicateFigureIdError",
+                  "code": "DUPLICATE_FIGURE_ID",
+                  "description": "A figure with this id already exists",
+                  "template": ""
+                },
+                {
+                  "id": "a6bca747-b76d-498e-a951-dd5b0b97726a",
+                  "name": "FigureAnchorNotFoundError",
+                  "code": "FIGURE_ANCHOR_NOT_FOUND",
+                  "description": "A figure belongs to a prose section or a use case that exists",
+                  "template": ""
+                },
+                {
+                  "id": "496039b7-e1e6-4ef5-9f45-c67a6ea5281c",
+                  "name": "FileNameRequiredError",
+                  "code": "FILE_NAME_REQUIRED",
+                  "description": "A file needs a name",
+                  "template": ""
+                },
+                {
+                  "id": "35d56498-e2d9-4674-9d25-23cff67a004d",
+                  "name": "FileTypeRequiredError",
+                  "code": "FILE_TYPE_REQUIRED",
+                  "description": "A file needs a type",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "b0e5f55b-0a5b-4a95-9e66-60ae5c097af7",
+              "name": "UPDATE_FIGURE",
+              "description": "Replace a figure's file or change its caption; a field left out is unchanged",
+              "schema": "input UpdateFigureInput {\n  id: OID!\n  file: UpdateFigureFileInput\n  caption: String\n}\n\ninput UpdateFigureFileInput {\n  ref: AttachmentRef!\n  name: String!\n  type: String!\n}",
+              "template": "Replace a figure's file or change its caption; a field left out is unchanged",
+              "reducer": "const input = action.input;\ncheckDraft(state);\nconst figure = state.figures.find((item) => item.id === input.id);\nif (!figure) throw new FigureNotFoundError(`Figure ${input.id} not found`);\nconst file = input.file != null ? checkedFile(input.file) : null;\nif (file) figure.file = file;\nif (input.caption !== undefined) figure.caption = input.caption;",
+              "errors": [
+                {
+                  "id": "7fd1a6e6-913b-45d8-b302-193f3dfaf482",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "a6a4e5d2-daa9-4f99-9095-eea6ba2a08c7",
+                  "name": "FigureNotFoundError",
+                  "code": "FIGURE_NOT_FOUND",
+                  "description": "No figure has this id",
+                  "template": ""
+                },
+                {
+                  "id": "ce7a4c12-7695-4b85-9dc7-2f2a9c571afb",
+                  "name": "FileNameRequiredError",
+                  "code": "FILE_NAME_REQUIRED",
+                  "description": "A file needs a name",
+                  "template": ""
+                },
+                {
+                  "id": "aee89614-4280-4553-bb5a-cfd4e1071be0",
+                  "name": "FileTypeRequiredError",
+                  "code": "FILE_TYPE_REQUIRED",
+                  "description": "A file needs a type",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "1abba0c6-2672-4216-b5e4-cef4ce5be983",
+              "name": "REMOVE_FIGURE",
+              "description": "Remove a figure",
+              "schema": "input RemoveFigureInput {\n  id: OID!\n}",
+              "template": "Remove a figure",
+              "reducer": "const { id } = action.input;\ncheckDraft(state);\nconst index = state.figures.findIndex((figure) => figure.id === id);\nif (index === -1) throw new FigureNotFoundError(`Figure ${id} not found`);\nstate.figures.splice(index, 1);",
+              "errors": [
+                {
+                  "id": "4e7c4238-1a2e-429d-88a2-a53c1eb9e5a3",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "fdc16c31-331e-4229-908f-6c7d72f46f85",
+                  "name": "FigureNotFoundError",
+                  "code": "FIGURE_NOT_FOUND",
+                  "description": "No figure has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "8c945bd2-fffa-4ea5-b709-95dd29bb14cc",
+              "name": "REORDER_FIGURES",
+              "description": "Set the order of the figures of one section or use case; every one of its figures exactly once",
+              "schema": "input ReorderFiguresInput {\n  anchorKind: FigureAnchorKind!\n  anchorId: OID!\n  ids: [OID!]!\n}",
+              "template": "Set the order of the figures of one section or use case; every one of its figures exactly once",
+              "reducer": "const { anchorKind, anchorId, ids } = action.input;\ncheckDraft(state);\nconst own = (figure: { anchorKind: string; anchorId: string }) =>\n  figure.anchorKind === anchorKind && figure.anchorId === anchorId;\nconst current = state.figures.filter(own);\ncheckPermutation(current, ids, () => {\n  throw new FigureOrderMismatchError(\n    \"The new order must list every figure of this section or use case exactly once\",\n  );\n});\nconst ordered = ids.map((id) => current.find((f) => f.id === id)!);\nlet next = 0;\nstate.figures = state.figures.map((figure) =>\n  own(figure) ? ordered[next++] : figure,\n);",
+              "errors": [
+                {
+                  "id": "f631223f-a177-4af4-a333-506048dd48d1",
+                  "name": "ProposalNotDraftError",
+                  "code": "PROPOSAL_NOT_DRAFT",
+                  "description": "Only a draft proposal can be edited",
+                  "template": ""
+                },
+                {
+                  "id": "4e4182f5-1a0d-46e7-93ca-ffa76d26135b",
+                  "name": "FigureOrderMismatchError",
+                  "code": "FIGURE_ORDER_MISMATCH",
+                  "description": "The new order must list every figure of this section or use case exactly once",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            }
+          ]
+        }
+      ],
+      "version": 1,
+      "changeLog": []
+    }
+  ]
+}

@@ -27,6 +27,22 @@ export default {
         plugins: [
           ...switchboard.runner.plugins,
           { module: "@powerhousedao/vetra-studio/switchboard", verbs: ["dev"] },
+          // The assistant's gateway, for the Power BD chat in local development:
+          // it holds the OpenRouter key as a host secret in the workflows
+          // runtime's store, and the key is typed into the chat's key card.
+          // `allowWithoutAuth` is for this local, sign-in-free host only: never
+          // set it on a deployed Switchboard, where the gateway needs
+          // AUTH_ENABLED with ADMINS. Admins can change the model on a running host.
+          {
+            module: "@powerhousedao/switchboard/plugins/ai",
+            verbs: ["dev"],
+            config: {
+              defaultModel: "anthropic/claude-sonnet-5.5",
+              appTitle: "Power BD",
+              appUrl: "https://powerhouse.inc",
+              allowWithoutAuth: true,
+            },
+          },
         ],
       },
       // The switchboard host's own drives plus the studio drives, declared

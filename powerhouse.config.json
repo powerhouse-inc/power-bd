@@ -10,7 +10,13 @@
   "reactor": {
     "port": 7927
   },
-  "packages": [],
+  "packages": [
+    {
+      "packageName": "@powerhousedao/knowledge-note",
+      "version": "1.0.54-dev.61",
+      "provider": "local"
+    }
+  ],
   "packageRegistryUrl": "https://registry.vetra.io",
   "connect": {
     "branding": {

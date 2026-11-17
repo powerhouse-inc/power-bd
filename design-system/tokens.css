@@ -1,0 +1,294 @@
+/* =============================================================================
+   Power BD design system: tokens
+   Prefix: --pb-
+   Themes: light is the default. Dark applies under Connect's `.dark` class on
+   the root, or inside any element with data-theme="dark". data-theme="light"
+   forces light inside a dark page. The app needs no theme code of its own: it
+   follows Connect.
+   Look: Notion's calm layout in Powerhouse's colours. Powerhouse slate
+   neutrals, a charcoal primary, Powerhouse blue for links and focus, status
+   tones built from the Powerhouse status colours, and the brand gradient kept
+   for the agent. Colour otherwise marks meaning only. Source: the Powerhouse
+   brand system (design-systems/powerhouse/colors.css).
+   Contrast: body and secondary text, links and button labels meet WCAG AA
+   (4.5:1) in both themes.
+   ============================================================================= */
+
+/* -----------------------------------------------------------------------------
+   1. Theme-independent: type, space, radius, motion, layout, layers
+   ----------------------------------------------------------------------------- */
+:root {
+  /* Inter, as in Connect and the Powerhouse app templates. Connect self-hosts it
+     (@fontsource-variable/inter registers "Inter Variable"). The system font
+     is the fallback. */
+  --pb-font-sans: "Inter Variable", "Inter", ui-sans-serif, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji";
+  --pb-font-mono: ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+
+  --pb-fs-xs: 12px;
+  --pb-fs-sm: 13px;
+  --pb-fs-md: 14px;
+  --pb-fs-lg: 16px;
+  --pb-fs-xl: 20px;
+  --pb-fs-2xl: 24px;
+  --pb-fs-3xl: 32px;
+  --pb-fs-4xl: 40px;
+  --pb-lh-tight: 1.25;
+  --pb-lh-normal: 1.5;
+  --pb-fw-regular: 400;
+  --pb-fw-medium: 500;
+  --pb-fw-semibold: 600;
+  --pb-fw-bold: 700;
+
+  /* 4 px grid */
+  --pb-s-0-5: 2px;
+  --pb-s-1: 4px;
+  --pb-s-1-5: 6px;
+  --pb-s-2: 8px;
+  --pb-s-2-5: 10px;
+  --pb-s-3: 12px;
+  --pb-s-3-5: 14px;
+  --pb-s-4: 16px;
+  --pb-s-5: 20px;
+  --pb-s-6: 24px;
+  --pb-s-8: 32px;
+  --pb-s-10: 40px;
+  --pb-s-12: 48px;
+  --pb-s-16: 64px;
+
+  --pb-r-xs: 4px;
+  --pb-r-sm: 4px;
+  --pb-r-md: 6px;
+  --pb-r-lg: 8px;
+  --pb-r-xl: 12px;
+  --pb-r-full: 999px;
+
+  --pb-ease: cubic-bezier(0.2, 0, 0, 1);
+  /* Entering things decelerate into place; leaving things accelerate away. */
+  --pb-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --pb-ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --pb-dur-fast: 100ms;
+  --pb-dur: 160ms;
+  --pb-dur-slow: 240ms;
+
+  --pb-sidebar-w: 240px;
+  --pb-topbar-h: 44px;
+  --pb-control-h-sm: 24px;
+  --pb-control-h: 28px;
+  --pb-control-h-lg: 32px;
+  --pb-row-h: 34px;
+  --pb-page-w: 900px;
+  --pb-page-w-wide: 1240px;
+
+  --pb-z-sticky: 10;
+  --pb-z-popover: 100;
+  --pb-z-dialog: 200;
+  --pb-z-toast: 300;
+
+  /* The Powerhouse gradient. Reserved for the agent: what it drafted or did. */
+  --pb-gradient: linear-gradient(135deg, #00d4ff, #7a3aff);
+}
+
+/* -----------------------------------------------------------------------------
+   2. Light theme (default)
+   ----------------------------------------------------------------------------- */
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+
+  /* Surfaces: white page, slate-50 sidebar (Powerhouse --accent) */
+  --pb-bg: #ffffff;
+  --pb-bg-sidebar: #f3f5f7;
+  --pb-bg-subtle: #fafbfb;
+  --pb-bg-card: #ffffff;
+  --pb-bg-elevated: #ffffff;
+  --pb-bg-input: #fafbfb;
+  --pb-bg-hover: rgba(50, 55, 59, 0.05);
+  --pb-bg-pressed: rgba(50, 55, 59, 0.09);
+  --pb-bg-selected: rgba(50, 157, 255, 0.14);
+
+  /* Text: Powerhouse foreground #343839; muted #6C7275 meets AA on white */
+  --pb-text: #343839;
+  --pb-text-secondary: #6c7275;
+  --pb-text-tertiary: #9ea0a1;
+  --pb-text-disabled: #c4c6c7;
+  --pb-text-on-accent: #ffffff;
+  --pb-icon: #8a8f92;
+
+  /* Lines: a hairline, and Powerhouse --border for inputs and outlines */
+  --pb-border: #e8e9ea;
+  --pb-border-strong: #d7d8d9;
+  --pb-border-input: #d7d8d9;
+
+  /* Primary action: Powerhouse --primary (charcoal) */
+  --pb-primary: #32373b;
+  --pb-primary-hover: #24282b;
+  --pb-primary-pressed: #181b1d;
+  --pb-on-primary: #ffffff;
+
+  /* Accent: Powerhouse blue, darkened for AA text on white. Links, focus,
+     selection, checked controls. */
+  --pb-accent: #1a73d0;
+  --pb-accent-hover: #1667bb;
+  --pb-accent-pressed: #135aa3;
+  --pb-accent-soft: rgba(50, 157, 255, 0.12);
+  --pb-accent-text: #1a73d0;
+  --pb-focus: rgba(50, 157, 255, 0.45);
+
+  /* Elevation */
+  --pb-shadow-card: 0 0 0 1px rgba(50, 55, 59, 0.08),
+    0 1px 2px rgba(50, 55, 59, 0.06);
+  --pb-shadow-card-hover: 0 0 0 1px rgba(50, 55, 59, 0.12),
+    0 4px 10px rgba(50, 55, 59, 0.08);
+  --pb-shadow-popover: 0 0 0 1px rgba(50, 55, 59, 0.08),
+    0 4px 8px rgba(14, 14, 13, 0.06), 0 12px 28px rgba(14, 14, 13, 0.14);
+  --pb-shadow-dialog: 0 0 0 1px rgba(50, 55, 59, 0.08),
+    0 8px 16px rgba(14, 14, 13, 0.08), 0 24px 48px rgba(14, 14, 13, 0.18);
+  --pb-shadow-peek: -12px 0 28px rgba(14, 14, 13, 0.1);
+  --pb-backdrop: rgba(14, 14, 13, 0.55);
+
+  /* Inverse: tooltips and toasts */
+  --pb-inverse-bg: #32373b;
+  --pb-inverse-text: #fcfcfc;
+  --pb-inverse-text-secondary: rgba(252, 252, 252, 0.65);
+
+  /* Tones, built from the Powerhouse status colours: progress #329DFF,
+     success #4FC86F, to-do #FFA132, destructive #EA4335, yellow #FAC400,
+     purple #8E55EA; slate for gray; brown and pink complete the set.
+     -text: coloured text and icons (AA on white)
+     -bg:   callout and soft block background
+     -tag:  tag background; -tag-text is the label on it */
+  --pb-gray-text: #6c7275;
+  --pb-gray-bg: #f3f5f7;
+  --pb-gray-tag: #eaecee;
+  --pb-gray-tag-text: #3a3f44;
+  --pb-brown-text: #8a5d44;
+  --pb-brown-bg: #f8f2ee;
+  --pb-brown-tag: #f0e5de;
+  --pb-brown-tag-text: #5a3a26;
+  --pb-orange-text: #b05e00;
+  --pb-orange-bg: #fff5ea;
+  --pb-orange-tag: #ffead2;
+  --pb-orange-tag-text: #6e3f04;
+  --pb-yellow-text: #8a6a00;
+  --pb-yellow-bg: #fff9e3;
+  --pb-yellow-tag: #fef1c4;
+  --pb-yellow-tag-text: #5e4700;
+  --pb-green-text: #277a3e;
+  --pb-green-bg: #eff9f2;
+  --pb-green-tag: #dcf4e3;
+  --pb-green-tag-text: #1d5e31;
+  --pb-blue-text: #1a6fc0;
+  --pb-blue-bg: #eef6ff;
+  --pb-blue-tag: #dbedff;
+  --pb-blue-tag-text: #114a7f;
+  --pb-purple-text: #7442cc;
+  --pb-purple-bg: #f6f1fe;
+  --pb-purple-tag: #ebe1fc;
+  --pb-purple-tag-text: #4a2391;
+  --pb-pink-text: #b3437f;
+  --pb-pink-bg: #fdf1f7;
+  --pb-pink-tag: #fae2ee;
+  --pb-pink-tag-text: #82244f;
+  --pb-red-text: #c9362a;
+  --pb-red-bg: #fef0ef;
+  --pb-red-tag: #fce0de;
+  --pb-red-tag-text: #8a1f17;
+}
+
+/* -----------------------------------------------------------------------------
+   3. Dark theme: Powerhouse's dark surfaces
+   ----------------------------------------------------------------------------- */
+.dark,
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --pb-bg: #0e0e0d;
+  --pb-bg-sidebar: #141517;
+  --pb-bg-subtle: #121314;
+  --pb-bg-card: #1a1d22;
+  --pb-bg-elevated: #1f2227;
+  --pb-bg-input: #141517;
+  --pb-bg-hover: rgba(243, 245, 247, 0.06);
+  --pb-bg-pressed: rgba(243, 245, 247, 0.1);
+  --pb-bg-selected: rgba(50, 157, 255, 0.24);
+
+  --pb-text: #f3f5f7;
+  --pb-text-secondary: #9ea0a1;
+  --pb-text-tertiary: #6c7275;
+  --pb-text-disabled: #4a4f54;
+  --pb-text-on-accent: #ffffff;
+  --pb-icon: #858a8e;
+
+  --pb-border: #24272c;
+  --pb-border-strong: #3a3f47;
+  --pb-border-input: #3a3f47;
+
+  /* Primary action: Powerhouse dark --primary (near-white) */
+  --pb-primary: #f3f5f7;
+  --pb-primary-hover: #ffffff;
+  --pb-primary-pressed: #dfe3e7;
+  --pb-on-primary: #0e0e0d;
+
+  --pb-accent: #1a73d0;
+  --pb-accent-hover: #2a80dc;
+  --pb-accent-pressed: #3a8ce2;
+  --pb-accent-soft: rgba(50, 157, 255, 0.18);
+  --pb-accent-text: #329dff;
+  --pb-focus: rgba(50, 157, 255, 0.55);
+
+  --pb-shadow-card: 0 0 0 1px rgba(243, 245, 247, 0.06),
+    0 1px 2px rgba(0, 0, 0, 0.4);
+  --pb-shadow-card-hover: 0 0 0 1px rgba(243, 245, 247, 0.1),
+    0 4px 10px rgba(0, 0, 0, 0.45);
+  --pb-shadow-popover: 0 0 0 1px rgba(243, 245, 247, 0.08),
+    0 4px 8px rgba(0, 0, 0, 0.3), 0 12px 28px rgba(0, 0, 0, 0.55);
+  --pb-shadow-dialog: 0 0 0 1px rgba(243, 245, 247, 0.08),
+    0 8px 16px rgba(0, 0, 0, 0.35), 0 24px 48px rgba(0, 0, 0, 0.6);
+  --pb-shadow-peek: -12px 0 28px rgba(0, 0, 0, 0.5);
+  --pb-backdrop: rgba(0, 0, 0, 0.6);
+
+  --pb-inverse-bg: #2a2d33;
+  --pb-inverse-text: #f3f5f7;
+  --pb-inverse-text-secondary: rgba(243, 245, 247, 0.65);
+
+  /* Dark tones: the status colour at low alpha behind, a light tint for text */
+  --pb-gray-text: #9ea0a1;
+  --pb-gray-bg: rgba(243, 245, 247, 0.06);
+  --pb-gray-tag: #2a2d33;
+  --pb-gray-tag-text: #d5d9de;
+  --pb-brown-text: #c9977a;
+  --pb-brown-bg: rgba(176, 120, 86, 0.14);
+  --pb-brown-tag: rgba(176, 120, 86, 0.26);
+  --pb-brown-tag-text: #e2c0ab;
+  --pb-orange-text: #ffb55c;
+  --pb-orange-bg: rgba(255, 161, 50, 0.12);
+  --pb-orange-tag: rgba(255, 161, 50, 0.22);
+  --pb-orange-tag-text: #ffc98a;
+  --pb-yellow-text: #f5cf4a;
+  --pb-yellow-bg: rgba(250, 196, 0, 0.1);
+  --pb-yellow-tag: rgba(250, 196, 0, 0.2);
+  --pb-yellow-tag-text: #f8dc7a;
+  --pb-green-text: #6fd88b;
+  --pb-green-bg: rgba(79, 200, 111, 0.11);
+  --pb-green-tag: rgba(79, 200, 111, 0.2);
+  --pb-green-tag-text: #9be6ae;
+  --pb-blue-text: #5ab1ff;
+  --pb-blue-bg: rgba(50, 157, 255, 0.12);
+  --pb-blue-tag: rgba(50, 157, 255, 0.22);
+  --pb-blue-tag-text: #a6d3ff;
+  --pb-purple-text: #b58cf5;
+  --pb-purple-bg: rgba(142, 85, 234, 0.14);
+  --pb-purple-tag: rgba(142, 85, 234, 0.26);
+  --pb-purple-tag-text: #d2b9fa;
+  --pb-pink-text: #e58bb9;
+  --pb-pink-bg: rgba(214, 86, 150, 0.12);
+  --pb-pink-tag: rgba(214, 86, 150, 0.24);
+  --pb-pink-tag-text: #f2bad6;
+  --pb-red-text: #ff7a6e;
+  --pb-red-bg: rgba(234, 67, 53, 0.13);
+  --pb-red-tag: rgba(234, 67, 53, 0.24);
+  --pb-red-tag-text: #ffaba3;
+}

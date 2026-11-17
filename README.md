@@ -1,194 +1,74 @@
-# Document Model Boilerplate
+# Power BD
 
-This Document Model Boilerplate provides code generation for scaffolding editors and models.
-It ensures compatibility with host applications like Connect and the Reactors for seamless document model and editor integration.
+Business development for Powerhouse teams. Power BD is a Powerhouse package: one drive app where a team runs its leads, funding opportunities, investors, proposals, company decisions and positioning playbook. It links to the team's Knowledge Vault and has an agent chat that works across both.
 
-## Standard Document Model Workflow with help of the boilerplate.
+## What's in the package
 
-This tutorial will guide you through the process of creating a new document model using the Document Model Editor in the Connect app.
+**The Power BD app**, the editor for a BD drive. Its places:
 
-<details>
-<summary>Available NPM commands</summary>
+| Place | What it holds |
+| --- | --- |
+| Overview | The landing view. It shows what needs attention (each item with its fix), what's coming up day by day, and every lead, opportunity and shortlisted investor on one board or table. Cards move between stages. |
+| Leads | Sales, partnership and investor leads, with their next step, outreach messages and proposals |
+| Proposals | Offers to clients: packages, options, prices and terms, edited and previewed as a document, exported as Markdown with their pictures |
+| Funding | Grants and calls, with deadlines in date order, the go-or-no-go gate, conditions and attempts left |
+| Investors | The investor list and its shortlist |
+| Organisations | Everyone the team deals with, with the retention list |
+| Decisions | Company decisions the BD work waits on |
+| Playbook | Approved positioning, proof cases and the never-claim list |
+| Settings | The team, the time zone, the due window, the vault drive and the retention period |
+| Agent | The chat. It reads and changes BD records, and reads the vault. |
 
-- `generate`: Updates the generated code according to the JSON spec and GraphQL schema of your document model, made in Connect.
-- `lint`: Checks for errors with oxlint, including type-aware rules and TypeScript type checking.
-- `format`: Formats the code using oxfmt.
-- `build`: Builds the library project using Vite.
-- `connect`: Runs the project's `connect` host (`ph run connect`): Connect in Studio Mode.
-- `vetra`: Runs the project's `vetra` host (`ph run vetra`): Vetra Studio and a Switchboard.
-- `storybook`: Starts Storybook in development mode.
-- `build-storybook`: Builds Storybook.
-- `test`: Runs Jest for testing.
+A first-run guide sets the drive up. Search (Ctrl K or ⌘ K) covers every record and, with a vault, its notes.
 
-</details>
+**Eight document models:** `powerbd/lead`, `powerbd/opportunity`, `powerbd/proposal`, `powerbd/investor-list`, `powerbd/decision`, `powerbd/playbook`, `powerbd/settings` and `powerbd/contact`. Each one has a thin editor that shows the same screen as the app, so a record opened on its own looks the same as it does inside the app.
 
-### 1. Defining Your Document Model GraphQL Schema
+## Requirements
 
-Start by creating your own 'Powerhouse Project' (Document model + editor).
+- **The Powerhouse stack 6.3.0-dev.1**, on Connect and the Switchboard. When the Knowledge Vault is installed beside Power BD, both packages must run the same stack version.
+- **Optional: the Knowledge Vault** (`@powerhousedao/knowledge-note`) on the same Switchboard. It adds links from records to vault notes, vault notes in search, and the chat's vault tools. Name the vault drive in Settings. Power BD keeps its own drive and never writes to the vault.
+- **Optional: the Switchboard's AI plugin** (`@powerhousedao/switchboard/plugins/ai`) for the chat. On a deployed Switchboard it needs authentication, and the server's admins are its admins. An admin adds an OpenRouter key in the chat's key card. The server keeps the key, and neither the page nor the agent ever sees it.
 
-Step 1: Run the following command to set up your project inside this directory:
+## Getting started
 
-```bash
-npm create document-model-lib
+1. Install the package on your host: run `ph install @powerhousedao/power-bd` in the host project, or add it from Connect's package manager.
+2. Create a drive and open it with the Power BD app. On first open the app creates its folders, the settings, the playbook and the investor list, then walks you through the team, the time zone and the vault.
+
+## Steps that stay with a person
+
+Eight steps are a person's:
+- approving an outreach message, and marking it sent
+- approving positioning
+- answering a company decision
+- deciding go or no-go
+- marking a submission
+- approving a proposal, and marking it sent
+
+Operation permissions on the BD drive can restrict who may run each of them; go or no-go, for example, can be limited to the team lead. In the chat, the agent takes one of these steps only when you ask for it. Each change waits for your approval unless you turn on auto-approve, which is each person's own choice and off by default.
+
+## Confidential items
+
+Confidential assessments on leads and opportunities stay in the BD drive. The chat withholds them from the model, and nothing in the vault points back at BD records.
+
+## Development
+
+Use bun for everything.
+
+```sh
+bun install
+bun run vetra          # Vetra Studio and a Switchboard: http://localhost:2927 and http://localhost:7927
+bun run tsc
+bun run lint
+bun run test:coverage  # reducers and the kit stay at 95% or more
 ```
 
-Step 2: Use the Document Model Editor in the Connect app
+- `document-models/<name>/v1/`: each model's reducers in `src/` and tests in `tests/`. `gen/` is generated: don't edit it.
+- `editors/power-bd/`: the app. `kit/` holds pure, tested modules; the rest is views, records and shared components.
+- `design-system/`: tokens, component classes, icons and the status vocabulary, in light and dark. Open `design-system/index.html` to see every part.
+- `hosts/`: the local hosts. The Vetra host loads the AI plugin with `allowWithoutAuth` for local development only. Never set that on a deployed Switchboard.
 
-The following command gives you access to all the powerhouse CLI tools available, install it globally if you are a poweruser.
+Build and publish with the Powerhouse CLI: `bun run build`, then `ph registry-login` and `ph publish`.
 
-```bash
-npm install ph-cmd
-```
+## License
 
-Now you are able to launch Connect in Studio Mode (Locally):
-
-```bash
-npm run connect
-```
-
-This runs `ph run connect`. The applications this project can run are its hosts, defined under `hosts/` and started with `ph run <host>` (for example `ph run vetra` or `ph run switchboard`). See `hosts/README.md`.
-
-Open the 'Document Model' creator at the bottom of connect to define your document mode with it's GraphQL Schema Definition.
-This schema will define the structure and fields for your document model using GraphQL.
-Follow one of our tutorials on Academy to get familiar with the process.
-
-### 2. Defining Document Model Operations
-
-Using the Document Model Operations Editor, define the operations for your document model and their GraphQL counterparts.
-These operations will handle state changes within your document model.
-
-**Best Practices:**
-
-- Clearly define CRUD operations (Create, Read, Update, Delete).
-- Use GraphQL input types to specify the parameters for each operation.
-- Ensure that operations align with user intent to maintain a clean and understandable API.
-
-### 3. Generating Scaffolding Code
-
-Export your document model as a .zip file from Connect.
-Import the .zip file into your project directory created in Step 1.
-Run the following command to generate the scaffolding code:
-
-```bash
-npm run generate YourModelName.phdm.zip
-```
-
-This will create a new directory under /document-models containing:
-
-JSON file with the document model specification.
-GraphQL file with state and operation schemas.
-A gen/ folder with autogenerated code.
-A src/ folder for your custom code implementation.
-
-### 4. Implementing Reducer Code and Unit Tests
-
-Navigate to the reducer directory:
-
-```bash
-cd document-models/"YourModelName"/src/reducers
-```
-
-Implement the reducer functions for each document model operation. These functions will handle state transitions.
-
-Add utility functions in:
-
-```bash
-document-models/"YourModelName"/src/utils.ts
-```
-
-Write unit tests to ensure the correctness of your reducers:
-
-Test files should be located in:
-
-```bash
-document-models/"YourModelName"/src/reducers/tests
-```
-
-Run the tests:
-
-```bash
-npm test
-```
-
-Test the editor functionality:
-
-```bash
-npm run connect
-```
-
-### 5. Implementing Document Editors
-
-Generate the editor template for your document model:
-
-```bash
-npm run generate -- --editor YourModelName --document-types powerhouse/YourModelName
-```
-
-The --editor flag specifies the name of your document model.
-The --document-types flag links the editor to your document model type.
-After generation:
-
-Open the editor template:
-
-```bash
-editors/YourModelName/editor.tsx
-```
-
-Customize the editor interface to suit your document model.
-
-### 6. Testing the Document Editor
-
-Run the Connect app to test your document editor:
-
-```bash
-npm run connect
-```
-
-Verify that the editor functions as expected.
-Perform end-to-end testing to ensure smooth integration between the document model and its editor.
-
-### 7. Adding a Manifest File
-
-Create a manifest file to describe your document model and editor. This enables proper integration with the host application.
-
-**Example manifest.json:**
-
-```json
-{
-  "name": "your-model-name",
-  "description": "A brief description of your document model.",
-  "category": "your-category", // e.g., "Finance", "People Ops", "Legal"
-  "publisher": {
-    "name": "your-publisher-name",
-    "url": "your-publisher-url"
-  },
-  "documentModels": [
-    {
-      "id": "your-model-id",
-      "name": "your-model-name"
-    }
-  ],
-  "editors": [
-    {
-      "id": "your-editor-id",
-      "name": "your-editor-name",
-      "documentTypes": ["your-model-id"]
-    }
-  ]
-}
-```
-
-### Steps to finalize:
-
-Place the manifest file at your project root.
-Update your index.js to export your modules and include the new document model and editor.
-
-### Final Thoughts
-
-You've now successfully created a Document Model and its corresponding Editor using the Connect app!
-
-Next Steps:
-
-- Expand functionality: Add more operations or complex logic to your document model.
-- Improve UX: Enhance the document editor for a smoother user experience.
-- Integrate with other systems: Use APIs or GraphQL to connect your document model with external services.
+AGPL-3.0-only. See [LICENSE](LICENSE).

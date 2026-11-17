@@ -65,3 +65,20 @@ Read the skill before you start one of these tasks. `ph migrate` keeps identical
 <!-- powerhouse:end -->
 
 ## Project notes
+
+- **Package manager: bun, for everything.** `bun install`, `bun run tsc`, `bun run lint:fix`, `bun run test:coverage`, `bunx` for one-off tools. Never npm, pnpm or yarn; where a skill or the block above says `npm run`, use `bun run`.
+- **Document models have no extension.** Leave `extension` empty (`SET_MODEL_EXTENSION` with `""`) on every model.
+- **Design system: `design-system/`.** Every UI uses its tokens (`--pb-*`), component classes (`.pb-*`), icons (`icons.ts`) and status vocabulary (`vocabulary.ts`), in light and dark. A new UI part is added there first, with a demo on the showcase. Open `design-system/index.html` straight from disk, or at `http://localhost:2927/design-system/` while Vetra runs; add `?mode=dark` for dark. After changing `showcase.ts`, `icons.ts` or `vocabulary.ts`, run `bun run design` to rebuild `showcase.js`. See `design-system/README.md`.
+- **Design method: the Six Minds skill.** Before designing or building any screen, view or component, use the `six-minds-design` skill (`.claude/skills/six-minds-design/SKILL.md`) and follow it:
+  1. Add the screen's cognitive audit (the six checkpoints) to `design-system/COGNITIVE-AUDIT.md` under *Per-screen audits*. Ask the user only when critical context is missing.
+  2. Weigh three concepts (task-oriented, conventional, immersive) and say which blend was chosen and on what evidence.
+  3. Build with the design system's Six Minds parts:
+     - one visual anchor per screen (`.pb-attention`, `.pb-next`)
+     - a red or orange signal line on slipping items (`.pb-signal`); no coloured edge on any component
+     - the status path (`.pb-path`)
+     - the side peek (`.pb-peek`)
+     - a visible save state
+     - prerequisites before decisions (`.pb-checks`)
+     - a reassurance line beside every risky action (`.pb-reassure`)
+     - labels from the lexicon in `COGNITIVE-AUDIT.md`, never system terms
+  4. End the work with the Six Minds mapping, in the skill's output format.
