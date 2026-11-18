@@ -1,4 +1,5 @@
-import { useSetSelectedNode, useUser } from "@powerhousedao/reactor-browser";
+import { useUser } from "@powerhousedao/reactor-browser";
+import { useSetSelectedNode } from "../shared/useOpenRecord.js";
 import { generateId } from "document-model";
 import { actions as leadActions } from "document-models/lead";
 import { actions as opportunityActions } from "document-models/opportunity";

@@ -1,4 +1,4 @@
-import { useSetSelectedNode } from "@powerhousedao/reactor-browser";
+import { useSetSelectedNode } from "../../components/shared/useOpenRecord.js";
 import { useState } from "react";
 import { VOCABULARY } from "../../../../design-system/vocabulary.js";
 import { EmptyPlace } from "../../components/EmptyPlace.js";
