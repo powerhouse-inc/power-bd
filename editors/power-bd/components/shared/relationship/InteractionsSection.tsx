@@ -51,12 +51,15 @@ export function InteractionsSection({
   onAdd,
   onRemove,
   onUpdate,
+  onBrief,
 }: {
   items: readonly InteractionItem[];
   onAdd: (item: NewInteraction, onErrors: OnErrors) => void;
   onRemove: (id: string, onErrors: OnErrors) => void;
   /** Records how a meeting went, or corrects an entry. */
   onUpdate?: (change: InteractionChange, onErrors: OnErrors) => void;
+  /** Opens the brief for a scheduled meeting; without it there is no Brief button. */
+  onBrief?: (id: string) => void;
 }) {
   const [adding, setAdding] = useState(false);
   const [kind, setKind] = useState<InteractionKind>("CALL");
@@ -300,6 +303,12 @@ export function InteractionsSection({
                 <div className="pb-timeline__body">{i.summary}</div>
               ) : null}
             </div>
+            {onBrief && i.status === "SCHEDULED" && !passed ? (
+              <button className="pb-btn pb-btn--ghost pb-btn--sm" onClick={() => onBrief(i.id)}>
+                <Icon name="note" />
+                Brief
+              </button>
+            ) : null}
             {onUpdate && passed ? (
               <button className="pb-btn pb-btn--sm" onClick={startEdit}>
                 <Icon name="check" />

@@ -1334,3 +1334,67 @@ A panel on the Leads place ("Import", and "Import from a spreadsheet" on the emp
 **Concepts weighed:** a one-box paste like the investor list (too little: leads have many fields and rules), a wizard in a modal (hides the drive behind it while matching names), and a panel on the place with the status path (chosen: the leads stay in view, and the path is a pattern the app already uses).
 
 **Implementation:** `.pb-import` (`__head`, `__title`, `__foot`, `__example`, `__problems`, `__row.is-blocked`, `__result--created|failed|skipped`), on `.pb-path`, `.pb-table`, `.pb-select`, `.pb-textarea`, `.pb-reassure`; shown on the showcase. `kit/lead-import`: `parseCsv` (quotes, separators and line breaks in quotes, CRLF, BOM, comma, semicolon or tab), `guessMapping`, `planImport`, `runImport` (one row at a time, a failure ends that row only), and the actions for each record; tests run the import through the contact and lead reducers. Records are created on the drive's server (`useCreateRecord`) and filled through `dispatchTo`.
+
+### Meeting brief (built, `records/lead/BriefDialog.tsx`, `kit/brief/`)
+
+From a lead's page ("Prepare a brief") or a scheduled meeting on it ("Brief"): what to know before talking to them, on one page, assembled from the records alone.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** One wide dialog, the brief's title as its head and the status line under it. Sections are quiet headings with short lines; the only colour is a late step in red and the purple lock callout of the confidential items, the same callout the lead page uses. "Refine with the agent" is the one primary button.
+2. **Wayfinding.** It opens over the lead and closes back to it (Escape, Close, or a click outside). From a meeting, it opens with that meeting. Nothing navigates away.
+3. **Memory and semantics.** A briefing note as account teams write them: who they are, who is who, why we talk to them, what happened, what is open, where the proposal stands, what to read, what never to say. Copy as markdown, as Proposal Preview copies.
+4. **Language.** Section headings in plain words ("Who is who", "What happened", "Read first", "Never claim", "Internal only"); people and owners by name; "Late:" before an overdue step.
+5. **Decision making.** Everything needed before a meeting without opening five sections of the lead: the angles sorted best first, the live proposal only, open steps by date. The agent is optional and comes second: the brief stands without it, and "Refine with the agent" asks for a write-up and five questions to ask.
+6. **Emotion.** Fears: "will the confidential items leak into a copy or the chat?", "did that send something?". The confidential items show to the team in the lock callout, and say they are never copied for others or sent to the agent; "Copy markdown" leaves them out, "Copy for the team" says it carries them; the foot says nothing is sent from Power BD.
+
+**2. Concepts weighed**
+
+- **A · Task-oriented:** a "Brief" section on the lead page. Always there, but it repeats the page and buries the page's own work.
+- **B · Conventional:** a briefing document in a dialog, copied or handed on. Familiar from account plans and meeting notes.
+- **C · Immersive:** the agent writes the brief from scratch in the chat. Polished, but nothing to read without a key, and a brief that changes each time it is asked.
+
+**Chosen:** B, with C as the second step. Evidence: the records already hold every fact a brief needs; the chat promises the confidential items stay out of it; the agent may not be set up (no key).
+
+**3. Implementation:** `.pb-dialog--doc` (wide, its body scrolls), `.pb-brief__summary`, `__section`, `__heading`, `__list`, `__detail`, `__late`, `__empty`; `.pb-callout--purple` with the lock for the internal items; `.pb-reassure` in the foot. Shown on the showcase. The brief is pure (`kit/brief/`: `buildBrief`, `briefMarkdown`, `agentPrompt`); the agent is asked through `kit/chat/agent-request.ts`, which the Shell hears (it opens the chat the person's way) and the conversation takes once it may go on.
+
+**4. Mapping**
+
+- **Vision:** one dialog, one primary button; red only for a late step; the lock callout for the confidential items.
+- **Wayfinding:** opens over the lead, from the lead or a meeting; closes back to it.
+- **Memory:** a briefing note; copy as markdown.
+- **Language:** plain section headings, names not addresses.
+- **Decision:** what a meeting needs on one page; the agent second and optional.
+- **Emotion:** confidential items never leave with a copy or the chat, and say so; nothing is sent.
+
+### Quick capture (built, `components/capture/CaptureDialog.tsx`, `kit/capture/`)
+
+Logging what just happened, from anywhere, and above all from a phone right after a meeting: on which lead or funding opportunity, what it was, when, one line of what happened, and the next step if there is one.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** On a phone a floating "Log" button in the primary colour, bottom right, is the one thing that stands out; on a wider screen a quiet "Log" beside the save state in the top bar. In the form, Save is the one primary button, disabled until the form can be saved, with the first thing it waits for written under the fields.
+2. **Wayfinding.** It opens over the page the person is on and closes back to it. After saving it says where the entry went and offers to open that record, log another, or be done. On a phone the form rises from the bottom, where the thumb is.
+3. **Memory and semantics.** A floating compose button and a bottom sheet, as mail and chat apps on a phone; a search that lists recent things first, as a phone's share sheet does.
+4. **Language.** "Log what happened", "On", "What happened", "Next step, if any", "By"; the kinds of contact as the history names them (Meeting, Call, Email, Message); the time with the team's time zone named.
+5. **Decision making.** Fewest choices first: the record (mine and recently changed first, a search for the rest), what it was (meeting preselected), when (now preselected), one line. The next step is optional, and a date without a step is caught before saving.
+6. **Emotion.** Fears: "did that email them?", "did it save?". The foot says nothing is sent from Power BD; after saving it says "Logged on Kelvar pilot, with its next step"; a refusal shows in the form, which keeps what was typed.
+
+**2. Concepts weighed**
+
+- **A · Task-oriented:** a "Log" button in the top bar only. Always in one place, but on a phone the top bar is full and far from the thumb.
+- **B · Conventional:** a floating button on a phone and a bottom sheet, a top-bar button on wider screens. Familiar from every mobile app.
+- **C · Immersive:** a full-screen capture page with voice notes. Fast to talk into, but a new page to find, and voice is not stored.
+
+**Chosen:** B. Evidence: on screens up to 760px the sidebar is hidden and the top bar holds the breadcrumb and search, so a top-bar-only entry would be the hardest thing to reach exactly where capture is needed; the records already take a held interaction and a next step, as the record pages add them.
+
+**3. Implementation:** `.pb-fab` (shown up to 760px), `.pb-topbar__log` (hidden up to 760px), `.pb-backdrop--sheet` (a bottom sheet up to 760px, inputs at 16px so the phone does not zoom, the kinds as four equal columns), `.pb-capture__picks`, `__pick` (`.is-active` in the accent tint), `__pick-kind`, `__row`, `__wait`. Shown on the showcase at 390px. The choices and the inputs are pure (`kit/capture/`: `captureRecords`, `captureCandidates`, `captureMissing`, `captureInputs`); the save goes through `useDriveWrite().dispatchTo` as one change of the record.
+
+**4. Mapping**
+
+- **Vision:** one floating button on a phone; Save the one primary button.
+- **Wayfinding:** over the current page; after saving, open the record or log another.
+- **Memory:** floating compose button and bottom sheet; recent first.
+- **Language:** the history's words; the time zone named.
+- **Decision:** record, kind, when and one line, with sensible defaults; the next step optional.
+- **Emotion:** nothing is sent; it says where the entry went.

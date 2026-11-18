@@ -15,6 +15,8 @@ interface Props {
   chatOpen?: boolean;
   /** Opens or closes the agent's panel; without it there is no entry. */
   onChat?: () => void;
+  /** Opens quick capture; without it there is no Log button. */
+  onLog?: () => void;
 }
 
 /** Breadcrumb on the left, search in the middle, save state and the agent on the right. */
@@ -26,6 +28,7 @@ export function TopBar({
   onSearch,
   chatOpen = false,
   onChat,
+  onLog,
 }: Props) {
   const save = saveStateView(saveState);
   const keys = shortcutKeys(navigator.platform);
@@ -67,6 +70,12 @@ export function TopBar({
         </button>
       </div>
       <div className="pb-topbar__actions">
+        {onLog ? (
+          <button type="button" className="pb-btn pb-btn--ghost pb-btn--sm pb-topbar__log" onClick={onLog}>
+            <Icon name="plus" />
+            Log
+          </button>
+        ) : null}
         <span className={save.className} role="status">
           <Icon name={save.icon} />
           {save.label}

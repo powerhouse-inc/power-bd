@@ -7,14 +7,7 @@ import {
 } from "@powerhousedao/reactor-browser";
 import { setDriveIcon } from "@powerhousedao/shared/document-drive";
 import type { ReactNode } from "react";
-import {
-  Suspense,
-  useDeferredValue,
-  useEffect,
-  useRef,
-  useState,
-  useSyncExternalStore,
-} from "react";
+import { Suspense, useDeferredValue, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import {
   isShortcut,
   placeOf,
@@ -63,7 +56,10 @@ import { TopBar } from "./TopBar.js";
 import { AgentView } from "./chat/AgentView.js";
 import { ChatDock } from "./chat/ChatDock.js";
 import { ChatHolder } from "./chat/ChatHolder.js";
+import { CaptureDialog } from "./capture/CaptureDialog.js";
+import { Icon } from "./Icon.js";
 import { useChatPresentation } from "./chat/useChatChoices.js";
+import { agentRequests } from "../kit/chat/index.js";
 import { useProposalDocumentsInSelectedDrive } from "./useDriveDocuments.js";
 
 function subscribeOnline(notify: () => void) {
@@ -329,6 +325,26 @@ export function Shell({
     else openFull();
   };
 
+  // A page asked the agent something (a brief to refine): the chat opens the
+  // person's way, unless it is open already; the conversation sends it.
+  // Quick capture: from the top bar, or the floating button on a phone.
+  const [logging, setLogging] = useState(false);
+  const openForRequest = useRef(() => {});
+  useEffect(() => {
+    openForRequest.current = () => {
+      if (besideOpen || atAgent) return;
+      if (presentation === "side") setChatBeside(true);
+      else openFull();
+    };
+  });
+  useEffect(
+    () =>
+      agentRequests.subscribe(() => {
+        if (agentRequests.peek()) openForRequest.current();
+      }),
+    [],
+  );
+
   /** Opens what search found, in the place it lives in. */
   const openEntry = ({ group, target }: Entry) => {
     const home = placeOf(group);
@@ -407,6 +423,7 @@ export function Shell({
                 onSearch={() => setSearching(true)}
                 chatOpen={besideOpen || atAgent}
                 onChat={askTheAgent}
+                onLog={() => setLogging(true)}
               />
               <div className={atAgent ? "pb-scroll pb-scroll--fill" : "pb-scroll"}>
                 <InvestorRowProvider value={investorRow}>
@@ -426,6 +443,11 @@ export function Shell({
               />
             ) : null}
           </div>
+          <button type="button" className="pb-fab" aria-label="Log what happened" onClick={() => setLogging(true)}>
+            <Icon name="plus" />
+            Log
+          </button>
+          {logging ? <CaptureDialog onClose={() => setLogging(false)} /> : null}
           <SearchPalette
             open={searching}
             onClose={closeSearch}

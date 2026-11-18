@@ -2282,3 +2282,52 @@ a.pb-ref__title:focus-visible { outline: 2px solid var(--pb-accent); outline-off
 .pb-import__result--created > .pb-icon { color: var(--pb-green-text); }
 .pb-import__result--failed { color: var(--pb-red-text); }
 .pb-import__result--skipped { color: var(--pb-text-secondary); }
+
+/* =============================================================================
+   Meeting brief: a document to read before a meeting, in a wide dialog whose
+   body scrolls. Sections in the order people ask; late steps in red; the
+   confidential items in the purple lock callout the record pages use.
+   ============================================================================= */
+.pb-dialog--doc { display: flex; flex-direction: column; width: min(720px, 100%); max-height: calc(100vh - var(--pb-s-12)); }
+.pb-dialog--doc > .pb-dialog__body { overflow-y: auto; color: var(--pb-text); }
+.pb-dialog--doc > .pb-dialog__foot { flex-wrap: wrap; align-items: center; }
+.pb-dialog__foot > .pb-reassure { margin-right: auto; }
+.pb-brief__summary { color: var(--pb-text-secondary); font-size: var(--pb-fs-sm); }
+.pb-brief__section { display: grid; gap: var(--pb-s-1); }
+.pb-brief__heading { margin: var(--pb-s-2) 0 0; color: var(--pb-text); font-size: var(--pb-fs-sm); font-weight: var(--pb-fw-semibold); }
+.pb-brief__list { display: grid; gap: var(--pb-s-1-5); margin: 0; padding-left: var(--pb-s-4); font-size: var(--pb-fs-sm); }
+.pb-brief__detail { display: block; color: var(--pb-text-tertiary); font-size: var(--pb-fs-xs); }
+.pb-brief__late { color: var(--pb-red-text); font-weight: var(--pb-fw-medium); }
+.pb-brief__empty { color: var(--pb-text-tertiary); font-size: var(--pb-fs-sm); }
+
+/* =============================================================================
+   Quick capture: log what just happened. "Log" in the top bar; on a phone,
+   where the sidebar is gone and the top bar is full, a floating button in
+   thumb reach. The form is a dialog, and on a phone a sheet that rises from
+   the bottom, with inputs large enough that the phone does not zoom.
+   ============================================================================= */
+.pb-fab { position: fixed; right: var(--pb-s-4); bottom: calc(var(--pb-s-4) + env(safe-area-inset-bottom, 0px)); z-index: var(--pb-z-popover); display: none; align-items: center; gap: var(--pb-s-1-5); min-height: var(--pb-s-12); padding: 0 var(--pb-s-5); border: 0; border-radius: var(--pb-r-full); background: var(--pb-primary); color: var(--pb-on-primary); font: inherit; font-weight: var(--pb-fw-semibold); box-shadow: var(--pb-shadow-popover); cursor: pointer; }
+.pb-fab > .pb-icon { color: inherit; }
+.pb-capture__picks { display: grid; gap: var(--pb-s-0-5); }
+.pb-capture__pick { display: flex; align-items: center; gap: var(--pb-s-2); min-height: var(--pb-s-10); padding: var(--pb-s-1) var(--pb-s-2); border: 0; border-radius: var(--pb-r-md); background: none; color: var(--pb-text); font: inherit; text-align: left; cursor: pointer; }
+.pb-capture__pick:hover { background: var(--pb-bg-hover); }
+.pb-capture__pick.is-active { background: var(--pb-accent-soft); }
+.pb-capture__pick > .pb-icon { flex: none; color: var(--pb-icon); }
+.pb-capture__pick-kind { margin-left: auto; color: var(--pb-text-tertiary); font-size: var(--pb-fs-xs); }
+.pb-capture__row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: end; gap: var(--pb-s-2); }
+.pb-capture__row .pb-input { min-width: 0; }
+.pb-capture__wait { color: var(--pb-text-tertiary); font-size: var(--pb-fs-xs); }
+.pb-backdrop--sheet > .pb-dialog { max-height: calc(100vh - var(--pb-s-12)); overflow-y: auto; }
+.pb-backdrop--sheet .pb-dialog__foot { flex-wrap: wrap; align-items: center; }
+.pb-backdrop--sheet .pb-dialog__foot > .pb-reassure { flex-basis: 100%; }
+@media (max-width: 760px) {
+  .pb-fab { display: inline-flex; }
+  .pb-topbar__log { display: none; }
+  .pb-backdrop--sheet { place-items: end stretch; padding: 0; }
+  .pb-backdrop--sheet > .pb-dialog { width: 100%; max-height: 92vh; overflow-y: auto; border-radius: var(--pb-r-xl) var(--pb-r-xl) 0 0; padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .pb-backdrop--sheet .pb-input,
+  .pb-backdrop--sheet .pb-select { font-size: 16px; }
+  .pb-backdrop--sheet .pb-segmented { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .pb-backdrop--sheet .pb-segmented__item { justify-content: center; }
+  .pb-backdrop--sheet .pb-segmented__item > .pb-icon { display: none; }
+}

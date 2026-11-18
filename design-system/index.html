@@ -831,6 +831,45 @@
                 </div>
               </div>
             </div>
+                      <h3 class="ds-sub">Meeting brief</h3>
+            <p class="ds-section__lead">A lead's brief before a meeting, assembled from its records: a wide dialog whose body scrolls, sections in the order people ask, a late step in red, the confidential items in the lock callout, never copied for others or sent to the agent.</p>
+            <div class="ds-demo">
+              <div class="ds-pane pb-root">
+                <div class="pb-dialog pb-dialog--doc" role="dialog" aria-label="Brief: meeting with Kelvar Institute" style="max-height: none">
+                  <div class="pb-dialog__head"><i data-icon="note"></i>Brief: meeting with Kelvar Institute</div>
+                  <div class="pb-dialog__body">
+                    <p class="pb-brief__summary">Met · Partnership · Mara Lind owns it · Kelvar Institute</p>
+                    <section class="pb-brief__section"><h3 class="pb-brief__heading">The meeting</h3><ul class="pb-brief__list"><li>Meeting: Data workshop<span class="pb-brief__detail">Thu 19 Nov, 10:00 Europe/Ljubljana · with Ana Novak · for us: Mara Lind</span></li></ul></section>
+                    <section class="pb-brief__section"><h3 class="pb-brief__heading">Why we talk to them</h3><ul class="pb-brief__list"><li>Signed records for their lab data<span class="pb-brief__detail">Best fit · stands for: Signed decision records</span></li></ul></section>
+                    <section class="pb-brief__section"><h3 class="pb-brief__heading">Open next steps</h3><ul class="pb-brief__list"><li class="pb-brief__late">Late: Send the outline<span class="pb-brief__detail">was due 2026-11-16 · Mara Lind</span></li><li>Book a room<span class="pb-brief__detail">due 2026-11-20 · Mara Lind</span></li></ul></section>
+                    <section class="pb-brief__section"><h3 class="pb-brief__heading">Where the proposal stands</h3><p class="pb-brief__empty">No live proposal.</p></section>
+                    <div class="pb-callout pb-callout--purple"><i data-icon="lock"></i><div class="pb-callout__body"><div class="pb-callout__title">Internal only: never copied for others or sent to the agent</div><ul class="pb-brief__list"><li>Their budget is €40k</li></ul></div></div>
+                  </div>
+                  <div class="pb-dialog__foot"><p class="pb-reassure"><i data-icon="shield"></i>Nothing is sent from Power BD. Copies and the agent leave out the internal items.</p><button class="pb-btn pb-btn--ghost pb-btn--sm">Copy for the team</button><button class="pb-btn pb-btn--sm"><i data-icon="copy"></i>Copy markdown</button><button class="pb-btn pb-btn--primary pb-btn--sm"><i data-icon="sparkles"></i>Refine with the agent</button><button class="pb-btn pb-btn--ghost pb-btn--sm">Close</button></div>
+                </div>
+              </div>
+            </div>
+                      <h3 class="ds-sub">Quick capture</h3>
+            <p class="ds-section__lead">Logging what just happened, from anywhere: "Log" in the top bar, and on a phone a floating button in thumb reach (the sidebar is gone there). On a phone the form rises from the bottom, its inputs big enough that the phone does not zoom. It saves a held entry in the record's history and an optional next step; nothing is sent.</p>
+            <div class="ds-demo">
+              <div class="ds-pane pb-root">
+                <div class="pb-backdrop pb-backdrop--sheet" style="position: relative; inset: auto; z-index: auto; min-height: 660px; border-radius: var(--pb-r-lg)">
+                  <div class="pb-dialog" role="dialog" aria-label="Log what happened">
+                    <div class="pb-dialog__head"><i data-icon="history"></i>Log what happened</div>
+                    <div class="pb-dialog__body">
+                      <div class="pb-field"><span class="pb-field__label">On</span><input class="pb-input" placeholder="Find a lead or funding opportunity" value="kel" />
+                        <div class="pb-capture__picks"><button class="pb-capture__pick"><i data-icon="funding"></i>Kelvar grant<span class="pb-capture__pick-kind">Funding</span></button><button class="pb-capture__pick is-active"><i data-icon="leads"></i>Kelvar pilot<span class="pb-capture__pick-kind">Lead</span></button></div></div>
+                      <div class="pb-segmented"><button class="pb-segmented__item is-active"><i data-icon="meeting"></i>Meeting</button><button class="pb-segmented__item"><i data-icon="phone"></i>Call</button><button class="pb-segmented__item"><i data-icon="mail"></i>Email</button><button class="pb-segmented__item"><i data-icon="message"></i>Message</button></div>
+                      <div class="pb-capture__row"><label class="pb-field"><span class="pb-field__label">Day</span><input class="pb-input" type="date" value="2026-11-18" /></label><label class="pb-field"><span class="pb-field__label">Time, Europe/Ljubljana</span><input class="pb-input" type="time" value="14:30" /></label></div>
+                      <label class="pb-field"><span class="pb-field__label">What happened</span><input class="pb-input" value="They want a pilot in January" /></label>
+                      <div class="pb-capture__row"><label class="pb-field"><span class="pb-field__label">Next step, if any</span><input class="pb-input" value="Send the pilot outline" /></label><label class="pb-field"><span class="pb-field__label">By</span><input class="pb-input" type="date" value="2026-11-20" /></label></div>
+                    </div>
+                    <div class="pb-dialog__foot"><p class="pb-reassure"><i data-icon="shield"></i>Nothing is sent from Power BD: this only records it.</p><button class="pb-btn pb-btn--ghost pb-btn--sm">Cancel</button><button class="pb-btn pb-btn--primary pb-btn--sm">Save</button></div>
+                  </div>
+                  <button class="pb-fab" style="position: absolute; top: var(--pb-s-4); bottom: auto; display: inline-flex" aria-label="Log what happened"><i data-icon="plus"></i>Log</button>
+                </div>
+              </div>
+            </div>
           </section>
 
           <!-- ============================== FEEDBACK ============================== -->

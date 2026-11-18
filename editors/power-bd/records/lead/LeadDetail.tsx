@@ -22,6 +22,7 @@ import { InteractionsSection } from "../../components/shared/relationship/Intera
 import { NextStepsSection } from "../../components/shared/relationship/NextStepsSection.js";
 import { ReferencesSection } from "../../components/shared/relationship/ReferencesSection.js";
 import {
+  fmtInstant,
   Section,
   useRun,
   dispatchWith,
@@ -32,6 +33,8 @@ import { fmtDay } from "../../components/shared/relationship/common.js";
 import { LOST_REMINDER_NOTE, reminderChoices, reminderStep } from "../../kit/reminder/index.js";
 import { nextAction, statusPath } from "../../kit/lead-view/index.js";
 import { leadProposalNext } from "../../kit/proposal-list/index.js";
+import { buildBrief } from "../../kit/brief/index.js";
+import { BriefDialog } from "./BriefDialog.js";
 import { LeadNextBar } from "./LeadNextBar.js";
 import { MessagesSection } from "./MessagesSection.js";
 import { ProposalsSection } from "../proposal/ProposalsSection.js";
@@ -64,6 +67,8 @@ export function LeadDetail({
   const angleRun = useRun();
   const [angleText, setAngleText] = useState("");
   const [angleFit, setAngleFit] = useState<Fit>("GOOD");
+  // The brief that is open: for the lead, or for one of its scheduled meetings.
+  const [briefFor, setBriefFor] = useState<{ meetingId?: string } | null>(null);
 
   const contacts = contactDocs.map((d) => ({
     id: d.header.id,
@@ -112,7 +117,38 @@ export function LeadDetail({
             {statusTerm.label}
           </span>
         ) : null}
+        <span className="pb-toolbar__spacer" />
+        <button type="button" className="pb-btn pb-btn--sm" onClick={() => setBriefFor({})}>
+          <Icon name="note" />
+          Prepare a brief
+        </button>
       </div>
+      {briefFor ? (
+        <BriefDialog
+          brief={buildBrief(
+            {
+              lead: s,
+              organisations: contactDocs.map((d) => ({
+                id: d.header.id,
+                name: d.state.global.name,
+                website: d.state.global.website,
+                notes: d.state.global.notes,
+                country: d.state.global.address.country,
+                tags: d.state.global.tags,
+                people: d.state.global.people,
+              })),
+              proposals,
+              neverClaims: playbook?.state.global.neverClaims ?? [],
+              positioning: playbook?.state.global.positioning ?? [],
+              ownerName: team.ownerName,
+              today,
+              when: fmtInstant,
+            },
+            briefFor,
+          )}
+          onClose={() => setBriefFor(null)}
+        />
+      ) : null}
 
       <ol className="pb-path pb-mt-6 pb-mb-8">
         {path.map((p) => (
@@ -516,6 +552,7 @@ export function LeadDetail({
         }
         onRemove={(id, e) => send(actions.removeInteraction({ id }), e)}
         onUpdate={(c, e) => send(actions.updateInteraction(c), e)}
+        onBrief={(id) => setBriefFor({ meetingId: id })}
       />
 
       <ContactLinksSection

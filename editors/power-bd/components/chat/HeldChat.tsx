@@ -10,6 +10,7 @@ import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Icon } from "../Icon.js";
 import type { ChatSlots } from "./ChatHolder.js";
+import { agentRequests } from "../../kit/chat/index.js";
 import { keptChats } from "./keptChats.js";
 import { useChatPlaces } from "./useChatPlaces.js";
 import { useAutoApprove, usePerson } from "./useChatChoices.js";
@@ -111,6 +112,16 @@ function HeldConversation({
   });
   // Shown with the vault's documents cited by title, each opening in the vault app.
   const chat = useCitedChat(kept, vaultDriveId);
+  // A request a page made (a brief to refine) is sent once the conversation may go on.
+  const { send } = chat;
+  useEffect(() => {
+    const sendWaiting = () => {
+      const text = agentRequests.take();
+      if (text) send(text);
+    };
+    sendWaiting();
+    return agentRequests.subscribe(sendWaiting);
+  }, [send]);
 
   return (
     <>
