@@ -38,73 +38,64 @@
     {
       "id": "powerbd/proposal",
       "name": "Proposal"
+    },
+    {
+      "id": "powerbd/market",
+      "name": "Market"
     }
   ],
   "apps": [
     {
       "id": "power-bd",
       "name": "Power BD",
-      "documentTypes": [
-        "powerhouse/document-drive"
-      ]
+      "documentTypes": ["powerhouse/document-drive"]
     }
   ],
   "editors": [
     {
       "id": "contact-editor",
       "name": "Contact Editor",
-      "documentTypes": [
-        "powerbd/contact"
-      ]
+      "documentTypes": ["powerbd/contact"]
     },
     {
       "id": "bd-settings-editor",
       "name": "BD Settings Editor",
-      "documentTypes": [
-        "powerbd/settings"
-      ]
+      "documentTypes": ["powerbd/settings"]
     },
     {
       "id": "lead-editor",
       "name": "Lead Editor",
-      "documentTypes": [
-        "powerbd/lead"
-      ]
+      "documentTypes": ["powerbd/lead"]
     },
     {
       "id": "opportunity-editor",
       "name": "Opportunity Editor",
-      "documentTypes": [
-        "powerbd/opportunity"
-      ]
+      "documentTypes": ["powerbd/opportunity"]
     },
     {
       "id": "investor-list-editor",
       "name": "Investor List Editor",
-      "documentTypes": [
-        "powerbd/investor-list"
-      ]
+      "documentTypes": ["powerbd/investor-list"]
     },
     {
       "id": "decision-editor",
       "name": "Decision Editor",
-      "documentTypes": [
-        "powerbd/decision"
-      ]
+      "documentTypes": ["powerbd/decision"]
     },
     {
       "id": "playbook-editor",
       "name": "Playbook Editor",
-      "documentTypes": [
-        "powerbd/playbook"
-      ]
+      "documentTypes": ["powerbd/playbook"]
     },
     {
       "id": "proposal-editor",
       "name": "Proposal Editor",
-      "documentTypes": [
-        "powerbd/proposal"
-      ]
+      "documentTypes": ["powerbd/proposal"]
+    },
+    {
+      "id": "market-editor",
+      "name": "Market Editor",
+      "documentTypes": ["powerbd/market"]
     }
   ],
   "processors": [],

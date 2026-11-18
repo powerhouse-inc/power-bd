@@ -1141,3 +1141,64 @@ The Overview audit stands. This covers one change: pointing at a day in the stri
 
 **Implementation:** `.pb-strip__day.is-focus` and `.pb-list__day.is-focus` (the items tinted, since the sticky heading keeps its own background); the strip's days with items take focus (`tabIndex`).
 
+### Market: the place and its list (built, `views/market/MarketsView.tsx`; ticket 03)
+
+A new place between Organisations and Decisions: the markets the team sells into.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** The anchor is "New market" (or "Add your first market" while empty). Each card puts the size line in the strongest text after the name ("€1.2bn · €310m · €18m"), so markets compare at a glance; Draft or Approved is a tag in the foot.
+2. **Wayfinding.** Market sits beside Organisations, where the comparables live; a card opens the market's page, and the breadcrumb leads back.
+3. **Memory and semantics.** A card grid like a CRM's pipeline list; the three numbers in the order every pitch deck uses: total, serviceable, obtainable.
+4. **Language.** "Market", "New market", "Not sized yet", "n organisations on the map", "Draft", "Approved". The line's tooltip spells out the three numbers.
+5. **Decision making.** Which market to open: the size line and the approval tag answer "is this ready to quote?" before opening it.
+6. **Emotion.** Nothing on the list changes data; a market starts in EUR over three years, so a new one is never half set up.
+
+**2. Concepts weighed:** a table of markets (A: dense but the numbers lose their shape), cards with the size line (B: familiar from pipeline views), a bubble chart of markets by size (C: striking but hides names and approval). **Chosen:** B; evidence: the team works with five markets, so a grid of five cards fits on one screen.
+
+**3. Implementation:** `.pb-card-grid`, `.pb-card` with `.pb-card__amounts`, `EmptyStart`; `marketCard` and `marketCardLine` in `kit/market/`.
+
+**4. Mapping:** Vision: the size line is the card's anchor. Wayfinding: beside Organisations; a card opens its market. Memory: pipeline cards. Language: total, serviceable, obtainable. Decision: approval shown before opening. Emotion: a new market starts complete.
+
+### Market page: Size (built, `records/market/SizeSection.tsx`, `SourceEditor.tsx`; ticket 04)
+
+What the market is worth to us, and whether the numbers may leave the team.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** Three tiles first: Total market (TAM), Serviceable (SAM), Obtainable in n years (SOM), each with what it rests on or leaves out ("1 not counted yet"). A number without a source carries "No source" in the warning tone, the only orange on the page.
+2. **Wayfinding.** Totals, then the approval line, then the segments they are computed from, then published figures to compare with: from the answer to its evidence.
+3. **Memory and semantics.** TAM, SAM and SOM as BD people use them, computed bottom-up from segments (organisations × value), never typed in; a table edited in place like a spreadsheet.
+4. **Language.** "Organisations", "Value per organisation a year", "We can serve it", "Obtainable in 3 years", "Source", "Published figures", "Approve the figures", "Reopen to change". The SOM label follows the market's horizon.
+5. **Decision making.** Approval's prerequisites are listed before the button (`.pb-checks`): a counted segment, and a source for both numbers of each. A segment missing a number is "not counted yet", never zero, and does not block approval: the tiles say what is left out. A published figure sits beside the totals and is never added to them.
+6. **Emotion.** Fear: "someone quotes a TAM nobody can back". Unsourced numbers show it, approval is people-only and signed with a name, and approved figures are read-only until reopened, with a line saying a reopen means approving again.
+
+**2. Concepts weighed:** A · a spreadsheet page (fast, but sources and approval vanish into cells); B · a pitch-deck page with TAM/SAM/SOM circles (familiar, but the numbers look settled); C · a guided wizard per segment (thorough, slow for five markets). **Chosen:** B's three totals as tiles over A's editable table, with the approval checks between them. Evidence: the team asked for figures that must be approved before use outside, and for sources on every number.
+
+**3. Implementation:** `.pb-tiles--3`, `.pb-tile--static`, `.pb-checks`, `PeopleMark`, `.pb-reassure`, `.pb-table` with `.pb-input--number` and `.pb-source` (`.is-missing`), `VaultNotePicker` for a vault note as source; `totalTiles`, `approvalChecks`, `sourceLabel`, `somLabel` in `kit/market/`; the reducer refuses every figure change while approved.
+
+**4. Mapping:** Vision: totals first; orange only for a missing source. Wayfinding: answer, approval, evidence. Memory: TAM/SAM/SOM, an editable table. Language: BD words; the horizon in the label. Decision: prerequisites before Approve; "not counted yet" instead of zero. Emotion: unsourced numbers show; approval is a person's, and reopening says what it means.
+
+### Market page: the market map and its side peek (built, `records/market/MapSection.tsx`, `DotPeek.tsx`; ticket 05)
+
+Where Powerhouse and the others stand in this market, on two axes the team names.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** Powerhouse is the one dot in the primary colour; the others are quiet pills with their names. The axes' ends are written at the map's edges, so a corner reads without a legend.
+2. **Wayfinding.** No axes yet: the page asks for them first, with an example in each field. A dot opens its side peek on the right (`.pb-peek`), the map stays in view; "Open the organisation" leads to its page, its leads are listed.
+3. **Memory and semantics.** The 2×2 positioning map of every strategy deck; dragging a dot like any canvas; arrow keys nudge (Shift for bigger steps) for the keyboard.
+4. **Language.** "Market map", "Left to right", "Bottom to top", "Place on the map", "Place Powerhouse", "Why it sits here", "Evidence", "Take off the map", "Stands for this positioning".
+5. **Decision making.** Placing offers the organisations tagged comparable or competitor first. A dot lands in the centre and is dragged to its place, so placing never asks for coordinates. Changing an axis keeps the dots and says to check each place.
+6. **Emotion.** Fears: "did I just delete SolveAI?" and "did we claim something we must never claim?". Taking a dot off says the organisation and its research stay. Powerhouse's note is checked against the Playbook's never-claim list, with the only red callout if it breaks one.
+
+**2. Concepts weighed:** A · a table of organisations with two scores (exact, but no picture); B · the deck's 2×2 with draggable dots (familiar); C · a canvas with clusters and arrows of movement over time (rich, but nothing stores history). **Chosen:** B, with A's precision in the peek's labels (the dot's position is read out to assistive technology) and the keyboard. Evidence: the team asked for "market positioning" with SolveAI on it; the model stores one position per organisation per market.
+
+**3. Implementation:** `.pb-map` with `__axis`, `__end--left/right/top/bottom`, `__dot` (`--us`, `.is-selected`, `.is-dragging`), `__caption`, `__empty`; `.pb-peek-host` holding `.pb-peek`; `VaultNotes` for evidence; `checkSensitivity` on our note; pointer capture for dragging; `positionAt`, `nudge` and `mapCandidates` in `kit/market/`.
+
+**4. Mapping:** Vision: Powerhouse distinct; ends at the edges. Wayfinding: axes first; the peek beside the map. Memory: the strategy 2×2; drag and arrow keys. Language: plain axis words. Decision: comparables first; place, then drag. Emotion: removing a dot keeps the research; the never-claim check on our note.
+
+### Organisation page: "On the maps of" (built, `records/contact/ContactDetail.tsx`; ticket 06)
+
+One line under the organisation's head: the markets whose map it is on, each a link. It appears only when there is one, so most organisations show nothing new. Words: "On the maps of: Finance operations, Law firms". `mapsOf` in `kit/market/`.
+

@@ -3,6 +3,7 @@ import { Contact as ContactV1 } from "document-models/contact/v1";
 import { Decision as DecisionV1 } from "document-models/decision/v1";
 import { InvestorList as InvestorListV1 } from "document-models/investor-list/v1";
 import { Lead as LeadV1 } from "document-models/lead/v1";
+import { Market as MarketV1 } from "document-models/market/v1";
 import { Opportunity as OpportunityV1 } from "document-models/opportunity/v1";
 import { Playbook as PlaybookV1 } from "document-models/playbook/v1";
 import { Proposal as ProposalV1 } from "document-models/proposal/v1";
@@ -18,6 +19,7 @@ export const documentModels = [
   DecisionV1,
   InvestorListV1,
   LeadV1,
+  MarketV1,
   OpportunityV1,
   PlaybookV1,
   ProposalV1,

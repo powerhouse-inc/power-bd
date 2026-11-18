@@ -1,0 +1,622 @@
+{
+  "id": "powerbd/market",
+  "name": "Market",
+  "author": {
+    "name": "Powerhouse",
+    "website": "https://powerhouse.inc"
+  },
+  "extension": "",
+  "description": "One market the team works in: its size, split into segments with sourced numbers that give TAM, SAM and SOM and that a person approves before use outside, and a map of where named organisations and Powerhouse stand on two chosen axes.",
+  "specifications": [
+    {
+      "state": {
+        "local": {
+          "schema": "",
+          "examples": [],
+          "initialValue": ""
+        },
+        "global": {
+          "schema": "type MarketState {\n  name: String\n  \"Who buys, and which problem they have.\"\n  description: String\n  \"Where: a country, a region, or 'EU'.\"\n  geography: String\n  \"EUR for a new market.\"\n  currency: Currency\n  \"Years the obtainable market (SOM) is counted over.\"\n  horizonYears: Int\n  segments: [Segment!]!\n  \"Published figures beside the computed ones, as a cross-check.\"\n  publishedFigures: [PublishedFigure!]!\n  axes: MapAxes\n  players: [Player!]!\n  \"Where Powerhouse stands on this market's map.\"\n  us: OurPosition\n  \"Whether a person has approved the figures for use outside the team.\"\n  sizeStatus: SizeStatus!\n  sizeApprovedBy: EthereumAddress\n  sizeApprovedAt: DateTime\n}\n\nenum SizeStatus {\n  DRAFT\n  APPROVED\n}\n\n\"Which number of a segment a source is for.\"\nenum SegmentFigure {\n  ACCOUNTS\n  ANNUAL_VALUE\n}\n\ntype Segment {\n  id: OID!\n  name: String!\n  description: String\n  \"How many organisations are in the segment.\"\n  accounts: Int\n  accountsSource: Source\n  \"What one organisation is worth to us per year, in the market's currency.\"\n  annualValue: Amount_Money\n  annualValueSource: Source\n  \"True when we can serve the segment today: it counts towards SAM.\"\n  serviceable: Boolean!\n  \"How many organisations we can win within horizonYears: SOM.\"\n  targetAccounts: Int\n  \"Named organisations in the segment (Organisations records).\"\n  organisationIds: [PHID!]!\n}\n\ntype PublishedFigure {\n  id: OID!\n  \"What it measures, as the source says it.\"\n  label: String!\n  amount: Amount_Money!\n  currency: Currency!\n  year: Int\n  source: Source!\n}\n\n\"A source for a number: a vault note, a web page, or both.\"\ntype Source {\n  title: String!\n  url: URL\n  documentId: PHID\n}\n\ntype MapAxes {\n  x: Axis!\n  y: Axis!\n}\n\ntype Axis {\n  \"What the axis measures.\"\n  label: String!\n  \"The low end, at the left or bottom.\"\n  low: String!\n  \"The high end, at the right or top.\"\n  high: String!\n}\n\ntype Player {\n  id: OID!\n  \"The organisation on the map (an Organisations record).\"\n  organisationId: PHID!\n  \"0 to 100 along each axis.\"\n  x: Float!\n  y: Float!\n  \"Why it is placed there.\"\n  note: String\n  evidence: [VaultRef!]!\n}\n\ntype VaultRef {\n  id: PHID!\n  title: String!\n}\n\ntype OurPosition {\n  x: Float!\n  y: Float!\n  note: String\n  \"The Playbook positioning statement this position stands for, if any.\"\n  positioningId: OID\n}",
+          "examples": [],
+          "initialValue": "{\"name\": null, \"description\": null, \"geography\": null, \"currency\": \"EUR\", \"horizonYears\": 3, \"segments\": [], \"publishedFigures\": [], \"axes\": null, \"players\": [], \"us\": null, \"sizeStatus\": \"DRAFT\", \"sizeApprovedBy\": null, \"sizeApprovedAt\": null}"
+        }
+      },
+      "modules": [
+        {
+          "id": "market-details",
+          "name": "details",
+          "description": "",
+          "operations": [
+            {
+              "id": "market-set-market-details",
+              "name": "SET_MARKET_DETAILS",
+              "description": "Name and describe the market, and set its currency and horizon; a field left out stays as it is",
+              "schema": "input SetMarketDetailsInput {\n  name: String\n  description: String\n  geography: String\n  currency: Currency\n  horizonYears: Int\n}",
+              "template": "Name and describe the market, and set its currency and horizon; a field left out stays as it is",
+              "reducer": "const { name, description, geography, currency, horizonYears } = action.input;\nif (horizonYears != null && horizonYears < 1)\n  throw new InvalidHorizonError(\"The horizon is at least one year\");\nconst changesFigures =\n  (currency !== undefined && currency !== state.currency) ||\n  (horizonYears !== undefined && horizonYears !== state.horizonYears);\nif (changesFigures && state.sizeStatus === \"APPROVED\")\n  throw new FiguresApprovedError(\"Reopen the figures to change them\");\nif (name !== undefined) state.name = name ?? null;\nif (description !== undefined) state.description = description ?? null;\nif (geography !== undefined) state.geography = geography ?? null;\nif (currency !== undefined) state.currency = currency ?? null;\nif (horizonYears !== undefined) state.horizonYears = horizonYears ?? null;",
+              "errors": [
+                {
+                  "id": "808c129e-b24c-4170-afee-2e9c51a7fbe3",
+                  "name": "InvalidHorizonError",
+                  "code": "INVALID_HORIZON",
+                  "description": "The horizon is less than one year",
+                  "template": ""
+                },
+                {
+                  "id": "3d896b48-df59-4e66-9485-19e5f88122fe",
+                  "name": "FiguresApprovedError",
+                  "code": "FIGURES_APPROVED",
+                  "description": "The figures are approved: reopen them to change them",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            }
+          ]
+        },
+        {
+          "id": "market-segments",
+          "name": "segments",
+          "description": "",
+          "operations": [
+            {
+              "id": "market-add-segment",
+              "name": "ADD_SEGMENT",
+              "description": "Add a segment of the market, not yet counted and not yet serviceable",
+              "schema": "input AddSegmentInput {\n  id: OID!\n  name: String!\n  description: String\n}",
+              "template": "Add a segment of the market, not yet counted and not yet serviceable",
+              "reducer": "if (state.sizeStatus === \"APPROVED\")\n  throw new FiguresApprovedError(\"Reopen the figures to change them\");\nconst { id, description } = action.input;\nconst name = action.input.name.trim();\nif (name === \"\") throw new SegmentNameRequiredError(\"A segment needs a name\");\nif (state.segments.some((s) => s.id === id))\n  throw new DuplicateSegmentIdError(`Segment ${id} already exists`);\nstate.segments.push({\n  id,\n  name,\n  description: description ?? null,\n  accounts: null,\n  accountsSource: null,\n  annualValue: null,\n  annualValueSource: null,\n  serviceable: false,\n  targetAccounts: null,\n  organisationIds: [],\n});",
+              "errors": [
+                {
+                  "id": "b08d61b8-d493-47fa-b3ea-65fb24d71b13",
+                  "name": "FiguresApprovedError",
+                  "code": "FIGURES_APPROVED",
+                  "description": "The figures are approved: reopen them to change them",
+                  "template": ""
+                },
+                {
+                  "id": "f3d5cd9c-aace-421f-9b8f-c7771d0703fb",
+                  "name": "SegmentNameRequiredError",
+                  "code": "SEGMENT_NAME_REQUIRED",
+                  "description": "The segment's name is empty",
+                  "template": ""
+                },
+                {
+                  "id": "2d519a0c-6c66-4c34-8955-184327bc8a6e",
+                  "name": "DuplicateSegmentIdError",
+                  "code": "DUPLICATE_SEGMENT_ID",
+                  "description": "A segment with this id already exists",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "market-update-segment",
+              "name": "UPDATE_SEGMENT",
+              "description": "Change a segment's name, description or numbers; a number set to null is no longer counted",
+              "schema": "input UpdateSegmentInput {\n  id: OID!\n  name: String\n  description: String\n  accounts: Int\n  annualValue: Amount_Money\n  serviceable: Boolean\n  targetAccounts: Int\n}",
+              "template": "Change a segment's name, description or numbers; a number set to null is no longer counted",
+              "reducer": "if (state.sizeStatus === \"APPROVED\")\n  throw new FiguresApprovedError(\"Reopen the figures to change them\");\nconst { id, name, description, accounts, annualValue, serviceable, targetAccounts } = action.input;\nconst segment = state.segments.find((s) => s.id === id);\nif (!segment) throw new SegmentNotFoundError(`Segment ${id} not found`);\nif (name !== undefined && (name === null || name.trim() === \"\"))\n  throw new SegmentNameRequiredError(\"A segment needs a name\");\nif ([accounts, annualValue, targetAccounts].some((n) => n != null && n < 0))\n  throw new NegativeNumberError(\"A segment's numbers can't be negative\");\nconst nextAccounts = accounts === undefined ? segment.accounts : accounts;\nconst nextTarget = targetAccounts === undefined ? segment.targetAccounts : targetAccounts;\nif (nextAccounts != null && nextTarget != null && nextTarget > nextAccounts)\n  throw new TargetAboveAccountsError(\"The target can't be more than the organisations in the segment\");\nif (name != null) segment.name = name.trim();\nif (description !== undefined) segment.description = description ?? null;\nif (accounts !== undefined) segment.accounts = accounts ?? null;\nif (annualValue !== undefined) segment.annualValue = annualValue ?? null;\nif (serviceable != null) segment.serviceable = serviceable;\nif (targetAccounts !== undefined) segment.targetAccounts = targetAccounts ?? null;",
+              "errors": [
+                {
+                  "id": "31f43ff2-dcaf-4e93-8362-1b7862dd4ea6",
+                  "name": "FiguresApprovedError",
+                  "code": "FIGURES_APPROVED",
+                  "description": "The figures are approved: reopen them to change them",
+                  "template": ""
+                },
+                {
+                  "id": "f6a1a1e0-b272-417e-96d0-69615feb6888",
+                  "name": "SegmentNotFoundError",
+                  "code": "SEGMENT_NOT_FOUND",
+                  "description": "No segment has this id",
+                  "template": ""
+                },
+                {
+                  "id": "e569c834-6ca1-42c1-8416-a11ad11a8b3a",
+                  "name": "SegmentNameRequiredError",
+                  "code": "SEGMENT_NAME_REQUIRED",
+                  "description": "The segment's name is empty",
+                  "template": ""
+                },
+                {
+                  "id": "a0fd072c-6cd8-4762-b840-7c516fe04bfc",
+                  "name": "NegativeNumberError",
+                  "code": "NEGATIVE_NUMBER",
+                  "description": "A segment's number is below zero",
+                  "template": ""
+                },
+                {
+                  "id": "d901d5b3-ed76-430d-b4f1-64a5e98e57a4",
+                  "name": "TargetAboveAccountsError",
+                  "code": "TARGET_ABOVE_ACCOUNTS",
+                  "description": "The target is more than the organisations in the segment",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "market-set-segment-source",
+              "name": "SET_SEGMENT_SOURCE",
+              "description": "Set where a segment's number of organisations or value comes from; no title, link or note clears it",
+              "schema": "input SetSegmentSourceInput {\n  id: OID!\n  figure: SegmentFigure!\n  title: String\n  url: URL\n  documentId: PHID\n}",
+              "template": "Set where a segment's number of organisations or value comes from; no title, link or note clears it",
+              "reducer": "if (state.sizeStatus === \"APPROVED\")\n  throw new FiguresApprovedError(\"Reopen the figures to change them\");\nconst { id, figure, title, url, documentId } = action.input;\nconst segment = state.segments.find((s) => s.id === id);\nif (!segment) throw new SegmentNotFoundError(`Segment ${id} not found`);\nlet source: typeof segment.accountsSource = null;\nif (title != null || url != null || documentId != null) {\n  if (title == null || title.trim() === \"\")\n    throw new SourceTitleRequiredError(\"A source needs a title\");\n  if (url == null && documentId == null)\n    throw new SourceLinkRequiredError(\"A source needs a link or a vault note\");\n  source = { title: title.trim(), url: url ?? null, documentId: documentId ?? null };\n}\nif (figure === \"ACCOUNTS\") segment.accountsSource = source;\nelse segment.annualValueSource = source;",
+              "errors": [
+                {
+                  "id": "9bc3fd2a-e7f1-4867-97cd-aaf21ec93c79",
+                  "name": "FiguresApprovedError",
+                  "code": "FIGURES_APPROVED",
+                  "description": "The figures are approved: reopen them to change them",
+                  "template": ""
+                },
+                {
+                  "id": "10ec5d4e-ecbd-4771-8c63-d6522ab1744f",
+                  "name": "SegmentNotFoundError",
+                  "code": "SEGMENT_NOT_FOUND",
+                  "description": "No segment has this id",
+                  "template": ""
+                },
+                {
+                  "id": "d5a11c67-0303-42ab-8619-0b8e68e4a688",
+                  "name": "SourceTitleRequiredError",
+                  "code": "SOURCE_TITLE_REQUIRED",
+                  "description": "A source has no title",
+                  "template": ""
+                },
+                {
+                  "id": "8de9e93f-1bf3-4795-a127-2fe869e8a045",
+                  "name": "SourceLinkRequiredError",
+                  "code": "SOURCE_LINK_REQUIRED",
+                  "description": "A source has neither a link nor a vault note",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "market-link-segment-organisation",
+              "name": "LINK_SEGMENT_ORGANISATION",
+              "description": "Name an organisation as one in the segment",
+              "schema": "input LinkSegmentOrganisationInput {\n  id: OID!\n  organisationId: PHID!\n}",
+              "template": "Name an organisation as one in the segment",
+              "reducer": "const { id, organisationId } = action.input;\nconst segment = state.segments.find((s) => s.id === id);\nif (!segment) throw new SegmentNotFoundError(`Segment ${id} not found`);\nif (segment.organisationIds.includes(organisationId))\n  throw new OrganisationAlreadyLinkedError(\"The organisation is already in the segment\");\nsegment.organisationIds.push(organisationId);",
+              "errors": [
+                {
+                  "id": "c3bc7eda-0f92-4a9e-b737-3e6481230a8e",
+                  "name": "SegmentNotFoundError",
+                  "code": "SEGMENT_NOT_FOUND",
+                  "description": "No segment has this id",
+                  "template": ""
+                },
+                {
+                  "id": "e2ef870a-0ffe-49c2-9cdd-3a21b812defc",
+                  "name": "OrganisationAlreadyLinkedError",
+                  "code": "ORGANISATION_ALREADY_LINKED",
+                  "description": "The organisation is already in the segment",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "market-unlink-segment-organisation",
+              "name": "UNLINK_SEGMENT_ORGANISATION",
+              "description": "Take an organisation out of the segment",
+              "schema": "input UnlinkSegmentOrganisationInput {\n  id: OID!\n  organisationId: PHID!\n}",
+              "template": "Take an organisation out of the segment",
+              "reducer": "const { id, organisationId } = action.input;\nconst segment = state.segments.find((s) => s.id === id);\nif (!segment) throw new SegmentNotFoundError(`Segment ${id} not found`);\nconst index = segment.organisationIds.indexOf(organisationId);\nif (index === -1)\n  throw new OrganisationNotLinkedError(\"The organisation is not in the segment\");\nsegment.organisationIds.splice(index, 1);",
+              "errors": [
+                {
+                  "id": "2386a56d-8750-4bf8-9fde-43a71c7fa25b",
+                  "name": "SegmentNotFoundError",
+                  "code": "SEGMENT_NOT_FOUND",
+                  "description": "No segment has this id",
+                  "template": ""
+                },
+                {
+                  "id": "65571d42-4f6c-484d-a5f6-ece0a7fa51fa",
+                  "name": "OrganisationNotLinkedError",
+                  "code": "ORGANISATION_NOT_LINKED",
+                  "description": "The organisation is not in the segment",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "market-remove-segment",
+              "name": "REMOVE_SEGMENT",
+              "description": "Remove a segment and its numbers",
+              "schema": "input RemoveSegmentInput {\n  id: OID!\n}",
+              "template": "Remove a segment and its numbers",
+              "reducer": "if (state.sizeStatus === \"APPROVED\")\n  throw new FiguresApprovedError(\"Reopen the figures to change them\");\nconst index = state.segments.findIndex((s) => s.id === action.input.id);\nif (index === -1) throw new SegmentNotFoundError(`Segment ${action.input.id} not found`);\nstate.segments.splice(index, 1);",
+              "errors": [
+                {
+                  "id": "c7e53f44-32aa-49ff-96d5-23f72bd5458e",
+                  "name": "FiguresApprovedError",
+                  "code": "FIGURES_APPROVED",
+                  "description": "The figures are approved: reopen them to change them",
+                  "template": ""
+                },
+                {
+                  "id": "58543551-75cd-4271-8b18-4ee97dee498e",
+                  "name": "SegmentNotFoundError",
+                  "code": "SEGMENT_NOT_FOUND",
+                  "description": "No segment has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            }
+          ]
+        },
+        {
+          "id": "market-figures",
+          "name": "figures",
+          "description": "",
+          "operations": [
+            {
+              "id": "market-add-published-figure",
+              "name": "ADD_PUBLISHED_FIGURE",
+              "description": "Add a published figure, with its source, beside the computed totals",
+              "schema": "input AddPublishedFigureInput {\n  id: OID!\n  label: String!\n  amount: Amount_Money!\n  currency: Currency!\n  year: Int\n  sourceTitle: String!\n  sourceUrl: URL\n  sourceDocumentId: PHID\n}",
+              "template": "Add a published figure, with its source, beside the computed totals",
+              "reducer": "if (state.sizeStatus === \"APPROVED\")\n  throw new FiguresApprovedError(\"Reopen the figures to change them\");\nconst { id, amount, currency, year, sourceUrl, sourceDocumentId } = action.input;\nconst label = action.input.label.trim();\nconst sourceTitle = action.input.sourceTitle.trim();\nif (label === \"\") throw new FigureLabelRequiredError(\"A figure needs to say what it measures\");\nif (amount < 0) throw new NegativeAmountError(\"A figure can't be negative\");\nif (sourceTitle === \"\") throw new SourceTitleRequiredError(\"A source needs a title\");\nif (sourceUrl == null && sourceDocumentId == null)\n  throw new SourceLinkRequiredError(\"A source needs a link or a vault note\");\nif (state.publishedFigures.some((f) => f.id === id))\n  throw new DuplicateFigureIdError(`Figure ${id} already exists`);\nstate.publishedFigures.push({\n  id,\n  label,\n  amount,\n  currency,\n  year: year ?? null,\n  source: { title: sourceTitle, url: sourceUrl ?? null, documentId: sourceDocumentId ?? null },\n});",
+              "errors": [
+                {
+                  "id": "0cc423ad-9e7d-4c37-8a77-08906676c7f1",
+                  "name": "FiguresApprovedError",
+                  "code": "FIGURES_APPROVED",
+                  "description": "The figures are approved: reopen them to change them",
+                  "template": ""
+                },
+                {
+                  "id": "27cd0933-4ac8-4f2c-b3d1-6f32dd36c6be",
+                  "name": "FigureLabelRequiredError",
+                  "code": "FIGURE_LABEL_REQUIRED",
+                  "description": "The figure's label is empty",
+                  "template": ""
+                },
+                {
+                  "id": "17c5fef1-faa3-49ab-9db7-9144a25b5656",
+                  "name": "NegativeAmountError",
+                  "code": "NEGATIVE_AMOUNT",
+                  "description": "The figure's amount is below zero",
+                  "template": ""
+                },
+                {
+                  "id": "9b796c74-36c5-43d3-92b0-c3f4043e9643",
+                  "name": "SourceTitleRequiredError",
+                  "code": "SOURCE_TITLE_REQUIRED",
+                  "description": "A source has no title",
+                  "template": ""
+                },
+                {
+                  "id": "0b6ed280-1859-4928-89df-96147735e96e",
+                  "name": "SourceLinkRequiredError",
+                  "code": "SOURCE_LINK_REQUIRED",
+                  "description": "A source has neither a link nor a vault note",
+                  "template": ""
+                },
+                {
+                  "id": "4c0c660e-1742-469a-9ec6-181509cb9e50",
+                  "name": "DuplicateFigureIdError",
+                  "code": "DUPLICATE_FIGURE_ID",
+                  "description": "A figure with this id already exists",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "market-remove-published-figure",
+              "name": "REMOVE_PUBLISHED_FIGURE",
+              "description": "Remove a published figure",
+              "schema": "input RemovePublishedFigureInput {\n  id: OID!\n}",
+              "template": "Remove a published figure",
+              "reducer": "if (state.sizeStatus === \"APPROVED\")\n  throw new FiguresApprovedError(\"Reopen the figures to change them\");\nconst index = state.publishedFigures.findIndex((f) => f.id === action.input.id);\nif (index === -1) throw new FigureNotFoundError(`Figure ${action.input.id} not found`);\nstate.publishedFigures.splice(index, 1);",
+              "errors": [
+                {
+                  "id": "51266bd0-4969-4b4d-8d3b-9cf905536268",
+                  "name": "FiguresApprovedError",
+                  "code": "FIGURES_APPROVED",
+                  "description": "The figures are approved: reopen them to change them",
+                  "template": ""
+                },
+                {
+                  "id": "22721348-74bc-43fe-b5a2-b560c4a6caca",
+                  "name": "FigureNotFoundError",
+                  "code": "FIGURE_NOT_FOUND",
+                  "description": "No published figure has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            }
+          ]
+        },
+        {
+          "id": "market-map",
+          "name": "map",
+          "description": "",
+          "operations": [
+            {
+              "id": "market-set-axes",
+              "name": "SET_AXES",
+              "description": "Set what the map's two axes measure and what their ends mean; the dots stay where they are",
+              "schema": "input SetAxesInput {\n  xLabel: String!\n  xLow: String!\n  xHigh: String!\n  yLabel: String!\n  yLow: String!\n  yHigh: String!\n}",
+              "template": "Set what the map's two axes measure and what their ends mean; the dots stay where they are",
+              "reducer": "const i = action.input;\nconst [xLabel, xLow, xHigh, yLabel, yLow, yHigh] = [i.xLabel, i.xLow, i.xHigh, i.yLabel, i.yLow, i.yHigh].map((t) => t.trim());\nif ([xLabel, xLow, xHigh, yLabel, yLow, yHigh].some((t) => t === \"\"))\n  throw new AxisTextRequiredError(\"Each axis needs a label and two ends\");\nstate.axes = {\n  x: { label: xLabel, low: xLow, high: xHigh },\n  y: { label: yLabel, low: yLow, high: yHigh },\n};",
+              "errors": [
+                {
+                  "id": "a4a63cb8-40e4-4f70-b9b9-6c61129c90e2",
+                  "name": "AxisTextRequiredError",
+                  "code": "AXIS_TEXT_REQUIRED",
+                  "description": "An axis' label or one of its ends is empty",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "market-place-player",
+              "name": "PLACE_PLAYER",
+              "description": "Put an organisation on the map",
+              "schema": "input PlacePlayerInput {\n  id: OID!\n  organisationId: PHID!\n  x: Float!\n  y: Float!\n  note: String\n}",
+              "template": "Put an organisation on the map",
+              "reducer": "const { id, organisationId, x, y, note } = action.input;\nif (!state.axes) throw new AxesRequiredError(\"Set the map's axes first\");\nif (x < 0 || x > 100 || y < 0 || y > 100)\n  throw new PositionOutOfRangeError(\"A position runs from 0 to 100 on each axis\");\nif (state.players.some((p) => p.organisationId === organisationId))\n  throw new OrganisationAlreadyPlacedError(\"The organisation is already on the map\");\nif (state.players.some((p) => p.id === id))\n  throw new DuplicatePlayerIdError(`Player ${id} already exists`);\nstate.players.push({ id, organisationId, x, y, note: note ?? null, evidence: [] });",
+              "errors": [
+                {
+                  "id": "ad5f0b7a-a3d1-49c2-93c6-ee7553985b0e",
+                  "name": "AxesRequiredError",
+                  "code": "AXES_REQUIRED",
+                  "description": "The map has no axes yet",
+                  "template": ""
+                },
+                {
+                  "id": "930a80f3-e59f-4f22-9f69-e90a9f19acaf",
+                  "name": "PositionOutOfRangeError",
+                  "code": "POSITION_OUT_OF_RANGE",
+                  "description": "A position is outside 0 to 100 on an axis",
+                  "template": ""
+                },
+                {
+                  "id": "f2179b13-eee7-4014-b7b1-c97184430ffe",
+                  "name": "OrganisationAlreadyPlacedError",
+                  "code": "ORGANISATION_ALREADY_PLACED",
+                  "description": "The organisation is already on the map",
+                  "template": ""
+                },
+                {
+                  "id": "3fc4f1c3-42f6-493a-845a-9fd97d64dc0c",
+                  "name": "DuplicatePlayerIdError",
+                  "code": "DUPLICATE_PLAYER_ID",
+                  "description": "An organisation on the map already has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "market-move-player",
+              "name": "MOVE_PLAYER",
+              "description": "Move an organisation on the map",
+              "schema": "input MovePlayerInput {\n  id: OID!\n  x: Float!\n  y: Float!\n}",
+              "template": "Move an organisation on the map",
+              "reducer": "const { id, x, y } = action.input;\nconst player = state.players.find((p) => p.id === id);\nif (!player) throw new PlayerNotFoundError(`Player ${id} not found`);\nif (x < 0 || x > 100 || y < 0 || y > 100)\n  throw new PositionOutOfRangeError(\"A position runs from 0 to 100 on each axis\");\nplayer.x = x;\nplayer.y = y;",
+              "errors": [
+                {
+                  "id": "60b0d55a-ebc3-4652-9b11-0bb02e529af2",
+                  "name": "PlayerNotFoundError",
+                  "code": "PLAYER_NOT_FOUND",
+                  "description": "No organisation on the map has this id",
+                  "template": ""
+                },
+                {
+                  "id": "21095fa0-368c-4ea1-a799-dfcd6986826d",
+                  "name": "PositionOutOfRangeError",
+                  "code": "POSITION_OUT_OF_RANGE",
+                  "description": "A position is outside 0 to 100 on an axis",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "market-set-player-note",
+              "name": "SET_PLAYER_NOTE",
+              "description": "Say why an organisation sits where it does",
+              "schema": "input SetPlayerNoteInput {\n  id: OID!\n  note: String\n}",
+              "template": "Say why an organisation sits where it does",
+              "reducer": "const player = state.players.find((p) => p.id === action.input.id);\nif (!player) throw new PlayerNotFoundError(`Player ${action.input.id} not found`);\nplayer.note = action.input.note ?? null;",
+              "errors": [
+                {
+                  "id": "73748985-6739-4102-a659-6e63f357f5ce",
+                  "name": "PlayerNotFoundError",
+                  "code": "PLAYER_NOT_FOUND",
+                  "description": "No organisation on the map has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "market-link-player-evidence",
+              "name": "LINK_PLAYER_EVIDENCE",
+              "description": "Link a vault note as evidence for an organisation's place",
+              "schema": "input LinkPlayerEvidenceInput {\n  id: OID!\n  refId: PHID!\n  refTitle: String!\n}",
+              "template": "Link a vault note as evidence for an organisation's place",
+              "reducer": "const { id, refId, refTitle } = action.input;\nconst player = state.players.find((p) => p.id === id);\nif (!player) throw new PlayerNotFoundError(`Player ${id} not found`);\nif (player.evidence.some((e) => e.id === refId))\n  throw new EvidenceAlreadyLinkedError(\"The note is already linked\");\nplayer.evidence.push({ id: refId, title: refTitle });",
+              "errors": [
+                {
+                  "id": "00a6e3cc-a910-43f4-8169-cc18287552c3",
+                  "name": "PlayerNotFoundError",
+                  "code": "PLAYER_NOT_FOUND",
+                  "description": "No organisation on the map has this id",
+                  "template": ""
+                },
+                {
+                  "id": "b0961ba1-64bc-475f-9cf7-0f841edb8ae7",
+                  "name": "EvidenceAlreadyLinkedError",
+                  "code": "EVIDENCE_ALREADY_LINKED",
+                  "description": "The note is already linked to this organisation",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "market-unlink-player-evidence",
+              "name": "UNLINK_PLAYER_EVIDENCE",
+              "description": "Unlink a vault note from an organisation's place",
+              "schema": "input UnlinkPlayerEvidenceInput {\n  id: OID!\n  refId: PHID!\n}",
+              "template": "Unlink a vault note from an organisation's place",
+              "reducer": "const { id, refId } = action.input;\nconst player = state.players.find((p) => p.id === id);\nif (!player) throw new PlayerNotFoundError(`Player ${id} not found`);\nconst index = player.evidence.findIndex((e) => e.id === refId);\nif (index === -1) throw new EvidenceNotLinkedError(\"The note is not linked\");\nplayer.evidence.splice(index, 1);",
+              "errors": [
+                {
+                  "id": "265fdb76-93f6-4225-a31a-9e2fa57e193f",
+                  "name": "PlayerNotFoundError",
+                  "code": "PLAYER_NOT_FOUND",
+                  "description": "No organisation on the map has this id",
+                  "template": ""
+                },
+                {
+                  "id": "82cc350a-c3a3-4943-8fa2-cbef0c86908e",
+                  "name": "EvidenceNotLinkedError",
+                  "code": "EVIDENCE_NOT_LINKED",
+                  "description": "The note is not linked to this organisation",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "market-remove-player",
+              "name": "REMOVE_PLAYER",
+              "description": "Take an organisation off the map",
+              "schema": "input RemovePlayerInput {\n  id: OID!\n}",
+              "template": "Take an organisation off the map",
+              "reducer": "const index = state.players.findIndex((p) => p.id === action.input.id);\nif (index === -1) throw new PlayerNotFoundError(`Player ${action.input.id} not found`);\nstate.players.splice(index, 1);",
+              "errors": [
+                {
+                  "id": "11089a8f-291b-4edb-9c48-c802d687cdd7",
+                  "name": "PlayerNotFoundError",
+                  "code": "PLAYER_NOT_FOUND",
+                  "description": "No organisation on the map has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "market-set-our-position",
+              "name": "SET_OUR_POSITION",
+              "description": "Place Powerhouse on the map, optionally standing for a Playbook positioning statement",
+              "schema": "input SetOurPositionInput {\n  x: Float!\n  y: Float!\n  note: String\n  positioningId: OID\n}",
+              "template": "Place Powerhouse on the map, optionally standing for a Playbook positioning statement",
+              "reducer": "const { x, y, note, positioningId } = action.input;\nif (!state.axes) throw new AxesRequiredError(\"Set the map's axes first\");\nif (x < 0 || x > 100 || y < 0 || y > 100)\n  throw new PositionOutOfRangeError(\"A position runs from 0 to 100 on each axis\");\nstate.us = { x, y, note: note ?? null, positioningId: positioningId ?? null };",
+              "errors": [
+                {
+                  "id": "65aeb0ea-7d3f-45a3-90e2-04afd1673204",
+                  "name": "AxesRequiredError",
+                  "code": "AXES_REQUIRED",
+                  "description": "The map has no axes yet",
+                  "template": ""
+                },
+                {
+                  "id": "993b5317-05b4-4734-aa81-95b2c6bcd62e",
+                  "name": "PositionOutOfRangeError",
+                  "code": "POSITION_OUT_OF_RANGE",
+                  "description": "A position is outside 0 to 100 on an axis",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            }
+          ]
+        },
+        {
+          "id": "market-approval",
+          "name": "approval",
+          "description": "",
+          "operations": [
+            {
+              "id": "market-approve-size",
+              "name": "APPROVE_SIZE",
+              "description": "A person approves the figures for use outside the team",
+              "schema": "input ApproveSizeInput {\n  approvedBy: EthereumAddress!\n  approvedAt: DateTime!\n}",
+              "template": "A person approves the figures for use outside the team",
+              "reducer": "const { approvedBy, approvedAt } = action.input;\nif (state.sizeStatus !== \"DRAFT\")\n  throw new SizeNotDraftError(\"Only draft figures can be approved\");\nconst counted = state.segments.filter((s) => s.accounts != null && s.annualValue != null);\nif (counted.length === 0)\n  throw new NothingCountedError(\"Count at least one segment before approving\");\nconst missing = counted.find((s) => !s.accountsSource || !s.annualValueSource);\nif (missing)\n  throw new SourceMissingError(`Add the sources for ${missing.name} before approving`);\nstate.sizeStatus = \"APPROVED\";\nstate.sizeApprovedBy = approvedBy;\nstate.sizeApprovedAt = approvedAt;",
+              "errors": [
+                {
+                  "id": "f154a643-be40-412d-b16d-819c88310e2a",
+                  "name": "SizeNotDraftError",
+                  "code": "SIZE_NOT_DRAFT",
+                  "description": "The figures are already approved",
+                  "template": ""
+                },
+                {
+                  "id": "82aec26a-3b2d-4375-bd1d-000898a6dd0c",
+                  "name": "NothingCountedError",
+                  "code": "NOTHING_COUNTED",
+                  "description": "No segment has both its number of organisations and its value",
+                  "template": ""
+                },
+                {
+                  "id": "1f3a973c-5c26-4170-bb9a-bbf78471b3ba",
+                  "name": "SourceMissingError",
+                  "code": "SOURCE_MISSING",
+                  "description": "A counted segment lacks the source of one of its numbers",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "market-reopen-size",
+              "name": "REOPEN_SIZE",
+              "description": "Reopen approved figures to change them; they need approving again",
+              "schema": "input ReopenSizeInput {\n  _empty: Boolean\n}",
+              "template": "Reopen approved figures to change them; they need approving again",
+              "reducer": "if (state.sizeStatus !== \"APPROVED\")\n  throw new SizeNotApprovedError(\"Only approved figures can be reopened\");\nstate.sizeStatus = \"DRAFT\";\nstate.sizeApprovedBy = null;\nstate.sizeApprovedAt = null;",
+              "errors": [
+                {
+                  "id": "9d093f8c-ff00-4c45-af75-6f57b5ef357a",
+                  "name": "SizeNotApprovedError",
+                  "code": "SIZE_NOT_APPROVED",
+                  "description": "The figures are not approved",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            }
+          ]
+        }
+      ],
+      "version": 1,
+      "changeLog": []
+    }
+  ]
+}

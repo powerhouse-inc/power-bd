@@ -650,6 +650,44 @@
             </div>
           </section>
 
+          <!-- ============================== MARKET ============================== -->
+          <section class="ds-section" id="market">
+            <h2 class="ds-section__title">Market</h2>
+            <p class="ds-section__lead">The Market place: a card per market with its size in short form; on its page the three totals with what they leave out, the approval before use outside the team, each number with its source ("No source" in the warning tone), and the market map, where each organisation is a dot on two named axes and Powerhouse is the primary one.</p>
+            <div class="ds-demo ds-demo--wide">
+              <div class="ds-pane pb-root">
+                <div class="pb-card-grid" style="max-width: 600px">
+                  <div class="pb-card pb-clickable"><div class="pb-card__kind"><i data-icon="compass"></i>EU</div><div class="pb-card__title">Finance operations</div><div class="pb-card__amounts">€1.2bn · €310m · €18m</div><div class="pb-card__foot"><span class="pb-small pb-faint">3 organisations on the map</span><span class="pb-tag pb-tag--green">Approved</span></div></div>
+                  <div class="pb-card pb-clickable"><div class="pb-card__kind"><i data-icon="compass"></i>DACH</div><div class="pb-card__title">Law firms</div><div class="pb-card__amounts">Not sized yet</div><div class="pb-card__foot"><span class="pb-small pb-faint">2 organisations on the map</span><span class="pb-tag pb-tag--default">Draft</span></div></div>
+                </div>
+                <div class="pb-tiles pb-tiles--3" style="margin-top: 20px">
+                  <div class="pb-tile pb-tile--static"><span class="pb-tile__label">Total market (TAM)</span><span class="pb-tile__value">€1.2bn</span><span class="pb-tile__sub">1 not counted yet</span></div>
+                  <div class="pb-tile pb-tile--static"><span class="pb-tile__label">Serviceable (SAM)</span><span class="pb-tile__value">€310m</span><span class="pb-tile__sub">From 2 segments</span></div>
+                  <div class="pb-tile pb-tile--static"><span class="pb-tile__label">Obtainable in 3 years (SOM)</span><span class="pb-tile__value">€18m</span><span class="pb-tile__sub">From 2 segments</span></div>
+                </div>
+                <div class="pb-stack pb-gap-2" style="margin-top: 16px; max-width: 640px">
+                  <p class="pb-flex pb-flex--center pb-gap-8"><span class="pb-tag pb-tag--default">Draft</span><span class="pb-small">Not approved for use outside the team.</span></p>
+                  <div class="pb-overline">Before you approve</div>
+                  <ul class="pb-checks"><li class="pb-checks__item is-warn"><i data-icon="alert"></i>Add a source for the value per organisation in Group finance</li></ul>
+                  <div><button class="pb-btn pb-btn--primary" disabled><span class="pb-btn__people"><i data-icon="people-only" class="pb-icon--xs"></i></span>Approve the figures</button></div>
+                  <p class="pb-reassure"><i data-icon="shield"></i>Only a person can approve, signed with your name. Changing a figure afterwards needs a reopen.</p>
+                </div>
+                <div class="pb-table-wrap" style="margin-top: 16px">
+                  <table class="pb-table"><thead><tr><th>Segment</th><th class="pb-num">Organisations</th><th class="pb-num">Value per organisation a year, EUR</th><th>We can serve it</th><th class="pb-num">Obtainable in 3 years</th></tr></thead>
+                  <tbody><tr><td>Mid-size finance teams</td><td class="pb-num"><input class="pb-input pb-input--number" value="1200" /><button class="pb-source"><i data-icon="source" class="pb-icon--xs"></i><span>Companies registry, 2026</span></button></td><td class="pb-num"><input class="pb-input pb-input--number" value="40000" /><button class="pb-source is-missing"><i data-icon="alert" class="pb-icon--xs"></i><span>No source</span></button></td><td><input type="checkbox" checked /></td><td class="pb-num"><input class="pb-input pb-input--number" value="12" /></td></tr></tbody></table>
+                </div>
+                <div class="pb-map" style="max-width: 720px">
+                  <span class="pb-map__axis pb-map__axis--x"></span><span class="pb-map__axis pb-map__axis--y"></span>
+                  <span class="pb-map__end pb-map__end--left">Built per customer</span><span class="pb-map__end pb-map__end--right">A product the customer configures</span><span class="pb-map__end pb-map__end--bottom">Outputs only</span><span class="pb-map__end pb-map__end--top">Signed record of who approved what</span>
+                  <button class="pb-map__dot" style="left: 22%; bottom: 30%"><span>SolveAI</span></button>
+                  <button class="pb-map__dot is-selected" style="left: 72%; bottom: 35%"><span>Lexroom</span></button>
+                  <button class="pb-map__dot pb-map__dot--us" style="left: 70%; bottom: 82%"><span>Powerhouse</span></button>
+                </div>
+                <div class="pb-map__caption" style="max-width: 984px"><span>Left to right: Who builds it</span><span>Bottom to top: What the record shows</span></div>
+              </div>
+            </div>
+          </section>
+
           <!-- ============================== NAVIGATION ============================== -->
           <section class="ds-section" id="navigation">
             <h2 class="ds-section__title">Navigation</h2>

@@ -8,6 +8,7 @@ import { ContactEditor } from "./contact-editor/module.js";
 import { DecisionEditor } from "./decision-editor/module.js";
 import { InvestorListEditor } from "./investor-list-editor/module.js";
 import { LeadEditor } from "./lead-editor/module.js";
+import { MarketEditor } from "./market-editor/module.js";
 import { OpportunityEditor } from "./opportunity-editor/module.js";
 import { PlaybookEditor } from "./playbook-editor/module.js";
 import { PowerBd } from "./power-bd/module.js";
@@ -19,6 +20,7 @@ export const editors: EditorModule[] = [
   DecisionEditor,
   InvestorListEditor,
   LeadEditor,
+  MarketEditor,
   OpportunityEditor,
   PlaybookEditor,
   PowerBd,
