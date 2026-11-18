@@ -120,3 +120,15 @@ describe("runImport", () => {
     expect(r).toMatchObject({ outcome: "failed", step: "lead", message: "A won or lost lead is final" });
   });
 });
+
+describe("a lead's source from the file", () => {
+  it("records where each lead came from, as the lead's reducer accepts it", async () => {
+    const rows = rowsOf("Company,Source\nCosylab,AI WEEK 2026\nSetcce,Referral\nKelvar,");
+    const { deps, leads } = memoryDrive();
+    const results = await runImport(rows, () => true, deps, () => undefined);
+    expect(results.map((r) => r.outcome)).toEqual(["created", "created", "created"]);
+    const sources = [...leads.values()].map((d) => [d.state.global.source, d.state.global.sourceDetail]);
+    expect(sources).toEqual([["EVENT", "AI WEEK 2026"], ["REFERRAL", null], [null, null]]);
+    for (const d of leads.values()) expect(d.operations.global.every((o) => !o.error)).toBe(true);
+  });
+});

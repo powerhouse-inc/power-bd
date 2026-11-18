@@ -39,6 +39,8 @@ export function leadActionsFor(change: LeadChange, changedAt: string): LeadActio
     }),
   ];
   if (change.owner) out.push(leadActions.setOwner({ owner: change.owner }));
+  if (change.source)
+    out.push(leadActions.setLeadSource({ source: change.source.source, sourceDetail: change.source.detail ?? undefined }));
   if (change.status !== "TO_CONTACT") out.push(leadActions.setLeadStatus({ status: change.status, changedAt }));
   if (change.nextStep)
     out.push(

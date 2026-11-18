@@ -4,6 +4,31 @@ import type { CsvTable } from "./csv.js";
 
 type LeadKind = NonNullable<LeadState["kind"]>;
 type LeadStatus = LeadState["status"];
+type LeadSource = NonNullable<LeadState["source"]>;
+
+const SOURCE_WORDS: readonly [LeadSource, RegExp][] = [
+  ["EVENT", /\b(event|week|conference|summit|expo|fair|meetup|forum|congress|webinar|festival)\b/],
+  ["REFERRAL", /\b(referral|referred|introduction|introduced|intro)\b/],
+  ["PARTNER", /\bpartner/],
+  ["INBOUND", /\b(inbound|website|web form|contact form|newsletter|signup|sign up)\b/],
+  ["OUTBOUND", /\b(outbound|cold|outreach|prospecting)\b/],
+];
+
+/**
+ * Where a lead came from, read from a spreadsheet cell: a source's own name
+ * ("Referral") is that source; otherwise words such as "week" or "conference"
+ * point to an event, "referred" to a referral, and so on, and the cell is kept
+ * as the detail ("AI WEEK 2026"). Anything else is Other, with the cell as
+ * its detail.
+ */
+export function parseSource(text: string): { source: LeadSource; detail: string | null } {
+  const t = text.trim();
+  const named = VOCABULARY.leadSource.find((s) => s.label.toLowerCase() === t.toLowerCase() || s.value === t.toUpperCase());
+  if (named) return { source: named.value as LeadSource, detail: null };
+  const lower = t.toLowerCase();
+  const hit = SOURCE_WORDS.find(([, words]) => words.test(lower));
+  return { source: hit ? hit[0] : "OTHER", detail: t };
+}
 
 /** What a column of the file fills in. */
 export type ImportField =
@@ -20,6 +45,7 @@ export type ImportField =
   | "owner"
   | "nextStep"
   | "nextStepDue"
+  | "source"
   | "notes";
 
 /** The fields in the order the matching step lists them, with their labels. */
@@ -37,6 +63,7 @@ export const IMPORT_FIELDS: { value: ImportField; label: string }[] = [
   { value: "owner", label: "Owner" },
   { value: "nextStep", label: "Next step" },
   { value: "nextStepDue", label: "Next step due" },
+  { value: "source", label: "Where it came from" },
   { value: "notes", label: "Add to notes" },
 ];
 
@@ -54,7 +81,8 @@ const SYNONYMS: [ImportField, string[]][] = [
   ["owner", ["owner", "assigned to", "responsible"]],
   ["nextStep", ["next step", "next action", "to do", "todo"]],
   ["nextStepDue", ["next step due", "due", "due date", "follow up date", "follow up"]],
-  ["notes", ["notes", "note", "comments", "comment", "source", "meeting date"]],
+  ["source", ["source", "lead source", "channel", "came from", "origin"]],
+  ["notes", ["notes", "note", "comments", "comment", "meeting date"]],
 ];
 
 /**
@@ -103,6 +131,8 @@ export type PlannedRow = {
   status: LeadStatus;
   owner: string | null;
   nextStep: { text: string; dueDate: string | null } | null;
+  /** Where it came from, read from the file's words. */
+  source: { source: LeadSource; detail: string | null } | null;
   /** What was changed or left out, said for the person checking. */
   problems: string[];
   /** True when the row can't be imported at all. */
@@ -227,6 +257,9 @@ export function planImport(table: CsvTable, mapping: readonly ImportField[], ctx
     if (!stepText && dueText) problems.push("A due date without a next step is left out");
     const nextStep = stepText ? { text: stepText, dueDate: due ? `${due}T00:00:00.000Z` : null } : null;
 
+    const sourceText = get("source");
+    const source = sourceText ? parseSource(sourceText) : null;
+
     const blocked = leadName === "";
     if (blocked) problems.unshift("No organisation or lead name: this row can't be imported");
     const orgId = organisation?.kind === "existing" ? organisation.id : null;
@@ -240,6 +273,7 @@ export function planImport(table: CsvTable, mapping: readonly ImportField[], ctx
       status,
       owner,
       nextStep,
+      source,
       problems,
       blocked,
       duplicateOf: dup ? { id: dup.id, name: dup.name } : null,

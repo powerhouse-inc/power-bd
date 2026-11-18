@@ -16,6 +16,7 @@ export type LeadChange = {
   owner: string | null;
   status: LeadState["status"];
   nextStep: { id: string; text: string; owner: string | null; dueDate: string | null } | null;
+  source: { source: NonNullable<LeadState["source"]>; detail: string | null } | null;
   contact: { id: string; contactId: string; personId: string; role: string | null } | null;
 };
 
@@ -104,6 +105,7 @@ export async function runImport(
         owner: r.owner,
         status: r.status,
         nextStep: r.nextStep ? { id: deps.newId(), text: r.nextStep.text, owner: r.owner, dueDate: r.nextStep.dueDate } : null,
+        source: r.source,
         contact: r.person && personId && organisationId ? { id: deps.newId(), contactId: organisationId, personId, role: r.person.role } : null,
       });
       results.push({ row: r.row, outcome: "created", leadId, organisationId, organisationNew });

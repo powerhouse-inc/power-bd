@@ -71,6 +71,8 @@ export type CaptureForm = {
   what: string;
   nextStep: string;
   nextDay: string;
+  /** How it went, if the person says; it is saved with the interaction. */
+  outcome: "POSITIVE" | "NEUTRAL" | "NEGATIVE" | null;
 };
 
 /** What saving still waits for, in the order of the form; empty when it can be saved. */
@@ -104,5 +106,6 @@ export function captureInputs(
     step: step
       ? { id: ids.step, text: step, owner: me ?? undefined, dueDate: form.nextDay ? `${form.nextDay}T00:00:00.000Z` : undefined }
       : null,
+    outcome: form.outcome ? { id: ids.interaction, outcome: form.outcome } : null,
   };
 }

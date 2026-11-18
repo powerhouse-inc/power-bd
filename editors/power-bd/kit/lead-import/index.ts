@@ -5,6 +5,7 @@ export {
   hostOf,
   mergedNotes,
   parseDay,
+  parseSource,
   planImport,
   sameName,
   type ImportContext,

@@ -31,6 +31,7 @@ const form = (over: Partial<CaptureForm> = {}): CaptureForm => ({
   what: " Went well, they want a pilot ",
   nextStep: "",
   nextDay: "",
+  outcome: null,
   ...over,
 });
 
@@ -86,10 +87,21 @@ describe("the form", () => {
         teamMembers: [ME],
       },
       step: null,
+      outcome: null,
     });
     const withStep = captureInputs(form({ nextStep: " Send the outline ", nextDay: "2026-11-20" }), "UTC", null, ids);
     expect(withStep.interaction.teamMembers).toEqual([]);
     expect(withStep.step).toEqual({ id: "s1", text: "Send the outline", owner: undefined, dueDate: "2026-11-20T00:00:00.000Z" });
     expect(captureInputs(form({ nextStep: "Call back" }), "UTC", ME, ids).step).toEqual({ id: "s1", text: "Call back", owner: ME, dueDate: undefined });
+  });
+});
+
+describe("how it went", () => {
+  it("saves how it went with the interaction, and nothing when not said", () => {
+    const ids = { interaction: "i1", step: "s1" };
+    const said = captureInputs(form({ outcome: "POSITIVE" }), "Europe/Ljubljana", null, ids);
+    expect(said.outcome).toEqual({ id: "i1", outcome: "POSITIVE" });
+    const silent = captureInputs(form(), "Europe/Ljubljana", null, ids);
+    expect(silent.outcome).toBeNull();
   });
 });

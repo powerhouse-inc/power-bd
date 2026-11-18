@@ -49,7 +49,7 @@ export function CaptureDialog({ onClose }: { onClose: () => void }) {
     opportunities: (useOpportunityDocumentsInSelectedDrive() ?? []).map(record),
   });
   const [query, setQuery] = useState("");
-  const [form, setForm] = useState<CaptureForm>({ recordId: null, kind: "MEETING", day: now.day, time: now.time, what: "", nextStep: "", nextDay: "" });
+  const [form, setForm] = useState<CaptureForm>({ recordId: null, kind: "MEETING", day: now.day, time: now.time, what: "", nextStep: "", nextDay: "", outcome: null });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [logged, setLogged] = useState<{ record: CaptureRecord; step: boolean } | null>(null);
@@ -59,11 +59,19 @@ export function CaptureDialog({ onClose }: { onClose: () => void }) {
 
   const save = () => {
     if (!picked || missing.length > 0 || busy) return;
-    const { interaction, step } = captureInputs(form, zone, me, { interaction: generateId(), step: generateId() });
+    const { interaction, step, outcome } = captureInputs(form, zone, me, { interaction: generateId(), step: generateId() });
     const made =
       picked.kind === "lead"
-        ? [leadActions.addInteraction(interaction), ...(step ? [leadActions.addNextStep(step)] : [])]
-        : [opportunityActions.addInteraction(interaction), ...(step ? [opportunityActions.addNextStep(step)] : [])];
+        ? [
+            leadActions.addInteraction(interaction),
+            ...(outcome ? [leadActions.setInteractionOutcome(outcome)] : []),
+            ...(step ? [leadActions.addNextStep(step)] : []),
+          ]
+        : [
+            opportunityActions.addInteraction(interaction),
+            ...(outcome ? [opportunityActions.setInteractionOutcome(outcome)] : []),
+            ...(step ? [opportunityActions.addNextStep(step)] : []),
+          ];
     setBusy(true);
     setError(null);
     let refused = false;
@@ -81,7 +89,7 @@ export function CaptureDialog({ onClose }: { onClose: () => void }) {
   const again = () => {
     setLogged(null);
     setQuery("");
-    setForm({ recordId: null, kind: "MEETING", day: now.day, time: now.time, what: "", nextStep: "", nextDay: "" });
+    setForm({ recordId: null, kind: "MEETING", day: now.day, time: now.time, what: "", nextStep: "", nextDay: "", outcome: null });
   };
 
   return (
@@ -188,6 +196,19 @@ export function CaptureDialog({ onClose }: { onClose: () => void }) {
                     </button>
                   );
                 })}
+              </div>
+              <div className="pb-segmented" role="group" aria-label="How did it go?">
+                {VOCABULARY.interactionOutcome.map((o) => (
+                  <button
+                    type="button"
+                    key={o.value}
+                    className={`pb-segmented__item${form.outcome === o.value ? " is-active" : ""}`}
+                    aria-pressed={form.outcome === o.value}
+                    onClick={() => set({ outcome: form.outcome === o.value ? null : (o.value as CaptureForm["outcome"]) })}
+                  >
+                    {o.label}
+                  </button>
+                ))}
               </div>
               <div className="pb-capture__row">
                 <label className="pb-field">

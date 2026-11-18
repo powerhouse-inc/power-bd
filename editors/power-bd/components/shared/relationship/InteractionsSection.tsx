@@ -1,9 +1,10 @@
 import {
   enumValue,
   INTERACTION_KINDS,
+  INTERACTION_OUTCOMES,
   INTERACTION_STATUSES,
 } from "../../../kit/enums.js";
-import type { InteractionKind, InteractionStatus } from "document-models/lead";
+import type { InteractionKind, InteractionOutcome, InteractionStatus } from "document-models/lead";
 import { ErrorLine } from "../ErrorLine.js";
 import { zonedToInstant } from "../../../kit/funding/index.js";
 import { localTime } from "../../../kit/overview/time.js";
@@ -23,6 +24,8 @@ export type InteractionItem = {
   timeZone?: string | null;
   summary?: string | null;
   notesSource?: { title: string } | null;
+  /** How a held interaction went; absent on entries recorded before outcomes existed. */
+  outcome?: string | null;
 };
 
 export type NewInteraction = {
@@ -52,6 +55,7 @@ export function InteractionsSection({
   onRemove,
   onUpdate,
   onBrief,
+  onOutcome,
 }: {
   items: readonly InteractionItem[];
   onAdd: (item: NewInteraction, onErrors: OnErrors) => void;
@@ -60,6 +64,8 @@ export function InteractionsSection({
   onUpdate?: (change: InteractionChange, onErrors: OnErrors) => void;
   /** Opens the brief for a scheduled meeting; without it there is no Brief button. */
   onBrief?: (id: string) => void;
+  /** Says how a held interaction went; without it, outcomes are not shown. */
+  onOutcome?: (id: string, outcome: InteractionOutcome | null, onErrors: OnErrors) => void;
 }) {
   const [adding, setAdding] = useState(false);
   const [kind, setKind] = useState<InteractionKind>("CALL");
@@ -301,6 +307,31 @@ export function InteractionsSection({
               </div>
               {i.summary ? (
                 <div className="pb-timeline__body">{i.summary}</div>
+              ) : null}
+              {onOutcome && i.status === "HELD" ? (
+                <div className="pb-timeline__outcome">
+                  <span>How did it go?</span>
+                  <span className="pb-segmented" role="group" aria-label="How did it go?">
+                    {VOCABULARY.interactionOutcome.map((o) => {
+                      const on = (i.outcome ?? null) === o.value;
+                      return (
+                        <button
+                          key={o.value}
+                          type="button"
+                          className={`pb-segmented__item${on ? " is-active" : ""}`}
+                          aria-pressed={on}
+                          onClick={() =>
+                            run((onErrors) =>
+                              onOutcome(i.id, on ? null : (enumValue(INTERACTION_OUTCOMES, o.value) ?? null), onErrors),
+                            )
+                          }
+                        >
+                          {o.label}
+                        </button>
+                      );
+                    })}
+                  </span>
+                </div>
               ) : null}
             </div>
             {onBrief && i.status === "SCHEDULED" && !passed ? (

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseCsv } from "./csv.js";
-import { guessMapping, hostOf, mergedNotes, parseDay, planImport, sameName, type ImportContext } from "./plan.js";
+import { guessMapping, hostOf, mergedNotes, parseDay, planImport, sameName, type ImportContext, parseSource } from "./plan.js";
 
 const MARA = { name: "Mara Lind", address: "0x1111111111111111111111111111111111111111" };
 const ctx: ImportContext = {
@@ -16,7 +16,7 @@ const TEAM_HEADER = "Name,Company,Role,Type,Status,Source,Meeting date,Owner,Con
 describe("guessMapping", () => {
   it("reads the team's own leads file", () => {
     expect(guessMapping(TEAM_HEADER.split(","))).toEqual([
-      "person", "organisation", "role", "kind", "status", "notes", "notes", "owner", "email", "nextStep", "notes",
+      "person", "organisation", "role", "kind", "status", "source", "notes", "owner", "email", "nextStep", "notes",
     ]);
   });
 
@@ -62,7 +62,8 @@ describe("planImport", () => {
     expect(r).toMatchObject({
       row: 2,
       leadName: "Setcce",
-      organisation: { kind: "existing", id: "org-setcce", existingNotes: "Trust services", notes: "Source: AI WEEK 2026\nMeeting date: 2026-11-11\nNotes: Met at the booth" },
+      organisation: { kind: "existing", id: "org-setcce", existingNotes: "Trust services", notes: "Meeting date: 2026-11-11\nNotes: Met at the booth" },
+      source: { source: "EVENT", detail: "AI WEEK 2026" },
       person: { name: "Svetlana Šaljić", role: "CEO", email: "s@setcce.si", phone: null },
       kind: "SALES",
       status: "MEETING_SET",
@@ -128,5 +129,20 @@ describe("planImport", () => {
   it("finds a lead that already exists for the organisation", () => {
     expect(plan("Company\nKelvar Institute")[0].duplicateOf).toEqual({ id: "lead-1", name: "Kelvar Institute" });
     expect(plan("Company,Lead\nKelvar Institute,Second pilot")[0].duplicateOf).toBeNull();
+  });
+});
+
+describe("where a lead came from", () => {
+  it("takes a source's own name, and keeps other words as the detail", () => {
+    expect(parseSource("Referral")).toEqual({ source: "REFERRAL", detail: null });
+    expect(parseSource("inbound")).toEqual({ source: "INBOUND", detail: null });
+    expect(parseSource("AI WEEK 2026")).toEqual({ source: "EVENT", detail: "AI WEEK 2026" });
+    expect(parseSource("Seyforum conference")).toEqual({ source: "EVENT", detail: "Seyforum conference" });
+    expect(parseSource("Referred by Nika")).toEqual({ source: "REFERRAL", detail: "Referred by Nika" });
+    expect(parseSource("Partner intro via SAP")).toEqual({ source: "REFERRAL", detail: "Partner intro via SAP" });
+    expect(parseSource("Website contact form")).toEqual({ source: "INBOUND", detail: "Website contact form" });
+    expect(parseSource("Cold email")).toEqual({ source: "OUTBOUND", detail: "Cold email" });
+    expect(parseSource("Reseller partner")).toEqual({ source: "PARTNER", detail: "Reseller partner" });
+    expect(parseSource("A friend")).toEqual({ source: "OTHER", detail: "A friend" });
   });
 });

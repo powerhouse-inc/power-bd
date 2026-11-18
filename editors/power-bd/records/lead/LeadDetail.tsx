@@ -1,5 +1,5 @@
 import { useToday } from "../../components/shared/useToday.js";
-import { enumValue, FITS, LEAD_KINDS, LEAD_STATUSES } from "../../kit/enums.js";
+import { enumValue, FITS, LEAD_KINDS, LEAD_SOURCES, LEAD_STATUSES } from "../../kit/enums.js";
 import type { Fit } from "document-models/lead";
 import { organisationLabel } from "../../kit/organisation-list/index.js";
 import { ErrorLine } from "../../components/shared/ErrorLine.js";
@@ -391,6 +391,60 @@ export function LeadDetail({
             }
           />
         </div>
+        <div className="pb-prop__key">
+          <Icon name="source" />
+          Came from
+        </div>
+        <div className="pb-prop__value pb-prop__value--pair">
+          <select
+            className="pb-select pb-select--inline"
+            aria-label="Came from"
+            value={s.source ?? ""}
+            onChange={(e) =>
+              details.run((onErrors) =>
+                send(actions.setLeadSource({ source: enumValue(LEAD_SOURCES, e.target.value) ?? null }), onErrors),
+              )
+            }
+          >
+            <option value="">Not recorded</option>
+            {VOCABULARY.leadSource.map((t) => (
+              <option key={t.value} value={t.value}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+          <input
+            className="pb-input"
+            aria-label="Which event, person or campaign"
+            placeholder="Which event, person or campaign"
+            defaultValue={s.sourceDetail ?? ""}
+            key={`source-${s.sourceDetail ?? ""}`}
+            onBlur={(e) =>
+              e.target.value.trim() !== (s.sourceDetail ?? "") &&
+              details.run((onErrors) => send(actions.setLeadSource({ sourceDetail: e.target.value }), onErrors))
+            }
+          />
+        </div>
+        <div className="pb-prop__key">
+          <Icon name="calendar" />
+          Expected close
+        </div>
+        <div className="pb-prop__value">
+          <input
+            type="date"
+            className="pb-input pb-input--auto"
+            aria-label="Expected close"
+            value={(s.expectedCloseDate ?? "").slice(0, 10)}
+            onChange={(e) =>
+              details.run((onErrors) =>
+                send(
+                  actions.setExpectedClose({ expectedCloseDate: e.target.value ? `${e.target.value}T00:00:00.000Z` : null }),
+                  onErrors,
+                ),
+              )
+            }
+          />
+        </div>
       </div>
       <ErrorLine message={details.error} />
 
@@ -553,6 +607,7 @@ export function LeadDetail({
         onRemove={(id, e) => send(actions.removeInteraction({ id }), e)}
         onUpdate={(c, e) => send(actions.updateInteraction(c), e)}
         onBrief={(id) => setBriefFor({ meetingId: id })}
+        onOutcome={(id, outcome, e) => send(actions.setInteractionOutcome({ id, outcome }), e)}
       />
 
       <ContactLinksSection
@@ -560,6 +615,7 @@ export function LeadDetail({
         contacts={contacts}
         onLink={(l, e) => send(actions.linkContact(l), e)}
         onUnlink={(id, e) => send(actions.unlinkContact({ id }), e)}
+        onDealRole={(id, dealRole, e) => send(actions.setContactLinkDealRole({ id, dealRole }), e)}
       />
 
       <ReferencesSection

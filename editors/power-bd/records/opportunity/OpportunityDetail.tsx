@@ -527,6 +527,7 @@ export function OpportunityDetail({
         onAdd={(i, e) => send(actions.addInteraction(i), e)}
         onRemove={(id, e) => send(actions.removeInteraction({ id }), e)}
         onUpdate={(c, e) => send(actions.updateInteraction(c), e)}
+        onOutcome={(id, outcome, e) => send(actions.setInteractionOutcome({ id, outcome }), e)}
       />
       <ContactLinksSection
         items={s.contactLinks}

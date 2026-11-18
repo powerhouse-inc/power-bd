@@ -1,4 +1,7 @@
+import type { DealRole } from "document-models/lead";
 import { useState } from "react";
+import { VOCABULARY } from "../../../../../design-system/vocabulary.js";
+import { DEAL_ROLES, enumValue } from "../../../kit/enums.js";
 import { ErrorLine } from "../ErrorLine.js";
 import { generateId } from "document-model";
 import { Icon } from "../../Icon.js";
@@ -9,6 +12,8 @@ export type ContactLinkItem = {
   contactId: string;
   personId?: string | null;
   role?: string | null;
+  /** On a lead: what this person is in the deal. */
+  dealRole?: string | null;
 };
 export type ContactChoice = {
   id: string;
@@ -21,6 +26,7 @@ export function ContactLinksSection({
   contacts,
   onLink,
   onUnlink,
+  onDealRole,
 }: {
   items: readonly ContactLinkItem[];
   contacts: readonly ContactChoice[];
@@ -29,6 +35,8 @@ export function ContactLinksSection({
     onErrors: OnErrors,
   ) => void;
   onUnlink: (id: string, onErrors: OnErrors) => void;
+  /** Sets a linked person's role in the deal; without it, roles are not shown (a funding opportunity has none). */
+  onDealRole?: (id: string, dealRole: DealRole | null, onErrors: OnErrors) => void;
 }) {
   const [adding, setAdding] = useState(false);
   const [contactId, setContactId] = useState("");
@@ -136,6 +144,23 @@ export function ContactLinksSection({
                 .filter(Boolean)
                 .join(" · ")}
             </span>
+            {onDealRole ? (
+              <select
+                className="pb-select pb-select--inline"
+                aria-label={`${name}'s role in the deal`}
+                value={l.dealRole ?? ""}
+                onChange={(e) =>
+                  run((onErrors) => onDealRole(l.id, enumValue(DEAL_ROLES, e.target.value) ?? null, onErrors))
+                }
+              >
+                <option value="">Role in the deal</option>
+                {VOCABULARY.dealRole.map((t) => (
+                  <option key={t.value} value={t.value}>
+                    {t.label}
+                  </option>
+                ))}
+              </select>
+            ) : null}
             <button
               className="pb-btn pb-btn--ghost pb-btn--sm pb-btn--icon"
               aria-label="Unlink this person"
