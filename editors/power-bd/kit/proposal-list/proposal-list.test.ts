@@ -8,14 +8,12 @@ import {
   step,
 } from "../proposal-totals/fixtures.js";
 import {
-  filterRows,
   isBlank,
   leadProposalNext,
   openProposalCount,
   proposalBadges,
   proposalNext,
   proposalRows,
-  statusOptions,
   waitLabel,
   waitSummary,
   waitsOn,
@@ -294,29 +292,6 @@ describe("the rows of the Proposals place", () => {
       "open-ended",
       "done",
     ]);
-  });
-
-  it("filters by status, and by nothing", () => {
-    const all = rows([
-      proposalRec("a", { status: "APPROVED" }),
-      proposalRec("s"),
-    ]);
-    expect(filterRows(all, "").length).toBe(2);
-    expect(filterRows(all, "SENT").map((r) => r.id)).toEqual(["s"]);
-  });
-
-  it("offers every status after the choice that narrows nothing", () => {
-    expect(statusOptions().map((o) => o.label)).toEqual([
-      "All",
-      "Draft",
-      "Approved",
-      "Sent",
-      "Accepted",
-      "Declined",
-      "Withdrawn",
-      "Superseded",
-    ]);
-    expect(statusOptions()[0].value).toBe("");
   });
 
   it("sums who the open proposals wait on", () => {

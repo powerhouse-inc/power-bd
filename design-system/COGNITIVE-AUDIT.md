@@ -929,6 +929,279 @@ The Lead and Opportunity audits stand. Found while testing every editor's contro
 - **Decision:** refusals are named where the change was made.
 - **Emotion:** no change waits unsent.
 
+### Moving a lead on the Leads board (built, `views/leads/LeadsBoard.tsx`, `components/shared/board/`)
+
+The Leads audit and *Moving a card on the board* stand. This covers one change: the Leads board, one column per status, takes a dragged card the way the Overview's stages do.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** While a card is in the hand the columns are the only thing to look at, as on the Overview: those that take it tint in the accent blue, the one under the card deeper, those that refuse it fade, and each shows its one line. The card lifts and its place fades. No coloured edge on any column or card.
+2. **Wayfinding.** On this board a column is a status, so a drop names its status and nothing is picked after it. The question, when there is one, stands in the column the card was put on; Escape or Cancel gives the focus back to the card, which never left its place.
+3. **Memory and semantics.** The same drag as the Overview and every CRM board, and the same "Move to…" list on each card for the keyboard and touch. A move sends the lead page's own action and follows its rules, so the board and the page never disagree.
+4. **Language.** Status names from the vocabulary. One line per column: "Becomes Met", "Becomes Lost · asks why", "Becomes Won · asks to confirm", "Comes off hold · returns to Met". Refusals say what to do first: "Give the lead an owner first", "Take it off hold first: it returns to Met", "An investor lead goes no further than met".
+5. **Decision making.** What a drop does shows before letting go. An active status is set at once. Lost and Parked ask why, and the move waits for the reason. Won has no reason to give but is final, so it asks once: the focus starts on Cancel and the button says "Mark won". A parked lead goes back only to the status it came from. An owner and an organisation are asked for on the column, not after a failed drop.
+6. **Emotion.** Fear: "I dropped it on Won by accident". No final status is one careless drop: Lost needs a reason, Won needs a click on "Mark won", and both carry "Nothing is deleted: a closed lead keeps its history. Closing is final." Parking says it returns to where it was. A refused move leaves the card where it was with the reason beside it.
+
+**2. Concepts weighed**
+
+- **A · Task-oriented:** only the "Move to…" list. Exact, but the board already invites dragging, and the Overview does it.
+- **B · Conventional:** free drag, the status set on drop with no question, errors as toasts. Familiar, but Won would close a lead in one drop, and a toast is far from the card.
+- **C · Immersive:** columns that widen and preview the card's new look while dragging. The layout would move under the pointer on an eight-column board that already scrolls.
+
+**Chosen:** the Overview's blend, unchanged: B's drag, A's list as the second way in, C's calm one-line hints. One addition for a status board: Won, final without a reason, is confirmed (`confirm`, a new move outcome). Evidence: the lead reducer refuses Lost and Parked without a reason, anything past "to contact" without an owner and an organisation, a status change while parked, and Proposal or Won for an investor lead; the Overview audit's rule that closing is never one careless drop.
+
+**3. Implementation:** the Overview's parts (`pb-card.is-lifted`, `.is-away`, `pb-board__col.is-target`, `.is-over`, `.is-refused`, `pb-board__hint`, `pb-ask`, `pb-card__move`, `pb-card__moves`, `pb-move`, `pb-reassure`, `ErrorLine`) a confirm variant of `pb-ask`, shown on the showcase, and `pb-board--drop`: every column runs the board's full height and the board keeps room under its cards (`--pb-board-drop-h`), so a card can be let go anywhere under a column's head. Without it a column was only as tall as its cards, and a drop in the empty space under a head was refused. The rules are pure, in `kit/overview-view/move.ts` (`leadStatusMove`, `leadStatusTargets`), and a test runs every status, kind, owner and organisation against the lead reducer. The drag itself is `useBoardMove`, shared with the boards to come.
+
+**4. Mapping**
+
+- **Vision:** tinted columns take the card, faded ones do not; the lifted card shows what moves.
+- **Wayfinding:** a column is a status; the question stands where the card was put; Escape returns to the card.
+- **Memory:** the Overview's drag and "Move to…" list; the lead page's rules and actions.
+- **Language:** status names; refusals say what to do first.
+- **Decision:** what a drop does shows before it; reasons are asked for when needed; Won is confirmed.
+- **Emotion:** no final status in one careless drop; a refused move leaves the card in place with the reason.
+
+
+### Moving a funding opportunity on the Funding board (built, `views/funding/FundingBoard.tsx`)
+
+The Funding audit and *Moving a lead on the Leads board* stand. This covers one change: Funding gets a board, one column per status in deadline order, beside today's list (Board and List, as on Leads), and its cards move the way the Leads board's do.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** While a card is in the hand the columns are the only thing to look at: those that take it tint, the one under the card deeper, those that refuse it fade, each with its one line. A card shows the funder, the name, the next deadline and its day, the owner and the amount; the deadline stays the line people scan for.
+2. **Wayfinding.** Ten columns in the order an opportunity lives: Watching, To evaluate, Deciding, Preparing, Submitted, Next stage, then the four closed ones. The board scrolls sideways and keeps the order of the status path on the opportunity's page. Inside a column the cards keep the list's deadline order.
+3. **Memory and semantics.** The Leads board's drag and "Move to…" list; the opportunity page's own moves (`allowedMoves`) and actions, so the board offers only what the page offers by hand.
+4. **Language.** Status names from the vocabulary. One line per column: "Becomes To evaluate", "Becomes Rejected · asks why", "Becomes Awarded · asks to confirm", "Go or no-go is decided on its page". Refusals say what to do first: "Give it an owner first", "Mark a submission on its page first", "Move it to To evaluate first: a watched opportunity is evaluated before anything else", "Go or no-go comes first: it is decided on the opportunity's page", "After the go decision a funding opportunity moves on or closes".
+5. **Decision making.** Go or no-go is the team lead's decision (FR-13.6): a drop on Preparing or No-go from To evaluate or Deciding changes nothing and offers "Open to decide", with the people mark. Rejected and Withdrawn ask why; Awarded, final without a reason, asks once, with the focus on Cancel. What the opportunity lacks (an owner, a submission with no outcome) is said on the column before the drop.
+6. **Emotion.** Fears: "did I close it by accident?", "did I decide go for the team lead?". Closing always passes a reason or a confirmation with "Nothing is deleted: a closed funding opportunity keeps its history. Closing is final."; a drop never decides go or no-go; a refused move leaves the card where it was with the reason beside it.
+
+**2. Concepts weighed**
+
+- **A · Task-oriented:** keep the deadline list only and add a status menu per row. Exact, but the user asked for a board, and a list hides where the work piles up.
+- **B · Conventional:** a board of the Overview's four stages. Familiar, but Funding's statuses matter on their own (Submitted is not Preparing), and a stage would ask which status after every drop.
+- **C · Immersive:** a timeline of deadlines with cards on it. Strong for dates, but status moves would have no place to land.
+
+**Chosen:** the Leads board's pattern with one column per status, the list kept one click away. Evidence: the opportunity reducer's moves by hand (`MOVES`), its refusal of preparing for the first time and no-go outside the decision, its owner and submission rules, and the reasons it requires for Rejected and Withdrawn.
+
+**3. Implementation:** the Leads board's parts (`pb-board--drop`, `pb-board__hint`, `pb-ask` with its confirm and decision variants, `pb-card__move`, `MoveList`, `ErrorLine`). The rules are pure, in `kit/overview-view/status-moves.ts` (`opportunityStatusMove`, `opportunityStatusTargets`); a test runs every status, owner and submission against the opportunity reducer. The decision question now carries its own line and button (`hint`, `open`, `people`), so the same box opens go or no-go here, approval on the Proposals board and "Start relationship" on the Investors board.
+
+**4. Mapping**
+
+- **Vision:** tinted columns take the card; the deadline stays on every card.
+- **Wayfinding:** columns in the order of the status path; the list one click away.
+- **Memory:** the Leads board's drag and list; the page's moves by hand.
+- **Language:** status names; refusals say what to do first.
+- **Decision:** go or no-go stays a person's decision; reasons and confirmation where the reducer and the stakes need them.
+- **Emotion:** no close in one careless drop; a refused move leaves the card in place with the reason.
+
+### Moving an investor on the Investors board (built, `views/investors/InvestorsBoard.tsx`, `records/investor-list/`)
+
+The Investors audit and *Moving a lead on the Leads board* stand. This covers one change: the investor list gets a board, one column per state (Listed, Shortlisted, Excluded, Engaged), beside today's list with its tabs (Board and List, as on Leads), and its cards are the list's rows.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** The columns are the narrowing the list exists for: a long Listed column, a short Shortlisted one, the few Engaged. A card shows the list it came from, the name, the website, why it was excluded, and how many funded comparables it has. While a card is in the hand, columns tint or fade with their one line, as on Leads.
+2. **Wayfinding.** On the board the tabs give way to the columns, which say the same thing; the list filter stays. Opening a card goes to where its details are: its row in the list, opened, or for an engaged investor its lead. A row asked for from search opens in the list, on that row.
+3. **Memory and semantics.** The Leads board's drag and "Move to…" list; the list page's own buttons and actions (Shortlist, Exclude, Put back on the list, Start relationship), each sent to the list document for that row.
+4. **Language.** State names from the vocabulary. One line per column: "Becomes Shortlisted", "Becomes Excluded · asks why", "Starts a relationship · opens its panel". Refusals say what to do first: "Shortlist it first: a relationship starts from the shortlist", "An engaged investor is a relationship now: open its lead".
+5. **Decision making.** Shortlisting and putting back on the list happen at once. Excluding asks why ("Why exclude it?") with the list's own reassurance, "You can put it back on the list later." Engaging is never done by a drop: it creates the organisation and the investor lead, so the drop changes nothing and offers "Start relationship", which opens the same panel as the list, in the Engaged column, listing what it will create before anything is created.
+6. **Emotion.** Fears: "did I just create a lead by dragging?", "did I lose why we excluded them?". A drop creates nothing; the panel says "Nobody is contacted"; an exclusion keeps its reason on the card; a refused move leaves the card where it was with the reason beside it.
+
+**2. Concepts weighed**
+
+- **A · Task-oriented:** keep the tabs and buttons only. Exact, but the user asked for a board, and the narrowing is easier to see as columns.
+- **B · Conventional:** free drag, Engaged set on drop. Familiar, but engaging needs an organisation and a lead that must exist first; a drop cannot make them silently.
+- **C · Immersive:** a funnel graphic with counts. Appealing, but moving one investor would have no place to land.
+
+**Chosen:** the Leads board's pattern with one column per state, the list one click away, and Start relationship opened, not done, by a drop on Engaged. Evidence: the investor list reducer refuses any change to an engaged row and an exclusion without a reason; engaging needs an organisation and a lead id; the list offers Start relationship from the shortlist only.
+
+**3. Implementation:** the Leads board's parts (`pb-board--drop`, `pb-board__hint`, `pb-ask` with its decision variant, now without the people mark since starting a relationship is not a person-only step, `MoveList`, `ErrorLine`); the Start relationship panel inside a `pb-ask` box in the Engaged column. The rules are pure, in `kit/overview-view/status-moves.ts` (`investorRowMove`, `investorRowTargets`); a test runs every state against the investor list reducer. `useBoardMove` takes a `send` so a row's move goes to its list document.
+
+**4. Mapping**
+
+- **Vision:** the narrowing as columns; the exclusion reason on the card.
+- **Wayfinding:** columns for tabs; a card opens its details or its lead.
+- **Memory:** the Leads board's drag; the list's own buttons and actions.
+- **Language:** state names; refusals say what to do first.
+- **Decision:** excluding asks why; engaging opens the panel that says what it creates.
+- **Emotion:** a drop creates nothing and contacts nobody; reasons are kept.
+
+### Moving a proposal on the Proposals board (built, `views/proposals/ProposalsBoard.tsx`)
+
+The Proposals audit and *Moving a lead on the Leads board* stand. This covers one change: Proposals gets a board, one column per status (Draft, Approved, Sent, Accepted, Declined, Withdrawn, Superseded), beside today's list (Board and List, as on Leads). On the board the status filter gives way to the columns; the "waits on you / the client" pulse stays.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** A card shows the organisation, the title, the lead, the valid-until day, what it waits on (on its own line, so it never wraps beside the value) and the value with its "draft" mark. While a card is in the hand, columns tint or fade with their one line, as on Leads.
+2. **Wayfinding.** Columns in the order a proposal lives, the same as the status path on the proposal's page. A step the board does not take opens the proposal's page, where its status panel takes it.
+3. **Memory and semantics.** The Leads board's drag and "Move to…" list; the proposal page's status panel and its actions (reopen, record the answer, withdraw), so the board offers what the panel offers.
+4. **Language.** Status names from the vocabulary; the panel's own words on the buttons: "Reopen to edit", "The client accepted “Pilot”", "Open to approve", "Open to mark sent". Refusals say what to do first: "Approve it first: a draft is approved before it is sent", "Send it first: the client answers a sent proposal", "A proposal is superseded when the revision that replaces it is marked sent".
+5. **Decision making.** Approve and Mark sent are people-only on the page (the people mark): a drop on Approved or Sent changes nothing and opens the proposal there, with the reason ("after its checks"; "Nothing is sent from Power BD"). Reopening an approved proposal asks once, with the panel's line "Reopening clears the approval; it stays in the history." Accepting asks which option the client chose (a single option is confirmed by name); declining and withdrawing ask why. Superseding has no button on the page (a revision marked sent does it), so the column refuses and says so.
+6. **Emotion.** Fears: "did I approve it without its checks?", "did that send something?", "did I record the wrong answer?". A drop never approves or marks sent; answers carry "Recording the answer changes this proposal only; nothing is sent to the client. The answer is final."; withdrawing says the proposal keeps its history; a refused move leaves the card where it was with the reason beside it.
+
+**2. Concepts weighed**
+
+- **A · Task-oriented:** keep the list and its status filter only. Exact, but the user asked for a board, and where proposals wait is clearer by column.
+- **B · Conventional:** free drag with every status set on drop. Familiar, but approval has checks and a person, sending happens outside Power BD, and an acceptance must name its option.
+- **C · Immersive:** a pipeline with value totals per column. Appealing, but totals across currencies and drafts would mislead.
+
+**Chosen:** the Leads board's pattern with one column per status, the list one click away, and the page's people-only steps opened, not taken, by a drop. Evidence: the proposal reducer approves only a complete draft, marks sent only an approved one, needs an existing option to accept and a reason to decline or withdraw, and supersedes only with a replacement; the status panel marks Approve and Mark sent as people-only and supersedes only when a revision is marked sent.
+
+**3. Implementation:** the Leads board's parts (`pb-board--drop`, `pb-board__hint`, `pb-ask` with its choose, reason, confirm and decision variants, `MoveList`, `ErrorLine`); a confirm's button can carry its own words (`verb`). The rules are pure, in `kit/overview-view/status-moves.ts` (`proposalStatusMove`, `proposalStatusTargets`, `proposalMoveCard`); a test runs every status, with and without options, against the proposal reducer.
+
+**4. Mapping**
+
+- **Vision:** what it waits on on its own line; tinted columns take the card.
+- **Wayfinding:** columns in the order of the status path; people-only steps open the page.
+- **Memory:** the Leads board's drag; the status panel's actions and words.
+- **Language:** status names and the panel's button words; refusals say what to do first.
+- **Decision:** approval and sending stay a person's; the answer names its option; reasons where the reducer needs them.
+- **Emotion:** nothing is approved or sent by a drop; answers say nothing reaches the client.
+
+### Moving a row on the lists (built, `components/shared/board/GroupedTable.tsx`; Leads, Funding, Proposals and Investors in List)
+
+The board entries stand. This covers one change: the List view of Leads, Funding, Proposals and Investors takes a dragged row the way its board takes a card, so drag means one thing in the app: change the status.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** While a row is in the hand, the groups are the only thing to look at. A group that takes the row tints in the accent blue, across its heading and its rows, deeper under the pointer. A group that refuses fades its rows. Each says its one line on its heading. The row left behind is faint. No coloured edge anywhere, as on the board.
+2. **Wayfinding.** The list keeps its columns and its order. It only stands under one heading per status, in the board's column order, so List and Board read in the same order and a status is in the same place in both. An empty status is its heading line, "Won · 0", short, and it still takes a row. The question stands in the group the row was put in, where it will land. The "Move to…" list and a refusal stand right under the row. Escape gives the focus back to the row, which never left.
+3. **Memory and semantics.** A grouped table is Notion's "group by status", with the same drag between groups. The row is moved with the board's rules and sends the board's actions, so List, Board and the record page never disagree.
+4. **Language.** Group headings are the status names with their counts. The lines and refusals are the board's: "Becomes Lost · asks why", "Give the lead an owner first", "Go or no-go is decided on its page".
+5. **Decision making.** What a drop does shows before letting go, on the heading of the group under the pointer. The questions are the board's: which option, why, confirm a final status, or where a person decides. On Investors, Engaged hands over to "Start relationship", which opens in its usual place, under the row it is for, since the list already starts a relationship there.
+6. **Emotion.** The same safety as the board. Nothing final happens in one careless drop. A refused move leaves the row where it was, with the reason under it. Every move can also be made from "Move to…", for anyone who does not drag.
+
+**2. Concepts weighed**
+
+- **A · Task-oriented:** no dragging in lists, only a status picker per row. Exact, but the user asked for dragging on lists, and it would make the List view the one place where dragging does nothing.
+- **B · Conventional:** drag a row up and down to reorder it. Familiar from to-do lists, but reordering means something different from the board's drag, needs a stored position in four models, and would replace the deadline order Funding is read by.
+- **C · Immersive:** while dragging, turn the list into a board. The layout would move under the pointer.
+
+**Chosen:** grouping by status with the board's drag (A's picker kept as "Move to…"). Evidence: the user chose "drag to change status, the same as the board" over reordering on 18 Nov; it needs no model change; and the board's rules are already tested against every reducer.
+
+**Decided with it**
+
+- **Grouping replaces the state tabs (Investors) and the status filter (Proposals) in List, as it already did on the board.** A tab or filter showing one status would hide every other group, leaving nowhere to drop a row. The headings carry the counts the tabs showed. The investor list's source-list filter stays, because it filters by where a row came from, not by state.
+- **Empty groups stay on screen as one heading line,** so each status can always take a row; the board does the same with its empty columns.
+- **The Status column stays,** though the heading says it, so each list's columns are unchanged.
+
+**3. Implementation:** `GroupedTable` with `groupRows` (`kit/overview-view/group-rows.ts`) on top of `useBoardMove`, whose rules and actions are the board's. A tbody per status is the drop zone. New parts in `components.css`, shown under "Moving a row" on the showcase: `pb-table__group`, `pb-table__group-head`, `pb-table__panel`, `pb-table__move`, and `tr.is-lifted` / `tr.is-away`. Rows can take the focus (Tab), and Enter opens one where a click does.
+
+**4. Mapping**
+
+- **Vision:** a tinted group takes the row and a faded one does not; the row in the hand is faint where it was.
+- **Wayfinding:** the board's order; the question where the row will land; Escape back to the row.
+- **Memory:** Notion's grouped table; the board's rules and actions.
+- **Language:** the board's status names, lines and refusals.
+- **Decision:** what a drop does shows before it; the board's questions; the investor's start where the list starts it.
+- **Emotion:** nothing final in one drop; a refusal leaves the row in place with the reason under it; "Move to…" for those who do not drag.
+
+### Calendar (built, `views/calendar/`, `kit/calendar/`)
+
+A new place, after Overview: every dated item of the open records on its day, a month or a week at a time. The team's own dates move by dragging; next steps and meetings are added on a day.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** Today's date in the filled circle is the anchor: the one solid spot, as in the Coming up strip. Items carry the strip's marks (diamond for a deadline, dot for a meeting, square for a next step), so the eye sorts them without reading. A late next step is red, the only red on the page. While an item is in the hand, the days that take it tint in the accent blue and the ones that refuse it say why when the pointer is over them; no day or item has a coloured edge.
+2. **Wayfinding.** Today, earlier, later and the month or week title sit together at the top; Month and Week switch in place. "n more" on a crowded day opens its week, where every item shows. Clicking an item opens its record. A question opens over the day the item was put on; Escape or Cancel gives the focus back to the item, which never left its day.
+3. **Memory and semantics.** A month grid with weeks starting Monday, a week of seven columns, dragging an event to another day, a plus to add on a day: the conventions of Google Calendar and Outlook. The marks and words are the Coming up strip's, so the Calendar reads as that strip, opened out.
+4. **Language.** "Next step", "Meeting", "Deadline", "Decide: …", "Opens: …", "Valid until: …". A day says "Moves here", "Moves here · asks to confirm", or what to do instead: "Pick today or a later day", "The funder sets this date. If it changed, change it on the opportunity's page", "The client has this date in the proposal they received".
+5. **Decision making.** Only dates the team owns move: next steps, decide-by dates and the expected opening at once; a meeting after one confirmation, keeping its clock time in its own time zone. Dates others set are not draggable at all, and say why. Nothing moves into the past, so rescheduling a late step means picking today or later. Adding asks three things in order: what (next step or meeting), for which open lead or funding opportunity, and the words (and a time for a meeting).
+6. **Emotion.** Fears: "did I just move the client's deadline?", "did that send a new invitation?". A funder's or client's date can't be dragged. Moving or adding a meeting says that nothing is sent from Power BD. A refused change leaves the item on its day with the reason above the grid.
+
+**2. Concepts weighed**
+
+- **A · Task-oriented:** an agenda list by day with a date picker on each row. Fast and exact, but it hides how full a week is and what sits next to what.
+- **B · Conventional:** a Google-style month and week grid with drag and a plus on each day. Familiar, but a plain copy would let the funder's and the client's dates be dragged like any event.
+- **C · Immersive:** an hourly week timeline with resizable meetings. Rich, but most items here are whole days, and meeting length is not stored.
+
+**Chosen:** B's grid and drag, with A's restraint (only the team's own dates move, everything else opens its record) and the strip's marks. Evidence: next steps, decide-by dates and the expected opening are the team's to set (`UPDATE_NEXT_STEP`, `SET_DECIDE_BY`, `SET_EXPECTED_OPENING`); funding steps record what a funder published, with a source and a checked date; a sent proposal's valid-until is what the client holds; a meeting has a time and a time zone but no length.
+
+**3. Implementation:** `.pb-cal` with `__wd`, `__day` (`.is-outside`, `.is-past`, `.is-today`, `.is-target`, `.is-over`, `.is-refused`), `__head`, `__num`, `__add`, `__item` (`.is-late`, `.is-away`), `__time`, `__text`, `__more`, `__title`, `.pb-cal--week`; the strip's marks and legend; `pb-board__hint` at the day's foot; `pb-ask` for the meeting question and the add panel; `pb-reassure`. Shown on the showcase. The rules are pure, in `kit/calendar/` (`dayMove`, `canReschedule`, `monthGrid`, `weekDays`, `itemLine`, `addableRecords`), on `datedItems` from `kit/overview/due.ts`. A test applies every move the calendar offers to the lead, opportunity and decision reducers and checks the item lands on the day it was put on.
+
+**4. Mapping**
+
+- **Vision:** today is the one filled spot; marks sort items at a glance; red only for a late step.
+- **Wayfinding:** today, earlier and later beside the title; "n more" opens the week; an item opens its record.
+- **Memory:** a month grid and a week of columns, drag to move, plus to add; the Coming up strip's marks and words.
+- **Language:** what the item is and whose; each day says what a drop does or what to do instead.
+- **Decision:** only the team's dates move; one confirmation for a meeting; add asks what, for whom, then the words.
+- **Emotion:** others' dates can't be dragged; nothing is sent from Power BD; a refused change leaves the item where it was.
+
+### Coming up: a day in the strip and its items (built, `views/overview/ComingUp.tsx`)
+
+The Overview audit stands. This covers one change: pointing at a day in the strip shows its items in the list, and pointing at an item shows its day in the strip.
+
+1. **Vision and attention.** The marks in the strip were anonymous: a diamond on the 26th said "a deadline" but not which one. Now the day pointed at and its items share the accent tint, so a mark and its item read as one. There is no coloured edge, and nothing red or orange.
+2. **Wayfinding.** The list scrolls itself (never the page) so the day's heading comes to the top. Leaving the strip leaves the list where it is, so what was found stays in view.
+3. **Memory and semantics.** Hover-to-reveal, as a calendar's day highlights its events. A day with items can also be reached with Tab and tapped on a touch screen.
+4. **Language.** No new words; the day's own line ("Thu 26 Nov · in 8 days") is the heading the list scrolls to.
+5. **Decision making.** Answers "what is that mark?" without opening anything or counting rows.
+6. **Emotion.** Nothing changes on hover, so pointing around is safe.
+
+**Implementation:** `.pb-strip__day.is-focus` and `.pb-list__day.is-focus` (the items tinted, since the sticky heading keeps its own background); the strip's days with items take focus (`tabIndex`).
+
+### Market: the place and its list (built, `views/market/MarketsView.tsx`; ticket 03)
+
+A new place between Organisations and Decisions: the markets the team sells into.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** The anchor is "New market" (or "Add your first market" while empty). Each card puts the size line in the strongest text after the name ("€1.2bn · €310m · €18m"), so markets compare at a glance; Draft or Approved is a tag in the foot.
+2. **Wayfinding.** Market sits beside Organisations, where the comparables live; a card opens the market's page, and the breadcrumb leads back.
+3. **Memory and semantics.** A card grid like a CRM's pipeline list; the three numbers in the order every pitch deck uses: total, serviceable, obtainable.
+4. **Language.** "Market", "New market", "Not sized yet", "n organisations on the map", "Draft", "Approved". The line's tooltip spells out the three numbers.
+5. **Decision making.** Which market to open: the size line and the approval tag answer "is this ready to quote?" before opening it.
+6. **Emotion.** Nothing on the list changes data; a market starts in EUR over three years, so a new one is never half set up.
+
+**2. Concepts weighed:** a table of markets (A: dense but the numbers lose their shape), cards with the size line (B: familiar from pipeline views), a bubble chart of markets by size (C: striking but hides names and approval). **Chosen:** B; evidence: the team works with five markets, so a grid of five cards fits on one screen.
+
+**3. Implementation:** `.pb-card-grid`, `.pb-card` with `.pb-card__amounts`, `EmptyStart`; `marketCard` and `marketCardLine` in `kit/market/`.
+
+**4. Mapping:** Vision: the size line is the card's anchor. Wayfinding: beside Organisations; a card opens its market. Memory: pipeline cards. Language: total, serviceable, obtainable. Decision: approval shown before opening. Emotion: a new market starts complete.
+
+### Market page: Size (built, `records/market/SizeSection.tsx`, `SourceEditor.tsx`; ticket 04)
+
+What the market is worth to us, and whether the numbers may leave the team.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** Three tiles first: Total market (TAM), Serviceable (SAM), Obtainable in n years (SOM), each with what it rests on or leaves out ("1 not counted yet"). A number without a source carries "No source" in the warning tone, the only orange on the page.
+2. **Wayfinding.** Totals, then the approval line, then the segments they are computed from, then published figures to compare with: from the answer to its evidence.
+3. **Memory and semantics.** TAM, SAM and SOM as BD people use them, computed bottom-up from segments (organisations × value), never typed in; a table edited in place like a spreadsheet.
+4. **Language.** "Organisations", "Value per organisation a year", "We can serve it", "Obtainable in 3 years", "Source", "Published figures", "Approve the figures", "Reopen to change". The SOM label follows the market's horizon.
+5. **Decision making.** Approval's prerequisites are listed before the button (`.pb-checks`): a counted segment, and a source for both numbers of each. A segment missing a number is "not counted yet", never zero, and does not block approval: the tiles say what is left out. A published figure sits beside the totals and is never added to them.
+6. **Emotion.** Fear: "someone quotes a TAM nobody can back". Unsourced numbers show it, approval is people-only and signed with a name, and approved figures are read-only until reopened, with a line saying a reopen means approving again.
+
+**2. Concepts weighed:** A · a spreadsheet page (fast, but sources and approval vanish into cells); B · a pitch-deck page with TAM/SAM/SOM circles (familiar, but the numbers look settled); C · a guided wizard per segment (thorough, slow for five markets). **Chosen:** B's three totals as tiles over A's editable table, with the approval checks between them. Evidence: the team asked for figures that must be approved before use outside, and for sources on every number.
+
+**3. Implementation:** `.pb-tiles--3`, `.pb-tile--static`, `.pb-checks`, `PeopleMark`, `.pb-reassure`, `.pb-table` with `.pb-input--number` and `.pb-source` (`.is-missing`), `VaultNotePicker` for a vault note as source; `totalTiles`, `approvalChecks`, `sourceLabel`, `somLabel` in `kit/market/`; the reducer refuses every figure change while approved.
+
+**4. Mapping:** Vision: totals first; orange only for a missing source. Wayfinding: answer, approval, evidence. Memory: TAM/SAM/SOM, an editable table. Language: BD words; the horizon in the label. Decision: prerequisites before Approve; "not counted yet" instead of zero. Emotion: unsourced numbers show; approval is a person's, and reopening says what it means.
+
+### Market page: the market map and its side peek (built, `records/market/MapSection.tsx`, `DotPeek.tsx`; ticket 05)
+
+Where Powerhouse and the others stand in this market, on two axes the team names.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** Powerhouse is the one dot in the primary colour; the others are quiet pills with their names. The axes' ends are written at the map's edges, so a corner reads without a legend.
+2. **Wayfinding.** No axes yet: the page asks for them first, with an example in each field. A dot opens its side peek on the right (`.pb-peek`), the map stays in view; "Open the organisation" leads to its page, its leads are listed.
+3. **Memory and semantics.** The 2×2 positioning map of every strategy deck; dragging a dot like any canvas; arrow keys nudge (Shift for bigger steps) for the keyboard.
+4. **Language.** "Market map", "Left to right", "Bottom to top", "Place on the map", "Place Powerhouse", "Why it sits here", "Evidence", "Take off the map", "Stands for this positioning".
+5. **Decision making.** Placing offers the organisations tagged comparable or competitor first. A dot lands in the centre and is dragged to its place, so placing never asks for coordinates. Changing an axis keeps the dots and says to check each place.
+6. **Emotion.** Fears: "did I just delete Quillmark?" and "did we claim something we must never claim?". Taking a dot off says the organisation and its research stay. Powerhouse's note is checked against the Playbook's never-claim list, with the only red callout if it breaks one.
+
+**2. Concepts weighed:** A · a table of organisations with two scores (exact, but no picture); B · the deck's 2×2 with draggable dots (familiar); C · a canvas with clusters and arrows of movement over time (rich, but nothing stores history). **Chosen:** B, with A's precision in the peek's labels (the dot's position is read out to assistive technology) and the keyboard. Evidence: the team asked for "market positioning" with Quillmark on it; the model stores one position per organisation per market.
+
+**3. Implementation:** `.pb-map` with `__axis`, `__end--left/right/top/bottom`, `__dot` (`--us`, `.is-selected`, `.is-dragging`), `__caption`, `__empty`; `.pb-peek-host` holding `.pb-peek`; `VaultNotes` for evidence; `checkSensitivity` on our note; pointer capture for dragging; `positionAt`, `nudge` and `mapCandidates` in `kit/market/`.
+
+**4. Mapping:** Vision: Powerhouse distinct; ends at the edges. Wayfinding: axes first; the peek beside the map. Memory: the strategy 2×2; drag and arrow keys. Language: plain axis words. Decision: comparables first; place, then drag. Emotion: removing a dot keeps the research; the never-claim check on our note.
+
+### Organisation page: "On the maps of" (built, `records/contact/ContactDetail.tsx`; ticket 06)
+
+One line under the organisation's head: the markets whose map it is on, each a link. It appears only when there is one, so most organisations show nothing new. Words: "On the maps of: Finance operations, Law firms". `mapsOf` in `kit/market/`.
+
 ### Opening a record at once, and view-only members (built, `components/LiveRecord.tsx`, `components/shared/useOpenRecord.ts`, `components/data/`; ticket 49)
 
 **1. Checkpoints.** *Vision:* a record opens the moment it is chosen, a new one included, from the app's own copy of the space. *Wayfinding:* the address, Back, Forward and the toolbar's close behave as before. *Memory:* the same record pages. *Language:* "View only" in the save state's place for a member who may look but not change; trying to change something says "You can view this space but not change it. Ask an admin of the space for access to edit." *Decision:* a view-only member learns why before anything is sent. *Emotion:* no change can be lost or left waiting; nothing pretends to save.
@@ -965,6 +1238,220 @@ Asked on 2026-11-18: the chat should "cite the sources it found just like the or
 - **Language:** the vault's words, and the document's title.
 - **Decision:** check by number, open by click; nothing offered that cannot open.
 - **Emotion:** every claim from the vault shows its source.
+
+### Reports (built, `views/reports/`, `kit/reports/`)
+
+A new place, after Decisions: what converts, where leads go quiet and why they are lost, for a period.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** The win rate is the first tile and the page's anchor; the funnel below it is the one picture. Bars are the accent tint, won is green, and nothing is red: a report is read, not acted on in a hurry. A share with too few leads behind it says "Too few" in plain text instead of a number that looks precise.
+2. **Wayfinding.** Reports is a place of its own, not part of the Overview: the Overview answers "what do I do now", daily; reports answer "what is working", weekly or monthly, and mixing them would dilute the Overview's one anchor. The period choice sits at the top right, as filters do elsewhere, and changes every section at once. Every lead named in a report opens its lead.
+3. **Memory and semantics.** A funnel of bars, win rate, a reasons list with counts, tables per owner and kind: what every CRM's reports show. Named "Reports", the word those tools use, rather than "Insights", which says less.
+4. **Language.** Status names from the vocabulary; "went on" for a stage's conversion; "Gone quiet: open, no change in 30 days"; "Parked now". Reasons stay in the team's own words; a theme ("Budget or price", "Timing", "Chose someone else", "No response", "Not a fit") is a label over them, and what was said is one click away.
+5. **Decision making.** Each number says what it counts: a period counts leads added, won or lost in it; "open now" is always now. What the app does not record is said, not guessed: a lost lead's stage is unknown, so lost leads count as added but stay out of the steps, with a line saying so; investor leads stop at met, so the later steps count the other kinds. A reason joins a theme only when its words name that theme alone.
+6. **Emotion.** Fear: "is this number fooling me?". Small samples show "Too few", the rules behind each figure are written under it, and the raw reasons are always reachable, so the page earns trust instead of asking for it.
+
+**What is not here, and why:** time in each stage. A lead keeps only when it closed, not when its status changed; that history lives in each record's operations, which the app's drive data does not load. "Gone quiet" uses the last change of any kind instead, and says so.
+
+**2. Concepts weighed**
+
+- **A · Task-oriented:** a few sentences ("You win 60% of what you propose; most losses are about budget"). Fast, but hides the numbers behind them.
+- **B · Conventional:** a CRM report page with tiles, a funnel, reasons and tables. Familiar to BD experts.
+- **C · Immersive:** interactive charts with drill-down and trend lines. Rich, but the team's numbers are small, and trends over few leads mislead.
+
+**Chosen:** B, with A's honesty (each figure explained in a line) and none of C's trends. Evidence: the drive holds tens of leads, not thousands, so rates need a floor (three) and trend lines would mislead.
+
+**3. Implementation:** `.pb-tiles` with `.pb-tile--static`; `.pb-funnel` (`__row`, `__label`, `__track`, `__fill`, `__fill--won`, `__count`, `__step`); `.pb-reasons` and `.pb-reason` (`__count`, `__said`) with `.pb-disclosure`; `.pb-list` for quiet leads; `.pb-table` for the splits; the `chart` icon. Pure computations in `kit/reports/` (`funnel`, `outcomes`, `groupReasons`, `quietLeads`, `splitBy`, `periodStart`), tested.
+
+**4. Mapping**
+
+- **Vision:** the win rate first, one funnel picture, no red.
+- **Wayfinding:** a place for reflection apart from the daily Overview; one period for the whole page; names open their leads.
+- **Memory:** the reports every CRM has, by their usual names.
+- **Language:** status names, "went on", the team's own reasons under a theme.
+- **Decision:** every figure says what it counts; what is unknown is said; small samples say "Too few".
+- **Emotion:** trust earned by showing the rules and the raw reasons.
+
+### Leads map (built, `views/leads/LeadsMap.tsx`, `kit/lead-map/`)
+
+A third view on Leads beside Board and List: every open lead placed by the fit of its best angle and how far along it is.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** The four corner names ("Close these", "Start these", "Check these", "Park or drop") are what the eye reads first; dots are named, and a bigger dot is a bigger proposal. A late next step carries the slipping mark in red, the only colour signal on the map. The "not assessed" column is grey, set apart from the four fits.
+2. **Wayfinding.** The same Leads place and its view switch; rows are the statuses in the board's order, columns the fits in the vocabulary's order, with their names at the edges. A dot opens its lead. A line under the map says what is not on it (won, lost, parked) and how many leads have no angle yet.
+3. **Memory and semantics.** A prioritisation matrix, the 2×2 every sales team draws; the market map's look, so the two maps read alike.
+4. **Language.** Status and fit names from the vocabulary; corners in verbs; "Not assessed" for a lead with no angle, and what to do about it.
+5. **Decision making.** Positions are worked out, not dragged: a dot moves when the lead's status or angles change, so the map never needs upkeep and never goes stale. Moving a lead is the board's job. Filters Mine and kind narrow it. Dots sharing a cell spread in a fixed order, so the map looks the same each visit.
+6. **Emotion.** Fear: "did I place that right?". Nobody places anything; the map shows what the records say, and how (a caption names both axes and what size means).
+
+**2. Concepts weighed**
+
+- **A · Task-oriented:** a ranked list by a score. Exact, but a score hides why.
+- **B · Conventional:** a 2×2 with named corners, positions from the lead's own fields. Familiar and explainable.
+- **C · Immersive:** draggable dots with free axes, like the market map. Rich, but positions would be opinions to maintain on every lead.
+
+**Chosen:** B. Evidence: every lead already has a status, and angles carry a fit (Unlikely, Later, Good, Best); live proposals carry a value. Nothing new needs entering.
+
+**3. Implementation:** `.pb-map--grid` on the market map's `.pb-map`, with `__line`, `__row-label`, `__col-label`, `__unassessed`, `__quadrant`, `.pb-map__dot--lead` (its size from `--pb-dot`) and `__slip`; the `scatter` icon on the view switch. Pure placement in `kit/lead-map/` (`priorityMap`, `quadrantOf`, `leftOutLine`), tested.
+
+**4. Mapping**
+
+- **Vision:** corner names first, size for money, red only for late.
+- **Wayfinding:** a view of Leads; rows and columns named at the edges; dots open leads.
+- **Memory:** the sales 2×2, in the market map's look.
+- **Language:** vocabulary names, corners as verbs.
+- **Decision:** worked-out positions, no upkeep; filters; a fixed layout.
+- **Emotion:** nothing to place wrongly; the caption says how it is drawn.
+
+### A reminder when a lead is parked (built, `views/overview/MoveAsk.tsx`, `records/lead/LeadDetail.tsx`, `kit/reminder/`)
+
+The board, list and lead audits stand. This covers one addition: parking a lead can set the day it comes back.
+
+1. **Vision and attention.** One quiet choice under the reason, "Remind me", defaulting to no reminder; nothing new competes with the reason field or the Move button.
+2. **Wayfinding.** The reminder becomes an ordinary next step, "Check back: <reason>", on the lead, so it appears where next steps always appear: the lead page, the Calendar, Coming up, and as slipping when it passes.
+3. **Memory and semantics.** Snooze-style quick picks (in 1, 3 or 6 months, with the date), as mail and task apps offer.
+4. **Language.** "Remind me", "No reminder", "In 3 months · Thu 18 Feb", "Check back: Waiting for their budget round". On a lost lead: "A lost lead leaves the calendar. To check back later, park it with a reminder instead."
+5. **Decision making.** The reason is asked first, then whether to come back to it. Only a park offers a reminder: a lost lead is closed, and the Calendar, Coming up and the slipping checks leave closed leads out, so a reminder on it would never show; the Lost question says so instead of pretending.
+6. **Emotion.** Fear: "parking means forgetting". The reminder answers it, and it is added only once the park is accepted, so a refused park never leaves a stray step.
+
+**Concepts weighed:** a separate "snooze" date on the lead (needs a model change, and a second place for dates), a reminder on the organisation (organisations have no next steps), and a next step on the lead (chosen: no model change, and it surfaces everywhere next steps do).
+
+**Implementation:** `.pb-field` with `.pb-select` inside `.pb-ask`, `.pb-ask__note` for the lost line; the step from `reminderStep`, the days from `reminderChoices` (month ends clamped); sent after the park with `dispatchTo` (boards and lists through `useBoardMove`'s `remind`), or `useRun`'s done callback on the lead page. Tests run the park and the step through the lead reducer and check the Calendar shows it, and that a lost lead's step would not show.
+
+### Importing leads from a spreadsheet (built, `views/leads/ImportLeads.tsx`, `kit/lead-import/`)
+
+A panel on the Leads place ("Import", and "Import from a spreadsheet" on the empty place): leads and their organisations from a CSV, as the team keeps them today (`bd-leads.csv`: Name, Company, Role, Type, Status, Source, Meeting date, Owner, Contact, Next step, Notes).
+
+1. **Vision and attention.** One step at a time on the status path, each with one primary button ("Match the columns", "Check the rows", "Import 6 leads"). In the check, what changes is the only coloured text (orange), beside the row it concerns; rows that won't be imported are faded.
+2. **Wayfinding.** The path shows where the person is and what follows; Back returns a step without losing anything; after the import each created lead is a link to open it.
+3. **Memory and semantics.** The spreadsheet-import pattern of CRMs and mail tools: choose or paste, match columns (guessed from the headers), preview, import with progress and a result per row.
+4. **Language.** The app's words for fields ("Organisation", "Contact person", "Kind of lead", "Next step due", "Add to notes"), statuses by their labels, and what changes said plainly: "\"Jonas\" is not in the team: imported without an owner", "Won needs a reason: imported as To contact; set it on the lead page", "Links to Tarvex d.o.o.", "Same as row 2".
+5. **Decision making.** Problems are found before anything is created, by the same rules the records keep (an owner and an organisation past "to contact", no won, lost or parked without a reason, an investor stops at met), so the import never half-fails on a rule. Organisations are matched by name (without case, punctuation or legal forms such as d.o.o. or GmbH) or by website, and to earlier rows, so nothing is created twice; a lead that already exists for the organisation is skipped unless the person ticks "import anyway".
+6. **Emotion.** Fears: "will this make a mess of our drive?", "will it overwrite what we have?". "Nothing is created until you press Import"; existing organisations are linked, not changed, and imported notes are added after theirs, never replacing them; a failed row says which step failed and what already exists, and the rest go on.
+
+**Concepts weighed:** a one-box paste like the investor list (too little: leads have many fields and rules), a wizard in a modal (hides the drive behind it while matching names), and a panel on the place with the status path (chosen: the leads stay in view, and the path is a pattern the app already uses).
+
+**Implementation:** `.pb-import` (`__head`, `__title`, `__foot`, `__example`, `__problems`, `__row.is-blocked`, `__result--created|failed|skipped`), on `.pb-path`, `.pb-table`, `.pb-select`, `.pb-textarea`, `.pb-reassure`; shown on the showcase. `kit/lead-import`: `parseCsv` (quotes, separators and line breaks in quotes, CRLF, BOM, comma, semicolon or tab), `guessMapping`, `planImport`, `runImport` (one row at a time, a failure ends that row only), and the actions for each record; tests run the import through the contact and lead reducers. Records are created on the drive's server (`useCreateRecord`) and filled through `dispatchTo`.
+
+### Meeting brief (built, `records/lead/BriefDialog.tsx`, `kit/brief/`)
+
+From a lead's page ("Prepare a brief") or a scheduled meeting on it ("Brief"): what to know before talking to them, on one page, assembled from the records alone.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** One wide dialog, the brief's title as its head and the status line under it. Sections are quiet headings with short lines; the only colour is a late step in red and the purple lock callout of the confidential items, the same callout the lead page uses. "Refine with the agent" is the one primary button.
+2. **Wayfinding.** It opens over the lead and closes back to it (Escape, Close, or a click outside). From a meeting, it opens with that meeting. Nothing navigates away.
+3. **Memory and semantics.** A briefing note as account teams write them: who they are, who is who, why we talk to them, what happened, what is open, where the proposal stands, what to read, what never to say. Copy as markdown, as Proposal Preview copies.
+4. **Language.** Section headings in plain words ("Who is who", "What happened", "Read first", "Never claim", "Internal only"); people and owners by name; "Late:" before an overdue step.
+5. **Decision making.** Everything needed before a meeting without opening five sections of the lead: the angles sorted best first, the live proposal only, open steps by date. The agent is optional and comes second: the brief stands without it, and "Refine with the agent" asks for a write-up and five questions to ask.
+6. **Emotion.** Fears: "will the confidential items leak into a copy or the chat?", "did that send something?". The confidential items show to the team in the lock callout, and say they are never copied for others or sent to the agent; "Copy markdown" leaves them out, "Copy for the team" says it carries them; the foot says nothing is sent from Power BD.
+
+**2. Concepts weighed**
+
+- **A · Task-oriented:** a "Brief" section on the lead page. Always there, but it repeats the page and buries the page's own work.
+- **B · Conventional:** a briefing document in a dialog, copied or handed on. Familiar from account plans and meeting notes.
+- **C · Immersive:** the agent writes the brief from scratch in the chat. Polished, but nothing to read without a key, and a brief that changes each time it is asked.
+
+**Chosen:** B, with C as the second step. Evidence: the records already hold every fact a brief needs; the chat promises the confidential items stay out of it; the agent may not be set up (no key).
+
+**3. Implementation:** `.pb-dialog--doc` (wide, its body scrolls), `.pb-brief__summary`, `__section`, `__heading`, `__list`, `__detail`, `__late`, `__empty`; `.pb-callout--purple` with the lock for the internal items; `.pb-reassure` in the foot. Shown on the showcase. The brief is pure (`kit/brief/`: `buildBrief`, `briefMarkdown`, `agentPrompt`); the agent is asked through `kit/chat/agent-request.ts`, which the Shell hears (it opens the chat the person's way) and the conversation takes once it may go on.
+
+**4. Mapping**
+
+- **Vision:** one dialog, one primary button; red only for a late step; the lock callout for the confidential items.
+- **Wayfinding:** opens over the lead, from the lead or a meeting; closes back to it.
+- **Memory:** a briefing note; copy as markdown.
+- **Language:** plain section headings, names not addresses.
+- **Decision:** what a meeting needs on one page; the agent second and optional.
+- **Emotion:** confidential items never leave with a copy or the chat, and say so; nothing is sent.
+
+### Quick capture (built, `components/capture/CaptureDialog.tsx`, `kit/capture/`)
+
+Logging what just happened, from anywhere, and above all from a phone right after a meeting: on which lead or funding opportunity, what it was, when, one line of what happened, and the next step if there is one.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** On a phone a floating "Log" button in the primary colour, bottom right, is the one thing that stands out; on a wider screen a quiet "Log" beside the save state in the top bar. In the form, Save is the one primary button, disabled until the form can be saved, with the first thing it waits for written under the fields.
+2. **Wayfinding.** It opens over the page the person is on and closes back to it. After saving it says where the entry went and offers to open that record, log another, or be done. On a phone the form rises from the bottom, where the thumb is.
+3. **Memory and semantics.** A floating compose button and a bottom sheet, as mail and chat apps on a phone; a search that lists recent things first, as a phone's share sheet does.
+4. **Language.** "Log what happened", "On", "What happened", "Next step, if any", "By"; the kinds of contact as the history names them (Meeting, Call, Email, Message); the time with the team's time zone named.
+5. **Decision making.** Fewest choices first: the record (mine and recently changed first, a search for the rest), what it was (meeting preselected), when (now preselected), one line. The next step is optional, and a date without a step is caught before saving.
+6. **Emotion.** Fears: "did that email them?", "did it save?". The foot says nothing is sent from Power BD; after saving it says "Logged on Kelvar pilot, with its next step"; a refusal shows in the form, which keeps what was typed.
+
+**2. Concepts weighed**
+
+- **A · Task-oriented:** a "Log" button in the top bar only. Always in one place, but on a phone the top bar is full and far from the thumb.
+- **B · Conventional:** a floating button on a phone and a bottom sheet, a top-bar button on wider screens. Familiar from every mobile app.
+- **C · Immersive:** a full-screen capture page with voice notes. Fast to talk into, but a new page to find, and voice is not stored.
+
+**Chosen:** B. Evidence: on screens up to 760px the sidebar is hidden and the top bar holds the breadcrumb and search, so a top-bar-only entry would be the hardest thing to reach exactly where capture is needed; the records already take a held interaction and a next step, as the record pages add them.
+
+**3. Implementation:** `.pb-fab` (shown up to 760px), `.pb-topbar__log` (hidden up to 760px), `.pb-backdrop--sheet` (a bottom sheet up to 760px, inputs at 16px so the phone does not zoom, the kinds as four equal columns), `.pb-capture__picks`, `__pick` (`.is-active` in the accent tint), `__pick-kind`, `__row`, `__wait`. Shown on the showcase at 390px. The choices and the inputs are pure (`kit/capture/`: `captureRecords`, `captureCandidates`, `captureMissing`, `captureInputs`); the save goes through `useDriveWrite().dispatchTo` as one change of the record.
+
+**4. Mapping**
+
+- **Vision:** one floating button on a phone; Save the one primary button.
+- **Wayfinding:** over the current page; after saving, open the record or log another.
+- **Memory:** floating compose button and bottom sheet; recent first.
+- **Language:** the history's words; the time zone named.
+- **Decision:** record, kind, when and one line, with sensible defaults; the next step optional.
+- **Emotion:** nothing is sent; it says where the entry went.
+
+### A lead's source, expected close and deal roles; how an interaction went (built, `records/lead/`, `components/shared/relationship/`, `components/capture/`)
+
+The Leads audit stands. Four small additions, each where the fact is born.
+
+1. **Vision and attention.** "Came from" and "Expected close" join the lead's properties, below Owner, in the same quiet rows; nothing new competes with the Next bar. "How did it go?" sits under a held entry's summary as three small choices; the chosen one is the only filled one. A deal role is an inline choice at the end of a linked person's row.
+2. **Wayfinding.** Each fact is set on the record it belongs to: the source and close date on the lead, the role on the linked person, the outcome on the interaction. Quick capture asks the outcome at the moment of logging, beside what it was.
+3. **Memory and semantics.** CRM conventions: a lead source with a free-text detail, an expected close date, a buying role (champion, decision maker, influencer, blocker, user).
+4. **Language.** "Came from", "Which event, person or campaign", "Expected close", "Role in the deal", "How did it go?" with "Went well", "Neutral", "Went badly". A spreadsheet's Source column is read as "Where it came from": a source's name, or words such as "week" or "conference" that point to an event, the cell kept as the detail.
+5. **Decision making.** Every one is optional and one click to undo (choosing the active outcome clears it). Only a held interaction asks how it went; a planned one cannot have gone any way yet.
+6. **Emotion.** "How did it go?" rates the relationship, never a person; it stays inside the team and feeds only the Mood map.
+
+**Concepts weighed:** a separate "deal" panel (A, more to visit), a scoring form after each meeting (C, heavier than the fact), the facts inline where they are born (B, chosen; the Notion-like record pattern the app already uses).
+
+**Implementation:** `.pb-prop__value--pair`, `.pb-timeline__outcome` with `.pb-segmented`; vocabulary `leadSource`, `dealRole`, `interactionOutcome` (on the showcase's vocabulary list).
+
+### The Overview's quarter: targets and the forecast (built, `views/overview/QuarterPanel.tsx`, `kit/targets/`, `kit/forecast/`)
+
+The Overview audit stands. One row is added under Attention and Coming up, above the board.
+
+1. **Vision and attention.** Two calm cards side by side. Each target is a label, the actual "4 of 12" and a thin bar in the accent tint that turns green once met; nothing turns red (a missed target is not a slipping item). The forecast is a small table: expected close quarter, weighted, if all close, leads.
+2. **Wayfinding.** "No targets for Q4 2026 yet. Set them in Settings" links to the place where they are set.
+3. **Memory and semantics.** A weighted pipeline by close quarter, as every CRM forecast; progress bars against goals.
+4. **Language.** Quarters as people say them ("Q4 2026"); "Weighted", "If all close", "No close date".
+5. **Decision making.** Each card says what it rests on (the stage weights, the lower end of a proposal's range, currencies never converted) and what is missing (leads with no proposal value, leads with no close date, investor leads not forecast), so a number is never trusted further than it goes. Value proposed in several currencies is shown per currency and not compared with one target.
+6. **Emotion.** No red: the quarter is information, not an alarm.
+
+**Concepts weighed:** a dashboard place (A, another place to visit), charts with trends (C, heavy for a few numbers), two cards on the Overview (B, chosen: the daily page already holds "where is everything").
+
+**Implementation:** `.pb-goals`, `.pb-goal` with `__label`, `__value`, `__bar` (`.is-met`) and `__fill`; `.pb-forecast__missing`; `.pb-table`.
+
+### Settings: targets per quarter (built, `records/settings/SettingsDetail.tsx`)
+
+1. **Vision and attention.** A "Targets" section with a quarter choice and four fields.
+2. **Wayfinding.** The quarter defaults to this one; the next three are offered for planning ahead.
+3. **Memory and semantics.** Fields saved when left, as every other setting here.
+4. **Language.** "Meetings held", "Proposals sent", "Value proposed, in the currency you quote in", "Leads won".
+5. **Decision making.** An empty field means no target, and emptying one removes it. A target set again keeps its record and changes its value.
+6. **Emotion.** Targets are the team's own numbers: nothing is sent to anyone from here.
+
+### Reports: by where leads came from (built, `views/reports/ReportsView.tsx`)
+
+The Reports audit stands; one table is added with the same columns as By owner and By kind, a row per source and "Not recorded" for leads older than sources. Win rates keep the three-lead rule.
+
+### Leads map: Mood (built, `views/leads/LeadsMap.tsx`, `kit/lead-map/`)
+
+1. **Vision and attention.** The same map as Priority, switched with "Priority | Mood"; dots without size (value is the Priority map's question).
+2. **Wayfinding.** The corners say what to do: "Move to a proposal" (warm, active), "Re-engage" (warm, quiet), "Address the concern" (cool, active), "Park" (cool, quiet). A dot opens its lead.
+3. **Memory and semantics.** A 2×2 like the market map and the priority map.
+4. **Language.** Edges in plain words: "Went badly" to "Went well", "Quiet" to "Active". The caption says how each is worked out.
+5. **Decision making.** Positions are worked out, never dragged: the last three outcomes (the latest counting most) and the held interactions of the last 60 days with how recent the last one was. A neutral average counts as not yet warm. Leads with no outcome are listed under the map, not guessed.
+6. **Emotion.** It rates the relationship, never a person, and stays inside the team; the caption says so.
+
+**Concepts weighed:** a sentiment score from text (rejected: our own short notes, too little to read), a hand-placed map (rejected: it would go stale), outcomes recorded at the source and mapped (chosen).
 
 ### Coming back to where you were (built, `kit/last-spot/`, `components/Shell.tsx`; ticket 52)
 

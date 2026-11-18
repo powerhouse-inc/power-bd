@@ -3,6 +3,7 @@ import { isContactDocument, type ContactAction } from "document-models/contact";
 import { isDecisionDocument, type DecisionAction } from "document-models/decision";
 import { isInvestorListDocument, type InvestorListAction } from "document-models/investor-list";
 import { isLeadDocument, type LeadAction } from "document-models/lead";
+import { isMarketDocument, type MarketAction } from "document-models/market";
 import { isOpportunityDocument, type OpportunityAction } from "document-models/opportunity";
 import { isPlaybookDocument, type PlaybookAction } from "document-models/playbook";
 import { isProposalDocument, type ProposalAction } from "document-models/proposal";
@@ -12,6 +13,7 @@ import ContactEditor from "../../contact-editor/editor.js";
 import DecisionEditor from "../../decision-editor/editor.js";
 import InvestorListEditor from "../../investor-list-editor/editor.js";
 import LeadEditor from "../../lead-editor/editor.js";
+import MarketEditor from "../../market-editor/editor.js";
 import OpportunityEditor from "../../opportunity-editor/editor.js";
 import PlaybookEditor from "../../playbook-editor/editor.js";
 import ProposalEditor from "../../proposal-editor/editor.js";
@@ -27,7 +29,8 @@ export function isLiveRecord(document: PHDocument): boolean {
     isProposalDocument(document) ||
     isInvestorListDocument(document) ||
     isPlaybookDocument(document) ||
-    isBdSettingsDocument(document)
+    isBdSettingsDocument(document) ||
+    isMarketDocument(document)
   );
 }
 
@@ -50,5 +53,6 @@ export function LiveRecord({ document }: { document: PHDocument }) {
   if (isPlaybookDocument(document)) return <PlaybookEditor document={document} dispatch={write.dispatcher<PlaybookAction>(id)} />;
   if (isBdSettingsDocument(document))
     return <BdSettingsEditor document={document} dispatch={write.dispatcher<BdSettingsAction>(id)} />;
+  if (isMarketDocument(document)) return <MarketEditor document={document} dispatch={write.dispatcher<MarketAction>(id)} />;
   return null;
 }

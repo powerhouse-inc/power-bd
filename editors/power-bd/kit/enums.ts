@@ -1,8 +1,11 @@
 import type {
+  DealRole,
   Fit,
   InteractionKind,
+  InteractionOutcome,
   InteractionStatus,
   LeadKind,
+  LeadSource,
   LeadStatus,
   MessageChannel,
   ReferenceKind,
@@ -29,6 +32,22 @@ export const LEAD_KINDS = [
   "EXCHANGE",
   "INVESTOR",
 ] as const satisfies readonly LeadKind[];
+export const LEAD_SOURCES = [
+  "EVENT",
+  "REFERRAL",
+  "INBOUND",
+  "OUTBOUND",
+  "PARTNER",
+  "OTHER",
+] as const satisfies readonly LeadSource[];
+export const DEAL_ROLES = [
+  "CHAMPION",
+  "DECISION_MAKER",
+  "INFLUENCER",
+  "BLOCKER",
+  "USER",
+] as const satisfies readonly DealRole[];
+export const INTERACTION_OUTCOMES = ["POSITIVE", "NEUTRAL", "NEGATIVE"] as const satisfies readonly InteractionOutcome[];
 export const FITS = [
   "BEST",
   "GOOD",

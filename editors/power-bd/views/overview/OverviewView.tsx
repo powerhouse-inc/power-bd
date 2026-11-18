@@ -27,6 +27,7 @@ import { OverviewBoard } from "./OverviewBoard.js";
 import { OverviewFilters } from "./OverviewFilters.js";
 import { OverviewTable } from "./OverviewTable.js";
 import { SummaryTiles, type Tile } from "./SummaryTiles.js";
+import { QuarterPanel } from "./QuarterPanel.js";
 import { useNow } from "../../components/shared/useNow.js";
 import { useBdSettingsDocumentsInSelectedDrive, useContactDocumentsInSelectedDrive, useDecisionDocumentsInSelectedDrive, useInvestorListDocumentsInSelectedDrive, useLeadDocumentsInSelectedDrive, useOpportunityDocumentsInSelectedDrive, useProposalDocumentsInSelectedDrive } from "../../components/useDriveDocuments.js";
 import { useSetSelectedNode } from "../../components/shared/useOpenRecord.js";
@@ -266,6 +267,16 @@ export function OverviewView({ driveId }: { driveId: string }) {
           onOpen={open}
         />
       </div>
+
+      <QuarterPanel
+        leads={leads.map(plain)}
+        opportunities={opps.map(plain)}
+        proposals={proposals.map(plain)}
+        settings={settings}
+        leadValues={result.leadValues}
+        today={today}
+        zone={zone}
+      />
 
       <div className="pb-section" ref={boardSection}>
         <OverviewFilters

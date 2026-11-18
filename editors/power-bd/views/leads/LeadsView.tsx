@@ -1,4 +1,16 @@
-import { NextStep, NextStepSignal } from "./NextStep.js";
+import { GroupedTable } from "../../components/shared/board/GroupedTable.js";
+import { reminderAction } from "../../components/shared/board/moveAction.js";
+import {
+  LEAD_STATUSES,
+  leadMoveCard,
+  leadStatusTargets,
+} from "../../kit/overview-view/index.js";
+import { ImportLeads } from "./ImportLeads.js";
+import { LeadsBoard } from "./LeadsBoard.js";
+import { LeadsMap } from "./LeadsMap.js";
+import { buildProposals } from "../../kit/overview/proposals.js";
+import { NextStep } from "./NextStep.js";
+import { useUser } from "@powerhousedao/reactor-browser";
 import { ErrorLine } from "../../components/shared/ErrorLine.js";
 import { useState } from "react";
 import { VOCABULARY } from "../../../../design-system/vocabulary.js";
@@ -17,15 +29,16 @@ import { useSetSelectedNode } from "../../components/shared/useOpenRecord.js";
 export function LeadsView({ driveId }: { driveId: string }) {
   const leads = useLeadDocumentsInSelectedDrive() ?? [];
   const contacts = useContactDocumentsInSelectedDrive() ?? [];
-  const badges = proposalBadges(
-    (useProposalDocumentsInSelectedDrive() ?? []).map((d) => ({
-      id: d.header.id,
-      state: d.state.global,
-    })),
-  );
+  const proposals = (useProposalDocumentsInSelectedDrive() ?? []).map((d) => ({
+    id: d.header.id,
+    state: d.state.global,
+  }));
+  const badges = proposalBadges(proposals);
+  const me = useUser()?.address ?? null;
   const select = useSetSelectedNode();
   const team = useTeam();
-  const [asBoard, setAsBoard] = useState(true);
+  const [view, setView] = useState<"board" | "list" | "map">("board");
+  const [importing, setImporting] = useState(false);
 
   const organisationName = (id: string | null | undefined) =>
     id
@@ -50,6 +63,12 @@ export function LeadsView({ driveId }: { driveId: string }) {
       <div className="pb-page__head pb-page__head--row">
         <h1 className="pb-page__title">Leads</h1>
         <span className="pb-toolbar__spacer" />
+        {leads.length > 0 && !importing && (
+          <button type="button" className="pb-btn" onClick={() => setImporting(true)}>
+            <Icon name="inbox" />
+            Import
+          </button>
+        )}
         {leads.length > 0 && (
           <button
             className="pb-btn pb-btn--primary"
@@ -62,6 +81,9 @@ export function LeadsView({ driveId }: { driveId: string }) {
         )}
       </div>
       <ErrorLine message={error} />
+      {importing ? (
+        <ImportLeads driveId={driveId} onClose={() => setImporting(false)} onOpen={select} />
+      ) : null}
       {leads.length === 0 ? (
         <EmptyStart
           icon="leads"
@@ -73,173 +95,154 @@ export function LeadsView({ driveId }: { driveId: string }) {
               "Sales lead · Mara Lind owns it · next step: send the pilot outline by Fri 27 Nov",
           }}
           action={
-            <button
-              type="button"
-              className="pb-btn pb-btn--primary"
-              disabled={busy}
-              onClick={create}
-            >
-              <Icon name="plus" />
-              Add your first lead
-            </button>
+            <>
+              <button
+                type="button"
+                className="pb-btn pb-btn--primary"
+                disabled={busy}
+                onClick={create}
+              >
+                <Icon name="plus" />
+                Add your first lead
+              </button>
+              {importing ? null : (
+                <button type="button" className="pb-btn" onClick={() => setImporting(true)}>
+                  <Icon name="inbox" />
+                  Import from a spreadsheet
+                </button>
+              )}
+            </>
           }
         />
       ) : (
         <>
           <div className="pb-toolbar pb-mb-8">
             <div className="pb-segmented">
-              <button
-                className={`pb-segmented__item${asBoard ? " is-active" : ""}`}
-                onClick={() => setAsBoard(true)}
-              >
-                <Icon name="board" />
-                Board
-              </button>
-              <button
-                className={`pb-segmented__item${asBoard ? "" : " is-active"}`}
-                onClick={() => setAsBoard(false)}
-              >
-                <Icon name="table" />
-                List
-              </button>
+              {(
+                [
+                  ["board", "Board", "board"],
+                  ["list", "List", "table"],
+                  ["map", "Map", "scatter"],
+                ] as const
+              ).map(([value, text, icon]) => (
+                <button
+                  key={value}
+                  className={`pb-segmented__item${view === value ? " is-active" : ""}`}
+                  aria-pressed={view === value}
+                  onClick={() => setView(value)}
+                >
+                  <Icon name={icon} />
+                  {text}
+                </button>
+              ))}
             </div>
           </div>
-          {asBoard ? (
-            <div className="pb-board">
-              {VOCABULARY.leadStatus.map((st) => {
-                const inCol = leads.filter(
-                  (d) => d.state.global.status === st.value,
-                );
-                return (
-                  <div className="pb-board__col" key={st.value}>
-                    <div className="pb-board__head">
-                      <span className={`pb-tag pb-tag--${st.tone}`}>
-                        {st.label}
-                      </span>
-                      <span>{inCol.length}</span>
-                    </div>
-                    {inCol.map((d) => {
-                      const s = d.state.global;
-                      const kind = VOCABULARY.relationshipKind.find(
-                        (k) => k.value === s.kind,
-                      );
-                      const badge = badges[d.header.id];
-                      return (
-                        <div
-                          className="pb-card pb-clickable"
-                          key={d.header.id}
-
-                          onClick={() => select(d.header.id)}
-                        >
-                          <div className="pb-card__title">
-                            {kind?.icon ? <Icon name={kind.icon} /> : null}
-                            {s.name || "Untitled lead"}
-                          </div>
-                          <div className="pb-card__row">
-                            <span>{kind?.label ?? "Kind not set"}</span>
-                          </div>
-                          <div className="pb-card__row">
-                            <NextStep next={nextAction(s, today)} inCard />
-                          </div>
-                          {badge ? (
-                            <div className="pb-card__row">
-                              <ProposalBadge badge={badge} />
-                            </div>
-                          ) : null}
-                          <div className="pb-card__foot">
-                            <span className="pb-small">
-                              {s.owner ? (
-                                team.ownerName(s.owner)
-                              ) : (
-                                <span className="pb-faint">No owner</span>
-                              )}
-                            </span>
-                          </div>
-                          <NextStepSignal next={nextAction(s, today)} />
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })}
-            </div>
+          {view === "map" ? (
+            <LeadsMap
+              leads={leads}
+              values={buildProposals(proposals).leadValues}
+              today={today}
+              me={me}
+              onOpen={select}
+            />
+          ) : view === "board" ? (
+            <LeadsBoard
+              leads={leads}
+              badges={badges}
+              today={today}
+              ownerName={team.ownerName}
+              onOpen={select}
+            />
           ) : (
-            <div className="pb-table-wrap">
-              <table className="pb-table">
-                <thead>
-                  <tr>
-                    <th>Lead</th>
-                    <th>Organisation</th>
-                    <th>Kind</th>
-                    <th>Status</th>
-                    <th>Owner</th>
-                    <th>Proposal</th>
-                    <th>Next step</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {leads.map((d) => {
-                    const s = d.state.global;
-                    const kind = VOCABULARY.relationshipKind.find(
-                      (k) => k.value === s.kind,
-                    );
-                    const status = VOCABULARY.leadStatus.find(
-                      (k) => k.value === s.status,
-                    );
-                    const next = nextAction(s, today);
-                    const badge = badges[d.header.id];
-                    return (
-                      <tr
-                        key={d.header.id}
-                        className="pb-clickable"
-                        onClick={() => select(d.header.id)}
-                      >
-                        <td className="pb-table__title">
-                          {s.name || "Untitled lead"}
-                        </td>
-                        <td>
-                          {organisationName(s.organisationId) ?? (
-                            <span className="pb-faint">—</span>
-                          )}
-                        </td>
-                        <td>
-                          {kind ? (
-                            <span className="pb-tag pb-tag--default">
-                              {kind.icon ? <Icon name={kind.icon} /> : null}
-                              {kind.label}
-                            </span>
-                          ) : (
-                            <span className="pb-faint">Not set</span>
-                          )}
-                        </td>
-                        <td>
-                          <span className={`pb-tag pb-tag--${status?.tone}`}>
-                            {status?.label}
-                          </span>
-                        </td>
-                        <td>
-                          {s.owner ? (
-                            team.ownerName(s.owner)
-                          ) : (
-                            <span className="pb-faint">No owner</span>
-                          )}
-                        </td>
-                        <td>
-                          {badge ? (
-                            <ProposalBadge badge={badge} />
-                          ) : (
-                            <span className="pb-faint">—</span>
-                          )}
-                        </td>
-                        <td>
-                          <NextStep next={next} />
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+            <GroupedTable
+              head={
+                <>
+                  <th>Lead</th>
+                  <th>Organisation</th>
+                  <th>Kind</th>
+                  <th>Status</th>
+                  <th>Owner</th>
+                  <th>Proposal</th>
+                  <th>Next step</th>
+                </>
+              }
+              columns={7}
+              statuses={LEAD_STATUSES}
+              terms={VOCABULARY.leadStatus}
+              rows={leads.map((d) => ({
+                key: d.header.id,
+                status: d.state.global.status,
+                name: d.state.global.name || "Untitled lead",
+                state: d.state.global,
+              }))}
+              targetsOf={(id) => {
+                const s = leads.find((d) => d.header.id === id)?.state.global;
+                return s ? leadStatusTargets(leadMoveCard(s)) : [];
+              }}
+              remind={(id, reason, day) => ({
+                documentId: id,
+                action: reminderAction(
+                  reason,
+                  day,
+                  leads.find((d) => d.header.id === id)?.state.global.owner ?? null,
+                ),
+              })}
+              onRow={(r) => select(r.key)}
+              onOpenRecord={select}
+              cells={({ key, state: s }) => {
+                const kind = VOCABULARY.relationshipKind.find(
+                  (k) => k.value === s.kind,
+                );
+                const status = VOCABULARY.leadStatus.find(
+                  (k) => k.value === s.status,
+                );
+                const badge = badges[key];
+                return (
+                  <>
+                    <td className="pb-table__title">
+                      {s.name || "Untitled lead"}
+                    </td>
+                    <td>
+                      {organisationName(s.organisationId) ?? (
+                        <span className="pb-faint">—</span>
+                      )}
+                    </td>
+                    <td>
+                      {kind ? (
+                        <span className="pb-tag pb-tag--default">
+                          {kind.icon ? <Icon name={kind.icon} /> : null}
+                          {kind.label}
+                        </span>
+                      ) : (
+                        <span className="pb-faint">Not set</span>
+                      )}
+                    </td>
+                    <td>
+                      <span className={`pb-tag pb-tag--${status?.tone}`}>
+                        {status?.label}
+                      </span>
+                    </td>
+                    <td>
+                      {s.owner ? (
+                        team.ownerName(s.owner)
+                      ) : (
+                        <span className="pb-faint">No owner</span>
+                      )}
+                    </td>
+                    <td>
+                      {badge ? (
+                        <ProposalBadge badge={badge} />
+                      ) : (
+                        <span className="pb-faint">—</span>
+                      )}
+                    </td>
+                    <td>
+                      <NextStep next={nextAction(s, today)} />
+                    </td>
+                  </>
+                );
+              }}
+            />
           )}
         </>
       )}

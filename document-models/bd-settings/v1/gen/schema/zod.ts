@@ -6,10 +6,14 @@ import type {
   BdSettingsState,
   DeactivateTeamMemberInput,
   ReactivateTeamMemberInput,
+  RemoveTargetInput,
   SetDueWindowInput,
   SetRetentionInput,
+  SetTargetInput,
   SetTimeZoneInput,
   SetVaultDriveInput,
+  Target,
+  TargetMetric,
   TeamMember,
   UpdateTeamMemberInput,
 } from "./types.js";
@@ -27,13 +31,22 @@ export const definedNonNullAnySchema = z
   .any()
   .refine((v) => isDefinedNonNullAny(v));
 
+export const TargetMetricSchema = z.enum([
+  "LEADS_WON",
+  "MEETINGS_HELD",
+  "PROPOSALS_SENT",
+  "VALUE_PROPOSED",
+]);
+
 export function AddTeamMemberInputSchema(): z.ZodObject<
   Properties<AddTeamMemberInput>
 > {
   return z.object({
-    address: z.string().regex(/^0x[a-fA-F0-9]{40}$/, {
-      error: "Invalid Ethereum address format",
-    }),
+    address: z
+      .string()
+      .regex(/^0x[a-fA-F0-9]{40}$/, {
+        error: "Invalid Ethereum address format",
+      }),
     id: z.string(),
     name: z.string(),
   });
@@ -46,6 +59,7 @@ export function BdSettingsStateSchema(): z.ZodObject<
     __typename: z.literal("BdSettingsState").optional(),
     dueWindowDays: z.number(),
     retentionMonths: z.number(),
+    targets: z.array(z.lazy(() => TargetSchema())),
     teamMembers: z.array(z.lazy(() => TeamMemberSchema())),
     timeZone: z.string().nullish(),
     vaultDriveId: z.string().nullish(),
@@ -68,6 +82,14 @@ export function ReactivateTeamMemberInputSchema(): z.ZodObject<
   });
 }
 
+export function RemoveTargetInputSchema(): z.ZodObject<
+  Properties<RemoveTargetInput>
+> {
+  return z.object({
+    id: z.string(),
+  });
+}
+
 export function SetDueWindowInputSchema(): z.ZodObject<
   Properties<SetDueWindowInput>
 > {
@@ -81,6 +103,17 @@ export function SetRetentionInputSchema(): z.ZodObject<
 > {
   return z.object({
     months: z.number(),
+  });
+}
+
+export function SetTargetInputSchema(): z.ZodObject<
+  Properties<SetTargetInput>
+> {
+  return z.object({
+    id: z.string(),
+    metric: TargetMetricSchema,
+    quarter: z.string(),
+    value: z.number(),
   });
 }
 
@@ -100,13 +133,25 @@ export function SetVaultDriveInputSchema(): z.ZodObject<
   });
 }
 
+export function TargetSchema(): z.ZodObject<Properties<Target>> {
+  return z.object({
+    __typename: z.literal("Target").optional(),
+    id: z.string(),
+    metric: TargetMetricSchema,
+    quarter: z.string(),
+    value: z.number(),
+  });
+}
+
 export function TeamMemberSchema(): z.ZodObject<Properties<TeamMember>> {
   return z.object({
     __typename: z.literal("TeamMember").optional(),
     active: z.boolean(),
-    address: z.string().regex(/^0x[a-fA-F0-9]{40}$/, {
-      error: "Invalid Ethereum address format",
-    }),
+    address: z
+      .string()
+      .regex(/^0x[a-fA-F0-9]{40}$/, {
+        error: "Invalid Ethereum address format",
+      }),
     id: z.string(),
     name: z.string(),
   });

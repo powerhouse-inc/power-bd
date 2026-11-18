@@ -113,14 +113,38 @@ export {
   relativeDay,
 } from "./when.js";
 export {
+  LEAD_STATUSES,
   canMove,
   cardMove,
+  leadMoveCard,
+  leadStatusMove,
+  leadStatusTargets,
   moveCards,
+  opportunityMoveCard,
   moveHint,
   moveReassurance,
   moveTargets,
+  type ColumnTarget,
   type MoveCard,
   type MoveOption,
   type MoveOutcome,
   type MoveTarget,
 } from "./move.js";
+export {
+  APPROVE_ON_PAGE,
+  FUNDING_STATUSES,
+  INVESTOR_ROW_STATES,
+  MARK_SENT_ON_PAGE,
+  PROPOSAL_STATUSES,
+  START_RELATIONSHIP,
+  investorRowMove,
+  investorRowTargets,
+  opportunityStatusMove,
+  opportunityStatusTargets,
+  proposalMoveCard,
+  proposalStatusMove,
+  proposalStatusTargets,
+  type InvestorRowCard,
+  type ProposalCard,
+} from "./status-moves.js";
+export { groupRows } from "./group-rows.js";

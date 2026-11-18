@@ -81,6 +81,8 @@
   --pb-row-h: 34px;
   --pb-page-w: 900px;
   --pb-page-w-wide: 1240px;
+  /* The least height of a board that takes drops, so there is room under every column's cards. */
+  --pb-board-drop-h: 60vh;
 
   --pb-z-sticky: 10;
   --pb-z-popover: 100;

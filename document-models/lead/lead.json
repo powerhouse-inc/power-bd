@@ -16,9 +16,9 @@
           "initialValue": ""
         },
         "global": {
-          "schema": "type LeadState {\n  name: String\n  kind: LeadKind\n  organisationId: PHID\n  owner: EthereumAddress\n  status: LeadStatus!\n  parkedFrom: LeadStatus\n  statusReason: String\n  closedAt: DateTime\n  angles: [Angle!]!\n  messages: [Message!]!\n  nextSteps: [NextStep!]!\n  interactions: [Interaction!]!\n  contactLinks: [ContactLink!]!\n  references: [Reference!]!\n  confidentialItems: [ConfidentialItem!]!\n}\n\nenum LeadKind {\n  SALES\n  PARTNERSHIP\n  EXCHANGE\n  INVESTOR\n}\n\nenum LeadStatus {\n  TO_CONTACT\n  IN_TOUCH\n  MEETING_SET\n  MET\n  PROPOSAL\n  WON\n  LOST\n  PARKED\n}\n\ntype Angle {\n  id: OID!\n  summary: String!\n  fit: Fit!\n  positioningId: OID\n}\n\nenum Fit {\n  BEST\n  GOOD\n  LATER\n  UNLIKELY\n}\n\ntype Message {\n  id: OID!\n  channel: MessageChannel!\n  recipient: PersonRef\n  subject: String\n  body: String!\n  angleId: OID\n  status: MessageStatus!\n  draftedBy: EthereumAddress!\n  draftedAt: DateTime!\n  approvedBy: EthereumAddress\n  approvedAt: DateTime\n  sentBy: EthereumAddress\n  sentAt: DateTime\n}\n\nenum MessageChannel {\n  EMAIL\n  LINKEDIN\n  OTHER\n}\n\nenum MessageStatus {\n  DRAFT\n  APPROVED\n  SENT\n  DISCARDED\n}\n\ntype PersonRef {\n  contactId: PHID!\n  personId: OID!\n}\n\ntype VaultRef {\n  id: PHID!\n  title: String!\n}\n\ntype NextStep {\n  id: OID!\n  text: String!\n  owner: EthereumAddress\n  dueDate: Date\n  doneAt: DateTime\n}\n\nenum InteractionKind {\n  EMAIL\n  CALL\n  MEETING\n  EVENT\n  MESSAGE\n  OTHER\n}\n\nenum InteractionStatus {\n  SCHEDULED\n  HELD\n  CANCELLED\n}\n\ntype Interaction {\n  id: OID!\n  kind: InteractionKind!\n  status: InteractionStatus!\n  at: DateTime\n  timeZone: String\n  summary: String\n  people: [PersonRef!]!\n  teamMembers: [EthereumAddress!]!\n  notesSource: VaultRef\n}\n\ntype ContactLink {\n  id: OID!\n  contactId: PHID!\n  personId: OID\n  role: String\n}\n\nenum ReferenceKind {\n  RESEARCH\n  NOTE\n  SOURCE\n  COMPARABLE\n  OPPORTUNITY\n  LEAD\n  DECISION\n  OTHER\n}\n\ntype Reference {\n  id: OID!\n  kind: ReferenceKind!\n  documentId: PHID!\n  title: String!\n}\n\ntype ConfidentialItem {\n  id: OID!\n  subjectContactId: PHID\n  text: String!\n  addedBy: EthereumAddress!\n  addedAt: DateTime!\n}",
+          "schema": "type LeadState {\n  name: String\n  kind: LeadKind\n  organisationId: PHID\n  owner: EthereumAddress\n  status: LeadStatus!\n  parkedFrom: LeadStatus\n  statusReason: String\n  closedAt: DateTime\n  source: LeadSource\n  sourceDetail: String\n  expectedCloseDate: Date\n  angles: [Angle!]!\n  messages: [Message!]!\n  nextSteps: [NextStep!]!\n  interactions: [Interaction!]!\n  contactLinks: [ContactLink!]!\n  references: [Reference!]!\n  confidentialItems: [ConfidentialItem!]!\n}\n\nenum LeadKind {\n  SALES\n  PARTNERSHIP\n  EXCHANGE\n  INVESTOR\n}\n\nenum LeadStatus {\n  TO_CONTACT\n  IN_TOUCH\n  MEETING_SET\n  MET\n  PROPOSAL\n  WON\n  LOST\n  PARKED\n}\n\ntype Angle {\n  id: OID!\n  summary: String!\n  fit: Fit!\n  positioningId: OID\n}\n\nenum Fit {\n  BEST\n  GOOD\n  LATER\n  UNLIKELY\n}\n\ntype Message {\n  id: OID!\n  channel: MessageChannel!\n  recipient: PersonRef\n  subject: String\n  body: String!\n  angleId: OID\n  status: MessageStatus!\n  draftedBy: EthereumAddress!\n  draftedAt: DateTime!\n  approvedBy: EthereumAddress\n  approvedAt: DateTime\n  sentBy: EthereumAddress\n  sentAt: DateTime\n}\n\nenum MessageChannel {\n  EMAIL\n  LINKEDIN\n  OTHER\n}\n\nenum MessageStatus {\n  DRAFT\n  APPROVED\n  SENT\n  DISCARDED\n}\n\ntype PersonRef {\n  contactId: PHID!\n  personId: OID!\n}\n\ntype VaultRef {\n  id: PHID!\n  title: String!\n}\n\ntype NextStep {\n  id: OID!\n  text: String!\n  owner: EthereumAddress\n  dueDate: Date\n  doneAt: DateTime\n}\n\nenum InteractionKind {\n  EMAIL\n  CALL\n  MEETING\n  EVENT\n  MESSAGE\n  OTHER\n}\n\nenum InteractionStatus {\n  SCHEDULED\n  HELD\n  CANCELLED\n}\n\ntype Interaction {\n  id: OID!\n  kind: InteractionKind!\n  status: InteractionStatus!\n  at: DateTime\n  timeZone: String\n  summary: String\n  people: [PersonRef!]!\n  teamMembers: [EthereumAddress!]!\n  notesSource: VaultRef\n  outcome: InteractionOutcome\n}\n\ntype ContactLink {\n  id: OID!\n  contactId: PHID!\n  personId: OID\n  role: String\n  dealRole: DealRole\n}\n\nenum ReferenceKind {\n  RESEARCH\n  NOTE\n  SOURCE\n  COMPARABLE\n  OPPORTUNITY\n  LEAD\n  DECISION\n  OTHER\n}\n\ntype Reference {\n  id: OID!\n  kind: ReferenceKind!\n  documentId: PHID!\n  title: String!\n}\n\ntype ConfidentialItem {\n  id: OID!\n  subjectContactId: PHID\n  text: String!\n  addedBy: EthereumAddress!\n  addedAt: DateTime!\n}\n\nenum LeadSource {\n  EVENT\n  REFERRAL\n  INBOUND\n  OUTBOUND\n  PARTNER\n  OTHER\n}\n\nenum DealRole {\n  CHAMPION\n  DECISION_MAKER\n  INFLUENCER\n  BLOCKER\n  USER\n}\n\nenum InteractionOutcome {\n  POSITIVE\n  NEUTRAL\n  NEGATIVE\n}\n",
           "examples": [],
-          "initialValue": "{\"name\":null,\"kind\":null,\"organisationId\":null,\"owner\":null,\"status\":\"TO_CONTACT\",\"parkedFrom\":null,\"statusReason\":null,\"closedAt\":null,\"angles\":[],\"messages\":[],\"nextSteps\":[],\"interactions\":[],\"contactLinks\":[],\"references\":[],\"confidentialItems\":[]}"
+          "initialValue": "{\"name\":null,\"kind\":null,\"organisationId\":null,\"owner\":null,\"status\":\"TO_CONTACT\",\"parkedFrom\":null,\"statusReason\":null,\"closedAt\":null,\"source\":null,\"sourceDetail\":null,\"expectedCloseDate\":null,\"angles\":[],\"messages\":[],\"nextSteps\":[],\"interactions\":[],\"contactLinks\":[],\"references\":[],\"confidentialItems\":[]}"
         }
       },
       "modules": [
@@ -69,6 +69,28 @@
                   "template": ""
                 }
               ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "0b64cf6e-4a44-4fc0-95be-ba5b7beeab27",
+              "name": "SET_LEAD_SOURCE",
+              "description": "Say where the lead came from: the channel, and the event, person or campaign; a field left out stays as it is",
+              "schema": "input SetLeadSourceInput {\n  source: LeadSource\n  sourceDetail: String\n}",
+              "template": "Say where the lead came from: the channel, and the event, person or campaign; a field left out stays as it is",
+              "reducer": "const { source, sourceDetail } = action.input;\nif (source !== undefined) state.source = source ?? null;\nif (sourceDetail !== undefined) state.sourceDetail = sourceDetail?.trim() || null;",
+              "errors": [],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "ac8f46bd-f897-4a1d-9c01-bf818f654e62",
+              "name": "SET_EXPECTED_CLOSE",
+              "description": "Set the day we expect to close the lead; null clears it",
+              "schema": "input SetExpectedCloseInput {\n  expectedCloseDate: Date\n}",
+              "template": "Set the day we expect to close the lead; null clears it",
+              "reducer": "state.expectedCloseDate = action.input.expectedCloseDate ?? null;",
+              "errors": [],
               "examples": [],
               "scope": "global"
             }
@@ -562,7 +584,7 @@
               "description": "Record an email, call, meeting, event or message, held or scheduled",
               "schema": "input AddInteractionInput {\n  id: OID!\n  kind: InteractionKind!\n  status: InteractionStatus!\n  at: DateTime\n  timeZone: String\n  summary: String\n  people: [AddInteractionPersonInput!]\n  teamMembers: [EthereumAddress!]\n  notesSource: AddInteractionNotesSourceInput\n}\n\ninput AddInteractionPersonInput {\n  contactId: PHID!\n  personId: OID!\n}\n\ninput AddInteractionNotesSourceInput {\n  id: PHID!\n  title: String!\n}",
               "template": "Record an email, call, meeting, event or message, held or scheduled",
-              "reducer": "const { id, kind, status, summary, people, teamMembers, notesSource } =\n  action.input;\nconst at = action.input.at ?? null;\nconst timeZone = action.input.timeZone ?? null;\nif (state.interactions.some((interaction) => interaction.id === id))\n  throw new DuplicateInteractionIdError(`Interaction ${id} already exists`);\ncheckWhen(kind, status, at, timeZone);\nstate.interactions.push({\n  id,\n  kind,\n  status,\n  at,\n  timeZone,\n  summary: summary ?? null,\n  people: (people ?? []).map((p) => ({\n    contactId: p.contactId,\n    personId: p.personId,\n  })),\n  teamMembers: teamMembers ?? [],\n  notesSource: notesSource\n    ? { id: notesSource.id, title: notesSource.title }\n    : null,\n});",
+              "reducer": "const { id, kind, status, summary, people, teamMembers, notesSource } =\n  action.input;\nconst at = action.input.at ?? null;\nconst timeZone = action.input.timeZone ?? null;\nif (state.interactions.some((interaction) => interaction.id === id))\n  throw new DuplicateInteractionIdError(`Interaction ${id} already exists`);\ncheckWhen(kind, status, at, timeZone);\nstate.interactions.push({\n  id,\n  kind,\n  status,\n  at,\n  timeZone,\n  summary: summary ?? null,\n  people: (people ?? []).map((p) => ({\n    contactId: p.contactId,\n    personId: p.personId,\n  })),\n  teamMembers: teamMembers ?? [],\n  notesSource: notesSource\n    ? { id: notesSource.id, title: notesSource.title }\n    : null,\n  outcome: null,\n});",
               "errors": [
                 {
                   "id": "e52bb10d-942a-4ae1-89cc-4149162756d1",
@@ -647,7 +669,7 @@
               "description": "Link a contact, or one person at it, to the relationship with a role",
               "schema": "input LinkContactInput {\n  id: OID!\n  contactId: PHID!\n  personId: OID\n  role: String\n}",
               "template": "Link a contact, or one person at it, to the relationship with a role",
-              "reducer": "const { id, contactId, personId, role } = action.input;\nif (state.contactLinks.some((link) => link.id === id))\n  throw new DuplicateContactLinkIdError(`ContactLink ${id} already exists`);\nstate.contactLinks.push({\n  id,\n  contactId,\n  personId: personId ?? null,\n  role: role ?? null,\n});",
+              "reducer": "const { id, contactId, personId, role } = action.input;\nif (state.contactLinks.some((link) => link.id === id))\n  throw new DuplicateContactLinkIdError(`ContactLink ${id} already exists`);\nstate.contactLinks.push({\n  id,\n  contactId,\n  personId: personId ?? null,\n  role: role ?? null,\n  dealRole: null,\n});",
               "errors": [
                 {
                   "id": "deaddb11-d53a-4efb-af66-f916e13b9d8d",
@@ -756,6 +778,51 @@
                   "name": "ConfidentialItemNotFoundError",
                   "code": "CONFIDENTIAL_ITEM_NOT_FOUND",
                   "description": "No confidential item has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "9c97f5da-4ff8-497c-bdf3-d98319ec3df2",
+              "name": "SET_CONTACT_LINK_DEAL_ROLE",
+              "description": "Say what role a linked person plays in the deal; null clears it",
+              "schema": "input SetContactLinkDealRoleInput {\n  id: OID!\n  dealRole: DealRole\n}",
+              "template": "Say what role a linked person plays in the deal; null clears it",
+              "reducer": "const link = state.contactLinks.find((l) => l.id === action.input.id);\nif (!link)\n  throw new ContactLinkNotFoundError(`ContactLink ${action.input.id} not found`);\nlink.dealRole = action.input.dealRole ?? null;",
+              "errors": [
+                {
+                  "id": "925f3e73-2599-48d5-a3bc-f10291a9db75",
+                  "name": "ContactLinkNotFoundError",
+                  "code": "CONTACT_LINK_NOT_FOUND",
+                  "description": "No contact link has this id",
+                  "template": ""
+                }
+              ],
+              "examples": [],
+              "scope": "global"
+            },
+            {
+              "id": "cf9923d3-e1d8-42dc-9546-35dbbe7d9c0a",
+              "name": "SET_INTERACTION_OUTCOME",
+              "description": "Say how a held interaction went; null clears it",
+              "schema": "input SetInteractionOutcomeInput {\n  id: OID!\n  outcome: InteractionOutcome\n}",
+              "template": "Say how a held interaction went; null clears it",
+              "reducer": "const interaction = state.interactions.find((i) => i.id === action.input.id);\nif (!interaction)\n  throw new InteractionNotFoundError(`Interaction ${action.input.id} not found`);\nif (action.input.outcome != null && interaction.status !== \"HELD\")\n  throw new InteractionNotHeldError(\"Only a held interaction has an outcome\");\ninteraction.outcome = action.input.outcome ?? null;",
+              "errors": [
+                {
+                  "id": "38317380-f18f-4c6e-a741-eab6af9498e9",
+                  "name": "InteractionNotFoundError",
+                  "code": "INTERACTION_NOT_FOUND",
+                  "description": "No interaction has this id",
+                  "template": ""
+                },
+                {
+                  "id": "1cefd75b-4116-42a4-a8eb-0c9536aa8453",
+                  "name": "InteractionNotHeldError",
+                  "code": "INTERACTION_NOT_HELD",
+                  "description": "The interaction has not been held",
                   "template": ""
                 }
               ],

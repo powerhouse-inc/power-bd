@@ -5,8 +5,10 @@
 import { type SignalDispatch } from "document-model";
 import type { BdSettingsGlobalState } from "../types.js";
 import type {
+  RemoveTargetAction,
   SetDueWindowAction,
   SetRetentionAction,
+  SetTargetAction,
   SetTimeZoneAction,
   SetVaultDriveAction,
 } from "./actions.js";
@@ -30,6 +32,16 @@ export interface BdSettingsPreferencesOperations {
   setRetentionOperation: (
     state: BdSettingsGlobalState,
     action: SetRetentionAction,
+    dispatch?: SignalDispatch,
+  ) => void;
+  setTargetOperation: (
+    state: BdSettingsGlobalState,
+    action: SetTargetAction,
+    dispatch?: SignalDispatch,
+  ) => void;
+  removeTargetOperation: (
+    state: BdSettingsGlobalState,
+    action: RemoveTargetAction,
     dispatch?: SignalDispatch,
   ) => void;
 }

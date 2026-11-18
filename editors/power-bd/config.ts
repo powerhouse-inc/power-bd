@@ -11,5 +11,6 @@ export const editorConfig: PHAppConfig = {
     "powerbd/decision",
     "powerbd/playbook",
     "powerbd/proposal",
+    "powerbd/market",
   ],
 };

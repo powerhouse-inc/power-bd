@@ -1,3 +1,11 @@
+import { useState } from "react";
+import { FundingBoard } from "./FundingBoard.js";
+import { GroupedTable } from "../../components/shared/board/GroupedTable.js";
+import {
+  FUNDING_STATUSES,
+  opportunityMoveCard,
+  opportunityStatusTargets,
+} from "../../kit/overview-view/index.js";
 import { ErrorLine } from "../../components/shared/ErrorLine.js";
 import { settingsOrDefaults } from "../../kit/settings/index.js";
 import { VOCABULARY } from "../../../../design-system/vocabulary.js";
@@ -12,7 +20,7 @@ import { useNow } from "../../components/shared/useNow.js";
 import { useBdSettingsDocumentsInSelectedDrive, useContactDocumentsInSelectedDrive, useOpportunityDocumentsInSelectedDrive } from "../../components/useDriveDocuments.js";
 import { useSetSelectedNode } from "../../components/shared/useOpenRecord.js";
 
-/** The Funding place: opportunities in deadline order, and a way to start one. */
+/** The Funding place: opportunities by status on a board, or by status in deadline order in a list, and a way to start one. */
 export function FundingView({ driveId }: { driveId: string }) {
   const docs = useOpportunityDocumentsInSelectedDrive() ?? [];
   const contacts = useContactDocumentsInSelectedDrive() ?? [];
@@ -22,6 +30,7 @@ export function FundingView({ driveId }: { driveId: string }) {
   const select = useSetSelectedNode();
   const team = useTeam();
   const now = useNow();
+  const [asBoard, setAsBoard] = useState(true);
 
   const {
     create: createRecord,
@@ -83,32 +92,72 @@ export function FundingView({ driveId }: { driveId: string }) {
           }
         />
       ) : (
-        <div className="pb-table-wrap">
-          <table className="pb-table">
-            <thead>
-              <tr>
-                <th>Deadline</th>
-                <th>Opportunity</th>
-                <th>Funder</th>
-                <th>Status</th>
-                <th>Owner</th>
-                <th>Amount</th>
-                <th>Attempts left</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map(({ id, state: s }) => {
+        <>
+          <div className="pb-toolbar pb-mb-8">
+            <div className="pb-segmented">
+              <button
+                className={`pb-segmented__item${asBoard ? " is-active" : ""}`}
+                onClick={() => setAsBoard(true)}
+              >
+                <Icon name="board" />
+                Board
+              </button>
+              <button
+                className={`pb-segmented__item${asBoard ? "" : " is-active"}`}
+                onClick={() => setAsBoard(false)}
+              >
+                <Icon name="table" />
+                List
+              </button>
+            </div>
+          </div>
+          {asBoard ? (
+            <FundingBoard
+              rows={rows}
+              now={now}
+              ourZone={ourZone}
+              funderName={funderName}
+              ownerName={team.ownerName}
+              onOpen={select}
+            />
+          ) : (
+            <GroupedTable
+              head={
+                <>
+                  <th>Deadline</th>
+                  <th>Opportunity</th>
+                  <th>Funder</th>
+                  <th>Status</th>
+                  <th>Owner</th>
+                  <th>Amount</th>
+                  <th>Attempts left</th>
+                </>
+              }
+              columns={7}
+              statuses={FUNDING_STATUSES}
+              terms={VOCABULARY.opportunityStatus}
+              rows={rows.map(({ id, state }) => ({
+                key: id,
+                status: state.status,
+                name: state.name || "Untitled opportunity",
+                state,
+              }))}
+              targetsOf={(id) => {
+                const s = rows.find((r) => r.id === id)?.state;
+                return s
+                  ? opportunityStatusTargets(opportunityMoveCard(s))
+                  : [];
+              }}
+              onRow={(r) => select(r.key)}
+              onOpenRecord={select}
+              cells={({ key: id, state: s }) => {
                 const d = deadline(s, now);
                 const st = VOCABULARY.opportunityStatus.find(
                   (t) => t.value === s.status,
                 );
                 const left = attemptsLeft({ id, state: s }, all);
                 return (
-                  <tr
-                    key={id}
-                    className="pb-clickable"
-                    onClick={() => select(id)}
-                  >
+                  <>
                     <td className="pb-num pb-nowrap">
                       {d ? (
                         <>
@@ -166,12 +215,12 @@ export function FundingView({ driveId }: { driveId: string }) {
                         </span>
                       )}
                     </td>
-                  </tr>
+                  </>
                 );
-              })}
-            </tbody>
-          </table>
-        </div>
+              }}
+            />
+          )}
+        </>
       )}
     </div>
   );

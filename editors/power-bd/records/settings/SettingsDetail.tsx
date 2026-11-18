@@ -20,6 +20,9 @@ import { CommitField } from "./CommitField.js";
 import { VaultField } from "./VaultField.js";
 import "../../kit/design.js";
 import { useRecordById } from "../../components/data/driveData.js";
+import { useToday } from "../../components/shared/useToday.js";
+import { VOCABULARY } from "../../../../design-system/vocabulary.js";
+import { METRICS, quarterLabel, quartersFrom, targetsOf } from "../../kit/targets/index.js";
 
 type Errors = Record<string, string | undefined>;
 
@@ -36,6 +39,8 @@ export function SettingsDetail({
   const [errors, setErrors] = useState<Errors>({});
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
+  const today = useToday();
+  const [targetQuarter, setTargetQuarter] = useState<string | null>(null);
   const [renaming, setRenaming] = useState<string>();
   const [renameDraft, setRenameDraft] = useState("");
   const zones = useMemo(() => runtimeTimeZones(), []);
@@ -242,6 +247,60 @@ export function SettingsDetail({
             <Icon name="plus" />
             Add to the team
           </button>
+        </div>
+      </div>
+
+      <div className="pb-section">
+        <div className="pb-section__head">
+          <h2 className="pb-section__title">Targets</h2>
+          <select
+            className="pb-select pb-select--inline"
+            aria-label="Quarter"
+            value={targetQuarter ?? quartersFrom(today, 1)[0]}
+            onChange={(e) => setTargetQuarter(e.target.value)}
+          >
+            {quartersFrom(today, 4).map((q) => (
+              <option key={q} value={q}>
+                {quarterLabel(q)}
+              </option>
+            ))}
+          </select>
+        </div>
+        <p className="pb-faint pb-small">
+          What the team aims for in the quarter. The Overview sets this quarter's records against it. Leave a field empty for no target.
+        </p>
+        <div className="pb-grid-2">
+          {METRICS.map((metric) => {
+            const quarter = targetQuarter ?? quartersFrom(today, 1)[0];
+            const target = targetsOf(state).find((t) => t.quarter === quarter && t.metric === metric);
+            const key = `target-${metric}`;
+            return (
+              <label className="pb-field" key={`${quarter}-${metric}`}>
+                <span className="pb-field__label">
+                  {VOCABULARY.targetMetric.find((t) => t.value === metric)?.label}
+                  {metric === "VALUE_PROPOSED" ? ", in the currency you quote in" : ""}
+                </span>
+                <input
+                  className={`pb-input${errors[key] ? " is-invalid" : ""}`}
+                  inputMode="decimal"
+                  defaultValue={target ? String(target.value) : ""}
+                  key={`${quarter}-${target?.value ?? ""}`}
+                  onBlur={(e) => {
+                    const text = e.target.value.trim();
+                    if (text === "") {
+                      if (target) send(key, actions.removeTarget({ id: target.id }));
+                      return;
+                    }
+                    const value = Number(text.replace(",", "."));
+                    if (!Number.isFinite(value)) return fail(key, "Enter a number.");
+                    if (value !== target?.value)
+                      send(key, actions.setTarget({ id: target?.id ?? generateId(), quarter, metric, value }));
+                  }}
+                />
+                {errors[key] ? <span className="pb-field__error">{errors[key]}</span> : null}
+              </label>
+            );
+          })}
         </div>
       </div>
 

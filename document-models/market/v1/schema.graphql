@@ -1,0 +1,258 @@
+scalar Unknown
+scalar DateTime
+scalar Address
+scalar AttachmentRef
+scalar Amount_Tokens
+scalar EthereumAddress
+scalar EmailAddress
+scalar Amount_Percentage
+scalar Date
+scalar URL
+scalar Amount_Money
+scalar OLabel
+scalar Currency
+scalar PHID
+scalar OID
+scalar Amount_Fiat
+scalar Amount_Currency
+scalar Amount_Crypto
+scalar Amount
+scalar Upload
+
+type MarketState {
+  name: String
+  "Who buys, and which problem they have."
+  description: String
+  "Where: a country, a region, or 'EU'."
+  geography: String
+  "EUR for a new market."
+  currency: Currency
+  "Years the obtainable market (SOM) is counted over."
+  horizonYears: Int
+  segments: [Segment!]!
+  "Published figures beside the computed ones, as a cross-check."
+  publishedFigures: [PublishedFigure!]!
+  axes: MapAxes
+  players: [Player!]!
+  "Where Powerhouse stands on this market's map."
+  us: OurPosition
+  "Whether a person has approved the figures for use outside the team."
+  sizeStatus: SizeStatus!
+  sizeApprovedBy: EthereumAddress
+  sizeApprovedAt: DateTime
+}
+
+enum SizeStatus {
+  DRAFT
+  APPROVED
+}
+
+"Which number of a segment a source is for."
+enum SegmentFigure {
+  ACCOUNTS
+  ANNUAL_VALUE
+}
+
+type Segment {
+  id: OID!
+  name: String!
+  description: String
+  "How many organisations are in the segment."
+  accounts: Int
+  accountsSource: Source
+  "What one organisation is worth to us per year, in the market's currency."
+  annualValue: Amount_Money
+  annualValueSource: Source
+  "True when we can serve the segment today: it counts towards SAM."
+  serviceable: Boolean!
+  "How many organisations we can win within horizonYears: SOM."
+  targetAccounts: Int
+  "Named organisations in the segment (Organisations records)."
+  organisationIds: [PHID!]!
+}
+
+type PublishedFigure {
+  id: OID!
+  "What it measures, as the source says it."
+  label: String!
+  amount: Amount_Money!
+  currency: Currency!
+  year: Int
+  source: Source!
+}
+
+"A source for a number: a vault note, a web page, or both."
+type Source {
+  title: String!
+  url: URL
+  documentId: PHID
+}
+
+type MapAxes {
+  x: Axis!
+  y: Axis!
+}
+
+type Axis {
+  "What the axis measures."
+  label: String!
+  "The low end, at the left or bottom."
+  low: String!
+  "The high end, at the right or top."
+  high: String!
+}
+
+type Player {
+  id: OID!
+  "The organisation on the map (an Organisations record)."
+  organisationId: PHID!
+  "0 to 100 along each axis."
+  x: Float!
+  y: Float!
+  "Why it is placed there."
+  note: String
+  evidence: [VaultRef!]!
+}
+
+type VaultRef {
+  id: PHID!
+  title: String!
+}
+
+type OurPosition {
+  x: Float!
+  y: Float!
+  note: String
+  "The Playbook positioning statement this position stands for, if any."
+  positioningId: OID
+}
+
+# details
+
+input SetMarketDetailsInput {
+  name: String
+  description: String
+  geography: String
+  currency: Currency
+  horizonYears: Int
+}
+
+# segments
+
+input AddSegmentInput {
+  id: OID!
+  name: String!
+  description: String
+}
+
+input UpdateSegmentInput {
+  id: OID!
+  name: String
+  description: String
+  accounts: Int
+  annualValue: Amount_Money
+  serviceable: Boolean
+  targetAccounts: Int
+}
+
+input SetSegmentSourceInput {
+  id: OID!
+  figure: SegmentFigure!
+  title: String
+  url: URL
+  documentId: PHID
+}
+
+input LinkSegmentOrganisationInput {
+  id: OID!
+  organisationId: PHID!
+}
+
+input UnlinkSegmentOrganisationInput {
+  id: OID!
+  organisationId: PHID!
+}
+
+input RemoveSegmentInput {
+  id: OID!
+}
+
+# figures
+
+input AddPublishedFigureInput {
+  id: OID!
+  label: String!
+  amount: Amount_Money!
+  currency: Currency!
+  year: Int
+  sourceTitle: String!
+  sourceUrl: URL
+  sourceDocumentId: PHID
+}
+
+input RemovePublishedFigureInput {
+  id: OID!
+}
+
+# map
+
+input SetAxesInput {
+  xLabel: String!
+  xLow: String!
+  xHigh: String!
+  yLabel: String!
+  yLow: String!
+  yHigh: String!
+}
+
+input PlacePlayerInput {
+  id: OID!
+  organisationId: PHID!
+  x: Float!
+  y: Float!
+  note: String
+}
+
+input MovePlayerInput {
+  id: OID!
+  x: Float!
+  y: Float!
+}
+
+input SetPlayerNoteInput {
+  id: OID!
+  note: String
+}
+
+input LinkPlayerEvidenceInput {
+  id: OID!
+  refId: PHID!
+  refTitle: String!
+}
+
+input UnlinkPlayerEvidenceInput {
+  id: OID!
+  refId: PHID!
+}
+
+input RemovePlayerInput {
+  id: OID!
+}
+
+input SetOurPositionInput {
+  x: Float!
+  y: Float!
+  note: String
+  positioningId: OID
+}
+
+# approval
+
+input ApproveSizeInput {
+  approvedBy: EthereumAddress!
+  approvedAt: DateTime!
+}
+
+input ReopenSizeInput {
+  _empty: Boolean
+}

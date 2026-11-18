@@ -1,8 +1,11 @@
 import type { BdSettingsPreferencesOperations } from "document-models/bd-settings/v1";
 import {
   InvalidDueWindowError,
+  InvalidQuarterError,
   InvalidRetentionError,
   InvalidTimeZoneError,
+  NegativeTargetError,
+  TargetNotFoundError,
   VaultDriveRequiredError,
 } from "../../gen/preferences/error.js";
 
@@ -45,5 +48,28 @@ export const bdSettingsPreferencesOperations: BdSettingsPreferencesOperations =
           "The retention period must be at least one month",
         );
       state.retentionMonths = months;
+    },
+    setTargetOperation(state, action) {
+      const { id, quarter, metric, value } = action.input;
+      if (!/^\d{4}-Q[1-4]$/.test(quarter))
+        throw new InvalidQuarterError("A quarter is written like 2026-Q4");
+      if (value < 0)
+        throw new NegativeTargetError("A target can't be negative");
+      // Settings saved before targets existed have no list yet.
+      if (!(state.targets as typeof state.targets | undefined))
+        state.targets = [];
+      const existing = state.targets.find(
+        (t) => t.quarter === quarter && t.metric === metric,
+      );
+      if (existing) existing.value = value;
+      else state.targets.push({ id, quarter, metric, value });
+    },
+    removeTargetOperation(state, action) {
+      // Settings saved before targets existed have no list yet.
+      const targets = (state.targets as typeof state.targets | undefined) ?? [];
+      const index = targets.findIndex((t) => t.id === action.input.id);
+      if (index === -1)
+        throw new TargetNotFoundError(`Target ${action.input.id} not found`);
+      targets.splice(index, 1);
     },
   };

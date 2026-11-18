@@ -15,6 +15,8 @@ import {
   updateInteraction,
   updateNextStep,
   utils,
+  setInteractionOutcome,
+  setContactLinkDealRole,
 } from "document-models/lead/v1";
 import { describe, expect, it } from "vitest";
 
@@ -207,6 +209,7 @@ describe("interactions", () => {
         people: [{ contactId: "contact-ines-varga", personId: "person-1" }],
         teamMembers: [JONAS],
         notesSource: { id: "vault-note-1", title: "Call notes" },
+        outcome: null,
       },
     ]);
   });
@@ -227,6 +230,7 @@ describe("interactions", () => {
       people: [],
       teamMembers: [],
       notesSource: null,
+      outcome: null,
     });
   });
 
@@ -326,6 +330,7 @@ describe("interactions", () => {
       people: [{ contactId: "contact-jonas-brandt", personId: "person-2" }],
       teamMembers: [JONAS, INES],
       notesSource: { id: "vault-note-2", title: "Better notes" },
+      outcome: null,
     });
 
     document = reducer(
@@ -354,6 +359,7 @@ describe("interactions", () => {
       people: [{ contactId: "contact-jonas-brandt", personId: "person-2" }],
       teamMembers: [JONAS, INES],
       notesSource: null,
+      outcome: null,
     });
 
     document = reducer(
@@ -450,12 +456,14 @@ describe("contact links", () => {
         contactId: "contact-brisa-labs",
         personId: "person-1",
         role: "Sponsor",
+        dealRole: null,
       },
       {
         id: "link-2",
         contactId: "contact-kelvar-institute",
         personId: null,
         role: null,
+        dealRole: null,
       },
     ]);
 
@@ -617,5 +625,63 @@ describe("confidential items", () => {
       "ConfidentialItem secret-9 not found",
     ]);
     expect(document.state.global.confidentialItems).toHaveLength(1);
+  });
+});
+
+const lastError = (doc: ReturnType<typeof utils.createDocument>) => doc.operations.global.at(-1)?.error;
+
+describe("how an interaction went", () => {
+  const held = addInteraction({ id: "i1", kind: "CALL", status: "HELD", at: "2026-11-10T09:00:00.000Z", timeZone: "Europe/Ljubljana" });
+  const planned = addInteraction({ id: "i2", kind: "MEETING", status: "SCHEDULED", at: "2026-12-01T09:00:00.000Z", timeZone: "Europe/Ljubljana" });
+
+  it("starts without an outcome, records one for a held interaction, and clears it", () => {
+    let doc = reducer(utils.createDocument(), held);
+    expect(doc.state.global.interactions[0].outcome).toBeNull();
+    doc = reducer(doc, setInteractionOutcome({ id: "i1", outcome: "POSITIVE" }));
+    expect(lastError(doc)).toBeUndefined();
+    expect(doc.state.global.interactions[0].outcome).toBe("POSITIVE");
+    doc = reducer(doc, setInteractionOutcome({ id: "i1", outcome: null }));
+    expect(doc.state.global.interactions[0].outcome).toBeNull();
+  });
+
+  it("refuses an outcome for an interaction not held yet, but lets one be cleared", () => {
+    let doc = reducer(utils.createDocument(), planned);
+    doc = reducer(doc, setInteractionOutcome({ id: "i2", outcome: "NEGATIVE" }));
+    expect(lastError(doc)).toBe("Only a held interaction has an outcome");
+    expect(doc.state.global.interactions[0].outcome).toBeNull();
+    doc = reducer(doc, setInteractionOutcome({ id: "i2", outcome: null }));
+    expect(lastError(doc)).toBeUndefined();
+  });
+
+  it("refuses an interaction that is not there", () => {
+    const doc = reducer(utils.createDocument(), setInteractionOutcome({ id: "nope", outcome: "NEUTRAL" }));
+    expect(lastError(doc)).toBe("Interaction nope not found");
+  });
+
+  it("records an outcome on an interaction stored before outcomes existed", () => {
+    const before = reducer(utils.createDocument(), held).state.global;
+    const { outcome: _outcome, ...old } = before.interactions[0];
+    const doc = reducer(
+      utils.createDocument({ global: { ...before, interactions: [old] } as never }),
+      setInteractionOutcome({ id: "i1", outcome: "NEUTRAL" }),
+    );
+    expect(doc.state.global.interactions[0].outcome).toBe("NEUTRAL");
+  });
+});
+
+describe("roles in the deal", () => {
+  it("starts without a role, gives a linked person one, and clears it", () => {
+    let doc = reducer(utils.createDocument(), linkContact({ id: "l1", contactId: "c1", personId: "p1" }));
+    expect(doc.state.global.contactLinks[0].dealRole).toBeNull();
+    doc = reducer(doc, setContactLinkDealRole({ id: "l1", dealRole: "DECISION_MAKER" }));
+    expect(lastError(doc)).toBeUndefined();
+    expect(doc.state.global.contactLinks[0].dealRole).toBe("DECISION_MAKER");
+    doc = reducer(doc, setContactLinkDealRole({ id: "l1", dealRole: null }));
+    expect(doc.state.global.contactLinks[0].dealRole).toBeNull();
+  });
+
+  it("refuses a link that is not there", () => {
+    const doc = reducer(utils.createDocument(), setContactLinkDealRole({ id: "nope", dealRole: "CHAMPION" }));
+    expect(lastError(doc)).toBe("ContactLink nope not found");
   });
 });

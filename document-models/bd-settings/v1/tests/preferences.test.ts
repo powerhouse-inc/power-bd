@@ -4,8 +4,7 @@ import {
   setRetention,
   setTimeZone,
   setVaultDrive,
-  utils,
-} from "document-models/bd-settings/v1";
+  utils, isBdSettingsDocument, setTarget, removeTarget, SetTimeZoneInputSchema, SetDueWindowInputSchema, SetVaultDriveInputSchema, SetRetentionInputSchema, SetTargetInputSchema, RemoveTargetInputSchema } from "document-models/bd-settings/v1";
 import { describe, expect, it } from "vitest";
 
 /** The error of each operation, in the order they were dispatched. */
@@ -21,6 +20,7 @@ describe("the drive's preferences", () => {
       dueWindowDays: 14,
       vaultDriveId: null,
       retentionMonths: 12,
+      targets: [],
     });
   });
 
@@ -112,5 +112,58 @@ describe("the drive's preferences", () => {
       "The retention period must be at least one month",
     ]);
     expect(document.state.global.retentionMonths).toBe(24);
+  });
+});
+
+const lastError = (doc: ReturnType<typeof utils.createDocument>) => doc.operations.global.at(-1)?.error;
+
+describe("targets", () => {
+  it("sets a target per quarter and measure, changing one already set and keeping its id", () => {
+    let doc = reducer(utils.createDocument(), setTarget({ id: "t1", quarter: "2026-Q4", metric: "MEETINGS_HELD", value: 20 }));
+    doc = reducer(doc, setTarget({ id: "t2", quarter: "2026-Q4", metric: "VALUE_PROPOSED", value: 150000 }));
+    doc = reducer(doc, setTarget({ id: "t3", quarter: "2026-Q4", metric: "MEETINGS_HELD", value: 25 }));
+    expect(lastError(doc)).toBeUndefined();
+    expect(isBdSettingsDocument(doc)).toBe(true);
+    expect(doc.state.global.targets).toEqual([
+      { id: "t1", quarter: "2026-Q4", metric: "MEETINGS_HELD", value: 25 },
+      { id: "t2", quarter: "2026-Q4", metric: "VALUE_PROPOSED", value: 150000 },
+    ]);
+  });
+
+  it("refuses a quarter not written like 2026-Q4, a negative target and an unknown measure", () => {
+    const base = { id: "t1", metric: "LEADS_WON" as const, value: 3 };
+    expect(lastError(reducer(utils.createDocument(), setTarget({ ...base, quarter: "Q4 2026" })))).toBe("A quarter is written like 2026-Q4");
+    expect(lastError(reducer(utils.createDocument(), setTarget({ ...base, quarter: "2026-Q5" })))).toBe("A quarter is written like 2026-Q4");
+    expect(lastError(reducer(utils.createDocument(), setTarget({ ...base, quarter: "2026-Q1", value: -1 })))).toBe("A target can't be negative");
+    expect(SetTargetInputSchema().safeParse({ ...base, quarter: "2026-Q1", metric: "CALLS" }).success).toBe(false);
+  });
+
+  it("removes a target, and refuses one that is not there", () => {
+    let doc = reducer(utils.createDocument(), setTarget({ id: "t1", quarter: "2026-Q4", metric: "PROPOSALS_SENT", value: 4 }));
+    doc = reducer(doc, removeTarget({ id: "t1" }));
+    expect(doc.state.global.targets).toEqual([]);
+    doc = reducer(doc, removeTarget({ id: "t1" }));
+    expect(lastError(doc)).toBe("Target t1 not found");
+    expect(RemoveTargetInputSchema().safeParse({}).success).toBe(false);
+  });
+
+  it("copes with settings stored before targets existed", () => {
+    // A document saved before targets existed: replaying its operations gives a state without the list.
+    const stored = () => {
+      const doc = utils.createDocument();
+      delete (doc.state.global as { targets?: unknown }).targets;
+      return doc;
+    };
+    const removed = reducer(stored(), removeTarget({ id: "t1" }));
+    expect(lastError(removed)).toBe("Target t1 not found");
+    const set = reducer(stored(), setTarget({ id: "t1", quarter: "2027-Q1", metric: "LEADS_WON", value: 2 }));
+    expect(set.state.global.targets).toEqual([{ id: "t1", quarter: "2027-Q1", metric: "LEADS_WON", value: 2 }]);
+  });
+
+  it("checks the inputs of the older preferences too", () => {
+    expect(SetTimeZoneInputSchema().safeParse({ timeZone: "Europe/Ljubljana" }).success).toBe(true);
+    expect(SetDueWindowInputSchema().safeParse({ days: 14 }).success).toBe(true);
+    expect(SetVaultDriveInputSchema().safeParse({}).success).toBe(false);
+    expect(SetRetentionInputSchema().safeParse({ months: 12 }).success).toBe(true);
   });
 });

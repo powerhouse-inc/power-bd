@@ -4,20 +4,26 @@
  */
 import { createAction } from "document-model";
 import {
+  RemoveTargetInputSchema,
   SetDueWindowInputSchema,
   SetRetentionInputSchema,
+  SetTargetInputSchema,
   SetTimeZoneInputSchema,
   SetVaultDriveInputSchema,
 } from "../schema/zod.js";
 import type {
+  RemoveTargetInput,
   SetDueWindowInput,
   SetRetentionInput,
+  SetTargetInput,
   SetTimeZoneInput,
   SetVaultDriveInput,
 } from "../types.js";
 import type {
+  RemoveTargetAction,
   SetDueWindowAction,
   SetRetentionAction,
+  SetTargetAction,
   SetTimeZoneAction,
   SetVaultDriveAction,
 } from "./actions.js";
@@ -55,5 +61,23 @@ export const setRetention = (input: SetRetentionInput) =>
     { ...input },
     undefined,
     SetRetentionInputSchema,
+    "global",
+  );
+
+export const setTarget = (input: SetTargetInput) =>
+  createAction<SetTargetAction>(
+    "SET_TARGET",
+    { ...input },
+    undefined,
+    SetTargetInputSchema,
+    "global",
+  );
+
+export const removeTarget = (input: RemoveTargetInput) =>
+  createAction<RemoveTargetAction>(
+    "REMOVE_TARGET",
+    { ...input },
+    undefined,
+    RemoveTargetInputSchema,
     "global",
   );

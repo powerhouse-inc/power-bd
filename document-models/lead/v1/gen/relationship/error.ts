@@ -13,7 +13,8 @@ export type ErrorCode =
   | "DUPLICATE_REFERENCE"
   | "REFERENCE_NOT_FOUND"
   | "DUPLICATE_CONFIDENTIAL_ITEM_ID"
-  | "CONFIDENTIAL_ITEM_NOT_FOUND";
+  | "CONFIDENTIAL_ITEM_NOT_FOUND"
+  | "INTERACTION_NOT_HELD";
 
 export interface ReducerError {
   errorCode: ErrorCode;
@@ -130,6 +131,13 @@ export class ConfidentialItemNotFoundError
   }
 }
 
+export class InteractionNotHeldError extends Error implements ReducerError {
+  errorCode = "INTERACTION_NOT_HELD" as ErrorCode;
+  constructor(message = "InteractionNotHeldError") {
+    super(message);
+  }
+}
+
 export const errors = {
   AddNextStep: { DuplicateNextStepIdError },
 
@@ -166,4 +174,8 @@ export const errors = {
   AddConfidentialItem: { DuplicateConfidentialItemIdError },
 
   RemoveConfidentialItem: { ConfidentialItemNotFoundError },
+
+  SetContactLinkDealRole: { ContactLinkNotFoundError },
+
+  SetInteractionOutcome: { InteractionNotFoundError, InteractionNotHeldError },
 };

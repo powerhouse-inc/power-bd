@@ -19,6 +19,7 @@ export const RECORD_KINDS = {
   playbook: { noun: "playbook", icon: "playbook" },
   settings: { noun: "settings", icon: "settings" },
   "investor-list": { noun: "investor list", icon: "investors" },
+  market: { noun: "market", icon: "compass" },
 } as const satisfies Record<string, { noun: string; icon: IconName }>;
 
 export type RecordKind = keyof typeof RECORD_KINDS;

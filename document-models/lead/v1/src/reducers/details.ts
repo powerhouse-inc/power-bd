@@ -27,4 +27,13 @@ export const leadDetailsOperations: LeadDetailsOperations = {
       throw new OwnerRequiredError("A lead past to contact needs an owner");
     state.owner = owner;
   },
+  setLeadSourceOperation(state, action) {
+    const { source, sourceDetail } = action.input;
+    if (source !== undefined) state.source = source ?? null;
+    if (sourceDetail !== undefined)
+      state.sourceDetail = sourceDetail?.trim() || null;
+  },
+  setExpectedCloseOperation(state, action) {
+    state.expectedCloseDate = action.input.expectedCloseDate ?? null;
+  },
 };

@@ -28,7 +28,7 @@ describe("organisation view", () => {
           id: "L1",
           state: lead({
             contactLinks: [
-              { id: "k", contactId: C, personId: null, role: null },
+              { id: "k", contactId: C, personId: null, role: null, dealRole: null },
             ],
           }),
         },
@@ -61,8 +61,8 @@ describe("organisation view", () => {
           state: lead({
             organisationId: C,
             contactLinks: [
-              { id: "k", contactId: C, personId: "p1", role: null },
-              { id: "k2", contactId: C, personId: "p2", role: null },
+              { id: "k", contactId: C, personId: "p1", role: null, dealRole: null },
+              { id: "k2", contactId: C, personId: "p2", role: null, dealRole: null },
             ],
           }),
         },

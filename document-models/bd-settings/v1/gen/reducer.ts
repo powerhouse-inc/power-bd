@@ -2,8 +2,10 @@ import type { Reducer, StateReducer } from "document-model";
 import { createReducer, isDocumentAction } from "document-model";
 import type { BdSettingsPHState } from "document-models/bd-settings/v1";
 import type {
+  RemoveTargetAction,
   SetDueWindowAction,
   SetRetentionAction,
+  SetTargetAction,
   SetTimeZoneAction,
   SetVaultDriveAction,
 } from "./preferences/actions.js";
@@ -21,8 +23,10 @@ import {
   AddTeamMemberInputSchema,
   DeactivateTeamMemberInputSchema,
   ReactivateTeamMemberInputSchema,
+  RemoveTargetInputSchema,
   SetDueWindowInputSchema,
   SetRetentionInputSchema,
+  SetTargetInputSchema,
   SetTimeZoneInputSchema,
   SetVaultDriveInputSchema,
   UpdateTeamMemberInputSchema,
@@ -138,6 +142,30 @@ const stateReducer: StateReducer<BdSettingsPHState> = (
       bdSettingsPreferencesOperations.setRetentionOperation(
         state.global,
         action as SetRetentionAction,
+        dispatch,
+      );
+
+      break;
+    }
+
+    case "SET_TARGET": {
+      memoizedSchema(SetTargetInputSchema).parse(action.input);
+
+      bdSettingsPreferencesOperations.setTargetOperation(
+        state.global,
+        action as SetTargetAction,
+        dispatch,
+      );
+
+      break;
+    }
+
+    case "REMOVE_TARGET": {
+      memoizedSchema(RemoveTargetInputSchema).parse(action.input);
+
+      bdSettingsPreferencesOperations.removeTargetOperation(
+        state.global,
+        action as RemoveTargetAction,
         dispatch,
       );
 

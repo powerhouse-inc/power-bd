@@ -1,5 +1,8 @@
 import { NotesField } from "./NotesField.js";
 import type { DocumentDispatch } from "@powerhousedao/reactor-browser";
+import { useSetSelectedNode } from "../../components/shared/useOpenRecord.js";
+import { mapsOf } from "../../kit/market/index.js";
+import { useMarketDocumentsInSelectedDrive } from "../../components/useDriveDocuments.js";
 import { organisationLabel } from "../../kit/organisation-list/index.js";
 import { ErrorLine } from "../../components/shared/ErrorLine.js";
 import {
@@ -39,6 +42,11 @@ export function ContactDetail({
   const send = (action: ContactAction, onErrors: OnErrors) =>
     dispatchWith(dispatch, action, onErrors);
   const archived = s.status === "ARCHIVED";
+  const open = useSetSelectedNode();
+  const onMaps = mapsOf(
+    document.header.id,
+    (useMarketDocumentsInSelectedDrive() ?? []).map((d) => ({ id: d.header.id, state: d.state.global })),
+  );
   const setProfile = (patch: Parameters<typeof actions.setProfile>[0]) =>
     profile.run(
       (e) => send(actions.setProfile(patch), e),
@@ -87,6 +95,17 @@ export function ContactDetail({
       <p className="pb-reassure pb-mb-12">
         Archiving hides the organisation from new work. Nothing is deleted.
       </p>
+      {onMaps.length > 0 ? (
+        <p className="pb-small pb-flex pb-flex--center pb-gap-8">
+          <Icon name="compass" />
+          <span>On the maps of:</span>
+          {onMaps.map((m) => (
+            <button key={m.id} type="button" className="pb-btn pb-btn--ghost pb-btn--sm" onClick={() => open(m.id)}>
+              {m.name}
+            </button>
+          ))}
+        </p>
+      ) : null}
 
       <Section title="Details">
         <div className="pb-grid pb-gap-10 pb-autofit-220">

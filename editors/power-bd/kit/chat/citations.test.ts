@@ -68,7 +68,7 @@ describe("knownDocuments: what the conversation's vault tools named", () => {
   it("keeps only the vault's finished results, with the vault the model named", () => {
     const messages = [
       answer(
-        tool("getDocument", { documentId: "lead-1", title: "Cosylab" }),
+        tool("getDocument", { documentId: "lead-1", title: "Fernhill" }),
         tool("search_vault", { documentId: "failed", title: "F" }, {}, "error"),
         tool("read_document", DESK, { documentId: DESK.documentId, driveId: "other-vault" }),
       ),
@@ -127,12 +127,12 @@ describe("citeAnswer: an answer's markers as numbered chips", () => {
 
   it("leaves out what it cannot open: an unknown id, a BD record, a document it cannot place", () => {
     const shown = citeAnswer(
-      answer(text(`Cosylab [[${LEAD_ID}]], made up [[${MADE_UP}]], nowhere [[${NOWHERE}]].`)),
+      answer(text(`Fernhill [[${LEAD_ID}]], made up [[${MADE_UP}]], nowhere [[${NOWHERE}]].`)),
       known,
-      source({ [LEAD_ID]: { documentType: "powerbd/lead", name: "Cosylab" }, [NOWHERE]: { name: "Somewhere" } }),
+      source({ [LEAD_ID]: { documentType: "powerbd/lead", name: "Fernhill" }, [NOWHERE]: { name: "Somewhere" } }),
       true,
     );
-    expect(textsOf(shown)).toEqual(["Cosylab, made up, nowhere."]);
+    expect(textsOf(shown)).toEqual(["Fernhill, made up, nowhere."]);
   });
 
   it("keeps the words of a marker that names no document, as a wiki link quoted from a note", () => {

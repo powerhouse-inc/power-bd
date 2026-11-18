@@ -3,12 +3,15 @@ import type { PlaceCounts } from "./drive-plan.js";
 
 export type PlaceId =
   | "overview"
+  | "calendar"
   | "leads"
   | "proposals"
   | "funding"
   | "investors"
   | "organisations"
+  | "market"
   | "decisions"
+  | "reports"
   | "playbook"
   | "agent"
   | "settings";
@@ -21,13 +24,19 @@ export interface Place {
   empty: string;
 }
 
-/** The ten places, in sidebar order. The Agent and Settings sit at the sidebar's foot. */
+/** The thirteen places, in sidebar order. The Agent and Settings sit at the sidebar's foot. */
 export const PLACES: readonly Place[] = [
   {
     id: "overview",
     label: "Overview",
     icon: "overview",
     empty: "What needs attention, and what is coming up, will appear here.",
+  },
+  {
+    id: "calendar",
+    label: "Calendar",
+    icon: "calendar",
+    empty: "Next steps, meetings and deadlines will appear here, on their days.",
   },
   {
     id: "leads",
@@ -60,10 +69,22 @@ export const PLACES: readonly Place[] = [
     empty: "Organisations and the people you know there will appear here.",
   },
   {
+    id: "market",
+    label: "Market",
+    icon: "compass",
+    empty: "The markets the team works in, their size and who stands where, will appear here.",
+  },
+  {
     id: "decisions",
     label: "Decisions",
     icon: "decisions",
     empty: "Questions waiting for an answer will appear here.",
+  },
+  {
+    id: "reports",
+    label: "Reports",
+    icon: "chart",
+    empty: "How far leads get, where they go quiet and why they are lost will appear here.",
   },
   {
     id: "playbook",

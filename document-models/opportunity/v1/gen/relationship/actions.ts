@@ -15,6 +15,7 @@ import type {
   RemoveNextStepInput,
   RemoveReferenceInput,
   ReopenNextStepInput,
+  SetInteractionOutcomeInput,
   UnlinkContactInput,
   UpdateInteractionInput,
   UpdateNextStepInput,
@@ -76,6 +77,10 @@ export type RemoveConfidentialItemAction = Action & {
   type: "REMOVE_CONFIDENTIAL_ITEM";
   input: RemoveConfidentialItemInput;
 };
+export type SetInteractionOutcomeAction = Action & {
+  type: "SET_INTERACTION_OUTCOME";
+  input: SetInteractionOutcomeInput;
+};
 
 export type OpportunityRelationshipAction =
   | AddNextStepAction
@@ -91,4 +96,5 @@ export type OpportunityRelationshipAction =
   | AddReferenceAction
   | RemoveReferenceAction
   | AddConfidentialItemAction
-  | RemoveConfidentialItemAction;
+  | RemoveConfidentialItemAction
+  | SetInteractionOutcomeAction;

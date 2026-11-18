@@ -7,7 +7,9 @@ import type {
   UpdateAngleAction,
 } from "./angles/actions.js";
 import type {
+  SetExpectedCloseAction,
   SetLeadDetailsAction,
+  SetLeadSourceAction,
   SetOwnerAction,
 } from "./details/actions.js";
 import type {
@@ -30,6 +32,8 @@ import type {
   RemoveNextStepAction,
   RemoveReferenceAction,
   ReopenNextStepAction,
+  SetContactLinkDealRoleAction,
+  SetInteractionOutcomeAction,
   UnlinkContactAction,
   UpdateInteractionAction,
   UpdateNextStepAction,
@@ -66,7 +70,11 @@ import {
   RemoveReferenceInputSchema,
   ReopenMessageInputSchema,
   ReopenNextStepInputSchema,
+  SetContactLinkDealRoleInputSchema,
+  SetExpectedCloseInputSchema,
+  SetInteractionOutcomeInputSchema,
   SetLeadDetailsInputSchema,
+  SetLeadSourceInputSchema,
   SetLeadStatusInputSchema,
   SetOwnerInputSchema,
   UnlinkContactInputSchema,
@@ -111,6 +119,30 @@ const stateReducer: StateReducer<LeadPHState> = (state, action, dispatch) => {
       leadDetailsOperations.setOwnerOperation(
         state.global,
         action as SetOwnerAction,
+        dispatch,
+      );
+
+      break;
+    }
+
+    case "SET_LEAD_SOURCE": {
+      memoizedSchema(SetLeadSourceInputSchema).parse(action.input);
+
+      leadDetailsOperations.setLeadSourceOperation(
+        state.global,
+        action as SetLeadSourceAction,
+        dispatch,
+      );
+
+      break;
+    }
+
+    case "SET_EXPECTED_CLOSE": {
+      memoizedSchema(SetExpectedCloseInputSchema).parse(action.input);
+
+      leadDetailsOperations.setExpectedCloseOperation(
+        state.global,
+        action as SetExpectedCloseAction,
         dispatch,
       );
 
@@ -423,6 +455,30 @@ const stateReducer: StateReducer<LeadPHState> = (state, action, dispatch) => {
       leadRelationshipOperations.removeConfidentialItemOperation(
         state.global,
         action as RemoveConfidentialItemAction,
+        dispatch,
+      );
+
+      break;
+    }
+
+    case "SET_CONTACT_LINK_DEAL_ROLE": {
+      memoizedSchema(SetContactLinkDealRoleInputSchema).parse(action.input);
+
+      leadRelationshipOperations.setContactLinkDealRoleOperation(
+        state.global,
+        action as SetContactLinkDealRoleAction,
+        dispatch,
+      );
+
+      break;
+    }
+
+    case "SET_INTERACTION_OUTCOME": {
+      memoizedSchema(SetInteractionOutcomeInputSchema).parse(action.input);
+
+      leadRelationshipOperations.setInteractionOutcomeOperation(
+        state.global,
+        action as SetInteractionOutcomeAction,
         dispatch,
       );
 

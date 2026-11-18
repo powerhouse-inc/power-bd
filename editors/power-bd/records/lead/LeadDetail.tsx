@@ -1,5 +1,5 @@
 import { useToday } from "../../components/shared/useToday.js";
-import { enumValue, FITS, LEAD_KINDS, LEAD_STATUSES } from "../../kit/enums.js";
+import { enumValue, FITS, LEAD_KINDS, LEAD_SOURCES, LEAD_STATUSES } from "../../kit/enums.js";
 import type { Fit } from "document-models/lead";
 import { organisationLabel } from "../../kit/organisation-list/index.js";
 import { ErrorLine } from "../../components/shared/ErrorLine.js";
@@ -22,14 +22,19 @@ import { InteractionsSection } from "../../components/shared/relationship/Intera
 import { NextStepsSection } from "../../components/shared/relationship/NextStepsSection.js";
 import { ReferencesSection } from "../../components/shared/relationship/ReferencesSection.js";
 import {
+  fmtInstant,
   Section,
   useRun,
   dispatchWith,
   type OnErrors,
 } from "../../components/shared/relationship/common.js";
 import { useProposalRows } from "../../components/shared/useProposalRows.js";
+import { fmtDay } from "../../components/shared/relationship/common.js";
+import { LOST_REMINDER_NOTE, reminderChoices, reminderStep } from "../../kit/reminder/index.js";
 import { nextAction, statusPath } from "../../kit/lead-view/index.js";
 import { leadProposalNext } from "../../kit/proposal-list/index.js";
+import { buildBrief } from "../../kit/brief/index.js";
+import { BriefDialog } from "./BriefDialog.js";
 import { LeadNextBar } from "./LeadNextBar.js";
 import { MessagesSection } from "./MessagesSection.js";
 import { ProposalsSection } from "../proposal/ProposalsSection.js";
@@ -62,6 +67,8 @@ export function LeadDetail({
   const angleRun = useRun();
   const [angleText, setAngleText] = useState("");
   const [angleFit, setAngleFit] = useState<Fit>("GOOD");
+  // The brief that is open: for the lead, or for one of its scheduled meetings.
+  const [briefFor, setBriefFor] = useState<{ meetingId?: string } | null>(null);
 
   const contacts = contactDocs.map((d) => ({
     id: d.header.id,
@@ -88,6 +95,7 @@ export function LeadDetail({
   const send = (action: LeadAction, onErrors: OnErrors) =>
     dispatchWith(dispatch, action, onErrors);
 
+  const [remindOn, setRemindOn] = useState("");
   const parked = s.status === "PARKED";
   const closed = s.status === "WON" || s.status === "LOST";
   const path = statusPath(s.status, s.kind, s.parkedFrom);
@@ -109,7 +117,38 @@ export function LeadDetail({
             {statusTerm.label}
           </span>
         ) : null}
+        <span className="pb-toolbar__spacer" />
+        <button type="button" className="pb-btn pb-btn--sm" onClick={() => setBriefFor({})}>
+          <Icon name="note" />
+          Prepare a brief
+        </button>
       </div>
+      {briefFor ? (
+        <BriefDialog
+          brief={buildBrief(
+            {
+              lead: s,
+              organisations: contactDocs.map((d) => ({
+                id: d.header.id,
+                name: d.state.global.name,
+                website: d.state.global.website,
+                notes: d.state.global.notes,
+                country: d.state.global.address.country,
+                tags: d.state.global.tags,
+                people: d.state.global.people,
+              })),
+              proposals,
+              neverClaims: playbook?.state.global.neverClaims ?? [],
+              positioning: playbook?.state.global.positioning ?? [],
+              ownerName: team.ownerName,
+              today,
+              when: fmtInstant,
+            },
+            briefFor,
+          )}
+          onClose={() => setBriefFor(null)}
+        />
+      ) : null}
 
       <ol className="pb-path pb-mt-6 pb-mb-8">
         {path.map((p) => (
@@ -167,17 +206,34 @@ export function LeadDetail({
           ) : (
             <button
               className="pb-btn pb-btn--ghost pb-btn--sm"
-              onClick={() =>
-                status.run((e) =>
-                  send(
-                    actions.parkLead({
-                      reason: reason.trim(),
-                      parkedAt: new Date().toISOString(),
-                    }),
-                    e,
-                  ),
-                )
-              }
+              onClick={() => {
+                const why = reason.trim();
+                const day = remindOn;
+                // The reminder is added only once the park is accepted.
+                status.run(
+                  (e) =>
+                    send(
+                      actions.parkLead({
+                        reason: why,
+                        parkedAt: new Date().toISOString(),
+                      }),
+                      e,
+                    ),
+                  day
+                    ? () => {
+                        setRemindOn("");
+                        status.run((e) =>
+                          send(
+                            actions.addNextStep(
+                              reminderStep({ id: generateId(), reason: why, day, owner: s.owner ?? null }),
+                            ),
+                            e,
+                          ),
+                        );
+                      }
+                    : undefined,
+                );
+              }}
             >
               Put on hold
             </button>
@@ -190,6 +246,24 @@ export function LeadDetail({
               value={reason}
               onChange={(e) => setReason(e.target.value)}
             />
+          ) : null}
+          {!parked ? (
+            <select
+              className="pb-select pb-select--inline"
+              aria-label="Remind me when on hold"
+              value={remindOn}
+              onChange={(e) => setRemindOn(e.target.value)}
+            >
+              <option value="">On hold: no reminder</option>
+              {reminderChoices(today).map((c) => (
+                <option key={c.day} value={c.day}>
+                  On hold: remind me {c.label.toLowerCase()} · {fmtDay(`${c.day}T00:00:00.000Z`)}
+                </option>
+              ))}
+            </select>
+          ) : null}
+          {!parked && remindOn ? (
+            <span className="pb-faint pb-small">{LOST_REMINDER_NOTE}</span>
           ) : null}
           <ErrorLine message={status.error} />
         </div>
@@ -313,6 +387,60 @@ export function LeadDetail({
             onChange={(address) =>
               owner.run((onErrors) =>
                 send(actions.setOwner({ owner: address ?? null }), onErrors),
+              )
+            }
+          />
+        </div>
+        <div className="pb-prop__key">
+          <Icon name="source" />
+          Came from
+        </div>
+        <div className="pb-prop__value pb-prop__value--pair">
+          <select
+            className="pb-select pb-select--inline"
+            aria-label="Came from"
+            value={s.source ?? ""}
+            onChange={(e) =>
+              details.run((onErrors) =>
+                send(actions.setLeadSource({ source: enumValue(LEAD_SOURCES, e.target.value) ?? null }), onErrors),
+              )
+            }
+          >
+            <option value="">Not recorded</option>
+            {VOCABULARY.leadSource.map((t) => (
+              <option key={t.value} value={t.value}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+          <input
+            className="pb-input"
+            aria-label="Which event, person or campaign"
+            placeholder="Which event, person or campaign"
+            defaultValue={s.sourceDetail ?? ""}
+            key={`source-${s.sourceDetail ?? ""}`}
+            onBlur={(e) =>
+              e.target.value.trim() !== (s.sourceDetail ?? "") &&
+              details.run((onErrors) => send(actions.setLeadSource({ sourceDetail: e.target.value }), onErrors))
+            }
+          />
+        </div>
+        <div className="pb-prop__key">
+          <Icon name="calendar" />
+          Expected close
+        </div>
+        <div className="pb-prop__value">
+          <input
+            type="date"
+            className="pb-input pb-input--auto"
+            aria-label="Expected close"
+            value={(s.expectedCloseDate ?? "").slice(0, 10)}
+            onChange={(e) =>
+              details.run((onErrors) =>
+                send(
+                  actions.setExpectedClose({ expectedCloseDate: e.target.value ? `${e.target.value}T00:00:00.000Z` : null }),
+                  onErrors,
+                ),
               )
             }
           />
@@ -478,6 +606,8 @@ export function LeadDetail({
         }
         onRemove={(id, e) => send(actions.removeInteraction({ id }), e)}
         onUpdate={(c, e) => send(actions.updateInteraction(c), e)}
+        onBrief={(id) => setBriefFor({ meetingId: id })}
+        onOutcome={(id, outcome, e) => send(actions.setInteractionOutcome({ id, outcome }), e)}
       />
 
       <ContactLinksSection
@@ -485,6 +615,7 @@ export function LeadDetail({
         contacts={contacts}
         onLink={(l, e) => send(actions.linkContact(l), e)}
         onUnlink={(id, e) => send(actions.unlinkContact({ id }), e)}
+        onDealRole={(id, dealRole, e) => send(actions.setContactLinkDealRole({ id, dealRole }), e)}
       />
 
       <ReferencesSection

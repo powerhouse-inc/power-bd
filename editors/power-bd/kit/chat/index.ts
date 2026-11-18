@@ -49,3 +49,4 @@ export { redactToolResult } from "./redact.js";
 export { serverToolClient, type ModelLookups, type ServerClient } from "./tool-client.js";
 export { bdChatTools, readsTheVault, type ChatTool, type OwnTools } from "./tools.js";
 export { routeVaultCall, type VaultDrives } from "./vault-drive.js";
+export { agentRequests, createAgentRequests } from "./agent-request.js";

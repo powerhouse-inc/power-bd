@@ -141,10 +141,18 @@ export type ConfidentialItem = {
 
 export type ContactLink = {
   contactId: Scalars["PHID"]["output"];
+  dealRole: Maybe<DealRole>;
   id: Scalars["OID"]["output"];
   personId: Maybe<Scalars["OID"]["output"]>;
   role: Maybe<Scalars["String"]["output"]>;
 };
+
+export type DealRole =
+  | "BLOCKER"
+  | "CHAMPION"
+  | "DECISION_MAKER"
+  | "INFLUENCER"
+  | "USER";
 
 export type DiscardMessageInput = {
   id: Scalars["OID"]["input"];
@@ -173,6 +181,7 @@ export type Interaction = {
   id: Scalars["OID"]["output"];
   kind: InteractionKind;
   notesSource: Maybe<VaultRef>;
+  outcome: Maybe<InteractionOutcome>;
   people: Array<PersonRef>;
   status: InteractionStatus;
   summary: Maybe<Scalars["String"]["output"]>;
@@ -188,15 +197,26 @@ export type InteractionKind =
   | "MESSAGE"
   | "OTHER";
 
+export type InteractionOutcome = "NEGATIVE" | "NEUTRAL" | "POSITIVE";
+
 export type InteractionStatus = "CANCELLED" | "HELD" | "SCHEDULED";
 
 export type LeadKind = "EXCHANGE" | "INVESTOR" | "PARTNERSHIP" | "SALES";
+
+export type LeadSource =
+  | "EVENT"
+  | "INBOUND"
+  | "OTHER"
+  | "OUTBOUND"
+  | "PARTNER"
+  | "REFERRAL";
 
 export type LeadState = {
   angles: Array<Angle>;
   closedAt: Maybe<Scalars["DateTime"]["output"]>;
   confidentialItems: Array<ConfidentialItem>;
   contactLinks: Array<ContactLink>;
+  expectedCloseDate: Maybe<Scalars["Date"]["output"]>;
   interactions: Array<Interaction>;
   kind: Maybe<LeadKind>;
   messages: Array<Message>;
@@ -206,6 +226,8 @@ export type LeadState = {
   owner: Maybe<Scalars["EthereumAddress"]["output"]>;
   parkedFrom: Maybe<LeadStatus>;
   references: Array<Reference>;
+  source: Maybe<LeadSource>;
+  sourceDetail: Maybe<Scalars["String"]["output"]>;
   status: LeadStatus;
   statusReason: Maybe<Scalars["String"]["output"]>;
 };
@@ -316,10 +338,29 @@ export type ReopenNextStepInput = {
   id: Scalars["OID"]["input"];
 };
 
+export type SetContactLinkDealRoleInput = {
+  dealRole?: InputMaybe<DealRole>;
+  id: Scalars["OID"]["input"];
+};
+
+export type SetExpectedCloseInput = {
+  expectedCloseDate?: InputMaybe<Scalars["Date"]["input"]>;
+};
+
+export type SetInteractionOutcomeInput = {
+  id: Scalars["OID"]["input"];
+  outcome?: InputMaybe<InteractionOutcome>;
+};
+
 export type SetLeadDetailsInput = {
   kind?: InputMaybe<LeadKind>;
   name?: InputMaybe<Scalars["String"]["input"]>;
   organisationId?: InputMaybe<Scalars["PHID"]["input"]>;
+};
+
+export type SetLeadSourceInput = {
+  source?: InputMaybe<LeadSource>;
+  sourceDetail?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export type SetLeadStatusInput = {

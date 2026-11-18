@@ -35,6 +35,7 @@
         <a href="#tables">Tables</a>
         <a href="#board">Board</a>
         <a href="#board-move">Moving a card</a>
+        <a href="#list-move">Moving a row</a>
         <a href="#callouts">Callouts</a>
         <a href="#lists">Next steps and history</a>
         <a href="#time-money">Dates, money, attempts</a>
@@ -523,8 +524,22 @@
                   <div><div class="ds-label">“Move to…” on the card</div><div class="pb-card"><div class="pb-card__kind"><i data-icon="partnership"></i>Partnership lead<button class="pb-btn pb-btn--ghost pb-btn--sm pb-card__move" aria-expanded="true">Move to…</button><span class="pb-avatar pb-avatar--blue">ML</span></div><div class="pb-card__title">Research partnership</div><div class="pb-card__foot"><span class="pb-tag pb-tag--blue">In touch</span><span class="pb-card__meta">Changed yesterday</span></div><div class="pb-card__moves" role="group" aria-label="Move to"><button class="pb-move"><span><span class="pb-tag pb-tag--gray">New</span></span><span class="pb-move__hint">Becomes To contact</span></button><button class="pb-move"><span><span class="pb-tag pb-tag--blue">Active</span></span><span class="pb-move__hint">Pick: Meeting set, Met or Proposal</span></button><button class="pb-move"><span><span class="pb-tag pb-tag--brown">Parked</span></span><span class="pb-move__hint">Becomes Parked · asks why</span></button><button class="pb-move" aria-disabled="true"><span><span class="pb-tag pb-tag--default">Closed</span></span><span class="pb-move__hint">Give the lead an owner first</span></button></div></div></div>
                   <div><div class="ds-label">Refused by the record</div><div class="pb-card"><div class="pb-card__kind"><i data-icon="partnership"></i>Partnership lead<span class="pb-avatar pb-avatar--blue">ML</span></div><div class="pb-card__title">Research partnership</div><div class="pb-card__foot"><span class="pb-tag pb-tag--blue">In touch</span><span class="pb-card__meta">Changed yesterday</span></div><div class="pb-field__error" role="alert"><i data-icon="alert-circle" class="pb-icon--xs"></i>A lead past to contact needs an owner</div></div></div>
                   <div><div class="ds-label">Which status</div><div class="pb-ask" role="dialog" aria-label="Move Research partnership to Closed"><div class="pb-ask__title">Move “Research partnership” to Closed</div><div class="pb-ask__options"><button class="pb-menu__item pb-ask__option"><span class="pb-tag pb-tag--green">Won</span></button><button class="pb-menu__item pb-ask__option is-active"><span class="pb-tag pb-tag--red">Lost</span><span class="pb-menu__hint">asks why</span></button></div><p class="pb-reassure"><i data-icon="shield"></i>Nothing is deleted: a closed lead keeps its history. Closing is final.</p><div class="pb-ask__foot"><button class="pb-btn pb-btn--ghost pb-btn--sm">Cancel</button></div></div></div>
-                  <div><div class="ds-label">Why</div><div class="pb-ask" role="dialog" aria-label="Move Research partnership to Parked"><div class="pb-ask__title">Move “Research partnership” to Parked</div><label class="pb-field"><span class="pb-field__label"><span class="pb-tag pb-tag--brown">Parked</span> Why is it parked?</span><input class="pb-input" placeholder="A short reason" value="Waiting for their budget round" /></label><p class="pb-reassure"><i data-icon="shield"></i>Nothing is lost: taken off hold, it returns to where it was.</p><div class="pb-ask__foot"><button class="pb-btn pb-btn--sm">Cancel</button><button class="pb-btn pb-btn--primary pb-btn--sm">Move</button></div></div></div>
+                  <div><div class="ds-label">Why</div><div class="pb-ask" role="dialog" aria-label="Move Research partnership to Parked"><div class="pb-ask__title">Move “Research partnership” to Parked</div><label class="pb-field"><span class="pb-field__label"><span class="pb-tag pb-tag--brown">Parked</span> Why is it parked?</span><input class="pb-input" placeholder="A short reason" value="Waiting for their budget round" /></label><label class="pb-field"><span class="pb-field__label">Remind me</span><select class="pb-select"><option>No reminder</option><option selected>In 3 months · Thu 18 Feb</option><option>In 6 months · Tue 18 May</option></select></label><p class="pb-reassure"><i data-icon="shield"></i>Nothing is lost: taken off hold, it returns to where it was.</p><div class="pb-ask__foot"><button class="pb-btn pb-btn--sm">Cancel</button><button class="pb-btn pb-btn--primary pb-btn--sm">Move</button></div></div></div>
+                  <div><div class="ds-label">A final status, confirmed</div><div class="pb-ask" role="dialog" aria-label="Move Research partnership to Won"><div class="pb-ask__title">Move “Research partnership” to Won</div><p class="pb-reassure"><i data-icon="shield"></i>Nothing is deleted: a closed lead keeps its history. Closing is final.</p><div class="pb-ask__foot"><button class="pb-btn pb-btn--sm">Cancel</button><button class="pb-btn pb-btn--primary pb-btn--sm">Mark won</button></div></div></div>
                   <div><div class="ds-label">A decision only a person takes</div><div class="pb-ask" role="dialog" aria-label="Move Incubator grant to Active"><div class="pb-ask__title">Move “Incubator grant” to Active</div><p class="pb-ask__note">Go or no-go is the team lead's decision, taken by a person on the opportunity's page. Nothing was changed.</p><div class="pb-ask__foot"><button class="pb-btn pb-btn--sm">Cancel</button><button class="pb-btn pb-btn--primary pb-btn--sm"><span class="pb-btn__people"><i data-icon="people-only" class="pb-icon--xs"></i></span>Open to decide</button></div></div></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="ds-section" id="list-move">
+            <h2 class="ds-section__title">Moving a row</h2>
+            <p class="ds-section__lead">A list moves its rows as the board moves its cards. Its rows stand under one heading per status, in the board's column order, each heading with its count; an empty status is its heading line, which still takes a row. A row is dragged under another heading, or moved with its “Move to…” list. While it is in the hand the row is faint where it was; a status that takes it tints its whole group, deeper under the pointer, and says on its heading line what a drop does; one that refuses it fades its rows and says why. The question, the “Move to…” list and a refusal stand in full-width rows: the question in the group the row was put in, the list and a refusal right under the row. The list's own columns and order stay as they were.</p>
+            <div class="ds-demo">
+              <div class="ds-pane pb-root">
+                <div class="pb-stack" style="gap: 24px">
+                  <div><div class="ds-label">In the hand: over Proposal, refused by Parked</div><table class="pb-table"><thead><tr><th>Lead</th><th>Status</th><th>Owner</th><th class="pb-table__move" aria-label="Move"></th></tr></thead><tbody class="pb-table__group is-target"><tr class="pb-table__group-head"><th colspan="4" scope="colgroup"><span class="pb-tag pb-tag--blue">In touch</span><span class="pb-count">0</span></th></tr></tbody><tbody class="pb-table__group"><tr class="pb-table__group-head"><th colspan="4" scope="colgroup"><span class="pb-tag pb-tag--purple">Met</span><span class="pb-count">1</span></th></tr><tr class="pb-clickable is-away"><td class="pb-table__title">Research partnership</td><td><span class="pb-tag pb-tag--purple">Met</span></td><td>Mara Lind</td><td class="pb-table__move"><button class="pb-btn pb-btn--ghost pb-btn--sm pb-card__move">Move to…</button></td></tr></tbody><tbody class="pb-table__group is-target is-over"><tr class="pb-table__group-head"><th colspan="4" scope="colgroup"><span class="pb-tag pb-tag--orange">Proposal</span><span class="pb-count">0</span><div class="pb-board__hint"><i data-icon="arrow-right"></i>Becomes Proposal</div></th></tr></tbody><tbody class="pb-table__group is-target"><tr class="pb-table__group-head"><th colspan="4" scope="colgroup"><span class="pb-tag pb-tag--green">Won</span><span class="pb-count">0</span></th></tr></tbody><tbody class="pb-table__group is-refused"><tr class="pb-table__group-head"><th colspan="4" scope="colgroup"><span class="pb-tag pb-tag--brown">Parked</span><span class="pb-count">1</span><div class="pb-board__hint"><i data-icon="info"></i>Take it off hold first: it returns to In touch</div></th></tr><tr class="pb-clickable"><td class="pb-table__title">Harbour analytics pilot</td><td><span class="pb-tag pb-tag--brown">Parked</span></td><td>Jonas Weber</td><td class="pb-table__move"><button class="pb-btn pb-btn--ghost pb-btn--sm pb-card__move">Move to…</button></td></tr></tbody></table></div>
+                  <div><div class="ds-label">“Move to…” under its row, and a question in the group it was put in</div><table class="pb-table"><thead><tr><th>Lead</th><th>Status</th><th>Owner</th><th class="pb-table__move" aria-label="Move"></th></tr></thead><tbody class="pb-table__group"><tr class="pb-table__group-head"><th colspan="4" scope="colgroup"><span class="pb-tag pb-tag--purple">Met</span><span class="pb-count">1</span></th></tr><tr class="pb-clickable"><td class="pb-table__title">Kelvar data partnership</td><td><span class="pb-tag pb-tag--purple">Met</span></td><td>Mara Lind</td><td class="pb-table__move"><button class="pb-btn pb-btn--ghost pb-btn--sm pb-card__move" aria-expanded="true">Move to…</button></td></tr><tr class="pb-table__panel"><td colspan="4"><div class="pb-card__moves" role="group" aria-label="Move to"><button class="pb-move"><span><span class="pb-tag pb-tag--blue">In touch</span></span><span class="pb-move__hint">Becomes In touch</span></button><button class="pb-move"><span><span class="pb-tag pb-tag--orange">Proposal</span></span><span class="pb-move__hint">Becomes Proposal</span></button><button class="pb-move"><span><span class="pb-tag pb-tag--green">Won</span></span><span class="pb-move__hint">Becomes Won · asks to confirm</span></button><button class="pb-move" aria-disabled="true"><span><span class="pb-tag pb-tag--brown">Parked</span></span><span class="pb-move__hint">Give the lead an owner first</span></button></div></td></tr></tbody><tbody class="pb-table__group"><tr class="pb-table__group-head"><th colspan="4" scope="colgroup"><span class="pb-tag pb-tag--red">Lost</span><span class="pb-count">0</span></th></tr><tr class="pb-table__panel"><td colspan="4"><div class="pb-ask" role="dialog" aria-label="Move Kelvar data partnership to Lost"><div class="pb-ask__title">Move “Kelvar data partnership” to Lost</div><label class="pb-field"><span class="pb-field__label"><span class="pb-tag pb-tag--red">Lost</span> Why was it lost?</span><input class="pb-input" placeholder="A short reason" value="Budget went to an in-house team" /></label><p class="pb-reassure"><i data-icon="shield"></i>Nothing is deleted: a closed lead keeps its history. Closing is final.</p><div class="pb-ask__foot"><button class="pb-btn pb-btn--sm">Cancel</button><button class="pb-btn pb-btn--primary pb-btn--sm">Move</button></div></div></td></tr></tbody></table></div>
                 </div>
               </div>
             </div>
@@ -616,6 +631,120 @@
                 <div class="pb-stack pb-gap-2"><div data-strip="2026-11-16" data-days="15" data-due="2:meeting 3:step 4:deadline 4:step 8:meeting 11:deadline 11:deadline 11:step"></div><div class="pb-strip__legend"><span><span class="pb-strip__mark pb-strip__mark--deadline"></span>Deadline</span><span><span class="pb-strip__mark pb-strip__mark--meeting"></span>Meeting</span><span><span class="pb-strip__mark pb-strip__mark--step"></span>Next step</span></div></div><div class="pb-list"><div class="pb-list__group"><strong>Wed 18 Nov</strong> · in 2 days</div><div class="pb-list__item"><span class="pb-list__lead pb-list__lead--meeting"><i data-icon="meeting"></i></span><div class="pb-list__main"><span class="pb-list__title">Meeting · Kelvar Institute</span><span class="pb-list__sub">15:00 your time</span></div><div class="pb-list__end"><span class="pb-avatar-stack"><span class="pb-avatar pb-avatar--blue">ML</span><span class="pb-avatar pb-avatar--purple">IV</span></span></div></div><div class="pb-list__group"><strong>Fri 20 Nov</strong> · in 4 days</div><div class="pb-list__item"><span class="pb-list__lead pb-list__lead--deadline"><i data-icon="hourglass"></i></span><div class="pb-list__main"><span class="pb-list__title">Decide by</span><span class="pb-list__sub">Orvane Foundation · incubator grant</span></div><div class="pb-list__end"><span class="pb-avatar pb-avatar--purple">IV</span></div></div><div class="pb-list__item"><span class="pb-list__lead pb-list__lead--step"><i data-icon="checklist"></i></span><div class="pb-list__main"><span class="pb-list__title">Send revised pricing</span><span class="pb-list__sub">Brisa Labs</span></div><div class="pb-list__end"><span class="pb-avatar pb-avatar--green">TO</span></div></div></div>
               </div>
             </div>
+            <h3 class="ds-sub">Calendar</h3>
+            <p class="ds-section__lead">The Calendar place: a month of whole weeks or one week, Monday first, with the strip's marks. Today is the one filled spot. A late next step is red. While an item is in the hand, the days that take it tint like a board's stages, and the day under it says what a drop does; a meeting asks first, because nobody invited is told.</p>
+            <div class="ds-demo">
+              <div class="ds-pane pb-root">
+                <div class="pb-cal" style="max-width: 980px">
+                  <div class="pb-cal__wd">Mon</div><div class="pb-cal__wd">Tue</div><div class="pb-cal__wd">Wed</div><div class="pb-cal__wd">Thu</div><div class="pb-cal__wd">Fri</div><div class="pb-cal__wd">Sat</div><div class="pb-cal__wd">Sun</div>
+                  <div class="pb-cal__day is-past"><div class="pb-cal__head"><span class="pb-cal__num">16</span></div><button class="pb-cal__item is-late"><span class="pb-strip__mark pb-strip__mark--step"></span><span class="pb-cal__text">Send revised pricing</span></button></div>
+                  <div class="pb-cal__day is-past"><div class="pb-cal__head"><span class="pb-cal__num">17</span></div></div>
+                  <div class="pb-cal__day is-today"><div class="pb-cal__head"><span class="pb-cal__num">18</span><button class="pb-btn pb-btn--ghost pb-btn--sm pb-cal__add" style="opacity: 1" aria-label="Add on Wed 18 Nov"><i data-icon="plus"></i></button></div><button class="pb-cal__item"><span class="pb-strip__mark pb-strip__mark--meeting"></span><span class="pb-cal__time">15:00</span><span class="pb-cal__text">Kick-off call</span></button><button class="pb-cal__item"><span class="pb-strip__mark pb-strip__mark--step"></span><span class="pb-cal__text">Prepare the agenda</span></button></div>
+                  <div class="pb-cal__day is-target"><div class="pb-cal__head"><span class="pb-cal__num">19</span></div></div>
+                  <div class="pb-cal__day is-target is-over"><div class="pb-cal__head"><span class="pb-cal__num">20</span></div><button class="pb-cal__item"><span class="pb-strip__mark pb-strip__mark--deadline"></span><span class="pb-cal__text">Decide: Incubator grant</span></button><div class="pb-board__hint"><i data-icon="arrow-right"></i>Moves here · asks to confirm</div></div>
+                  <div class="pb-cal__day is-target"><div class="pb-cal__head"><span class="pb-cal__num">21</span></div><button class="pb-cal__item"><span class="pb-strip__mark pb-strip__mark--step"></span><span class="pb-cal__text">Draft the outline</span></button><button class="pb-cal__item"><span class="pb-strip__mark pb-strip__mark--step"></span><span class="pb-cal__text">Book the room</span></button><button class="pb-cal__item"><span class="pb-strip__mark pb-strip__mark--meeting"></span><span class="pb-cal__time">10:00</span><span class="pb-cal__text">Partner call</span></button><button class="pb-cal__more">2 more</button></div>
+                  <div class="pb-cal__day is-target"><div class="pb-cal__head"><span class="pb-cal__num">22</span></div></div>
+                </div>
+                <div class="pb-ask" role="dialog" aria-label="Move Kick-off call to Fri 20 Nov" style="max-width: 300px; margin-top: 16px"><div class="pb-ask__title">Move “Kick-off call” to Fri 20 Nov</div><p class="pb-reassure"><i data-icon="shield"></i>Only Power BD's record moves: nothing is sent to the people invited. Tell them yourself.</p><div class="pb-ask__foot"><button class="pb-btn pb-btn--sm">Cancel</button><button class="pb-btn pb-btn--primary pb-btn--sm">Move</button></div></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============================== MARKET ============================== -->
+          <section class="ds-section" id="market">
+            <h2 class="ds-section__title">Market</h2>
+            <p class="ds-section__lead">The Market place: a card per market with its size in short form; on its page the three totals with what they leave out, the approval before use outside the team, each number with its source ("No source" in the warning tone), and the market map, where each organisation is a dot on two named axes and Powerhouse is the primary one.</p>
+            <div class="ds-demo ds-demo--wide">
+              <div class="ds-pane pb-root">
+                <div class="pb-card-grid" style="max-width: 600px">
+                  <div class="pb-card pb-clickable"><div class="pb-card__kind"><i data-icon="compass"></i>EU</div><div class="pb-card__title">Finance operations</div><div class="pb-card__amounts">€1.2bn · €310m · €18m</div><div class="pb-card__foot"><span class="pb-small pb-faint">3 organisations on the map</span><span class="pb-tag pb-tag--green">Approved</span></div></div>
+                  <div class="pb-card pb-clickable"><div class="pb-card__kind"><i data-icon="compass"></i>DACH</div><div class="pb-card__title">Law firms</div><div class="pb-card__amounts">Not sized yet</div><div class="pb-card__foot"><span class="pb-small pb-faint">2 organisations on the map</span><span class="pb-tag pb-tag--default">Draft</span></div></div>
+                </div>
+                <div class="pb-tiles pb-tiles--3" style="margin-top: 20px">
+                  <div class="pb-tile pb-tile--static"><span class="pb-tile__label">Total market (TAM)</span><span class="pb-tile__value">€1.2bn</span><span class="pb-tile__sub">1 not counted yet</span></div>
+                  <div class="pb-tile pb-tile--static"><span class="pb-tile__label">Serviceable (SAM)</span><span class="pb-tile__value">€310m</span><span class="pb-tile__sub">From 2 segments</span></div>
+                  <div class="pb-tile pb-tile--static"><span class="pb-tile__label">Obtainable in 3 years (SOM)</span><span class="pb-tile__value">€18m</span><span class="pb-tile__sub">From 2 segments</span></div>
+                </div>
+                <div class="pb-stack pb-gap-2" style="margin-top: 16px; max-width: 640px">
+                  <p class="pb-flex pb-flex--center pb-gap-8"><span class="pb-tag pb-tag--default">Draft</span><span class="pb-small">Not approved for use outside the team.</span></p>
+                  <div class="pb-overline">Before you approve</div>
+                  <ul class="pb-checks"><li class="pb-checks__item is-warn"><i data-icon="alert"></i>Add a source for the value per organisation in Group finance</li></ul>
+                  <div><button class="pb-btn pb-btn--primary" disabled><span class="pb-btn__people"><i data-icon="people-only" class="pb-icon--xs"></i></span>Approve the figures</button></div>
+                  <p class="pb-reassure"><i data-icon="shield"></i>Only a person can approve, signed with your name. Changing a figure afterwards needs a reopen.</p>
+                </div>
+                <div class="pb-table-wrap" style="margin-top: 16px">
+                  <table class="pb-table"><thead><tr><th>Segment</th><th class="pb-num">Organisations</th><th class="pb-num">Value per organisation a year, EUR</th><th>We can serve it</th><th class="pb-num">Obtainable in 3 years</th></tr></thead>
+                  <tbody><tr><td>Mid-size finance teams</td><td class="pb-num"><input class="pb-input pb-input--number" value="1200" /><button class="pb-source"><i data-icon="source" class="pb-icon--xs"></i><span>Companies registry, 2026</span></button></td><td class="pb-num"><input class="pb-input pb-input--number" value="40000" /><button class="pb-source is-missing"><i data-icon="alert" class="pb-icon--xs"></i><span>No source</span></button></td><td><input type="checkbox" checked /></td><td class="pb-num"><input class="pb-input pb-input--number" value="12" /></td></tr></tbody></table>
+                </div>
+                <div class="pb-map" style="max-width: 720px">
+                  <span class="pb-map__axis pb-map__axis--x"></span><span class="pb-map__axis pb-map__axis--y"></span>
+                  <span class="pb-map__end pb-map__end--left">Built per customer</span><span class="pb-map__end pb-map__end--right">A product the customer configures</span><span class="pb-map__end pb-map__end--bottom">Outputs only</span><span class="pb-map__end pb-map__end--top">Signed record of who approved what</span>
+                  <button class="pb-map__dot" style="left: 22%; bottom: 30%"><span>Quillmark</span></button>
+                  <button class="pb-map__dot is-selected" style="left: 72%; bottom: 35%"><span>Larkspire</span></button>
+                  <button class="pb-map__dot pb-map__dot--us" style="left: 70%; bottom: 82%"><span>Powerhouse</span></button>
+                </div>
+                <div class="pb-map__caption" style="max-width: 984px"><span>Left to right: Who builds it</span><span>Bottom to top: What the record shows</span></div>
+              </div>
+            </div>
+            <h3 class="ds-sub">Importing from a spreadsheet</h3>
+            <p class="ds-section__lead">Leads and organisations from a CSV: four steps on the status path, then each row as it will be imported, with what changes said in orange beside it and existing organisations linked rather than created twice. Nothing is created until Import.</p>
+            <div class="ds-demo">
+              <div class="ds-pane pb-root">
+                <section class="pb-import" style="max-width: 980px">
+                  <div class="pb-import__head"><h2 class="pb-import__title">Import leads from a spreadsheet</h2><span class="pb-toolbar__spacer"></span><button class="pb-btn pb-btn--ghost pb-btn--sm"><i data-icon="close"></i>Close</button></div>
+                  <ol class="pb-path"><li class="pb-path__step is-done"><span class="pb-path__dot"><i data-icon="check"></i></span>Paste or choose a file</li><li class="pb-path__step is-done"><span class="pb-path__dot"><i data-icon="check"></i></span>Match the columns</li><li class="pb-path__step is-current"><span class="pb-path__dot"></span>Check the rows</li><li class="pb-path__step"><span class="pb-path__dot"></span>Import</li></ol>
+                  <p class="pb-small">2 of 3 rows to import: 1 new organisation, 1 linked to an existing one. 1 already exists and is skipped.</p>
+                  <div class="pb-table-wrap"><table class="pb-table"><thead><tr><th>Row</th><th>Lead</th><th>Organisation</th><th>Status</th><th>Owner</th><th>What changes</th></tr></thead><tbody>
+                    <tr class="pb-import__row"><td>2</td><td>Fernhill</td><td>New: Fernhill</td><td>In touch</td><td>Mara Lind</td><td></td></tr>
+                    <tr class="pb-import__row"><td>3</td><td>TARVEX</td><td>Links to Tarvex d.o.o.</td><td>To contact</td><td><span class="pb-faint">No owner</span></td><td><ul class="pb-import__problems"><li>"Jonas" is not in the team: imported without an owner</li><li>Past To contact a lead needs an owner and an organisation: imported as To contact</li></ul></td></tr>
+                    <tr class="pb-import__row is-blocked"><td>4</td><td>Kelvar Institute</td><td>Links to Kelvar Institute</td><td>To contact</td><td><span class="pb-faint">No owner</span></td><td><label class="pb-small"><input type="checkbox" /> "Kelvar Institute" already exists: import anyway</label></td></tr>
+                  </tbody></table></div>
+                  <p class="pb-reassure"><i data-icon="shield"></i>Nothing is created until you press Import. Existing organisations are linked, not changed, except that imported notes are added after theirs.</p>
+                  <div class="pb-import__foot"><button class="pb-btn pb-btn--sm">Back</button><button class="pb-btn pb-btn--primary pb-btn--sm">Import 2 leads</button></div>
+                  <div class="pb-import__result pb-import__result--created"><i data-icon="check-circle"></i><span>Row 2: Fernhill with a new organisation</span></div>
+                  <div class="pb-import__result pb-import__result--failed"><i data-icon="alert-circle"></i><span>Row 5: the lead failed: A lead past to contact needs an owner</span></div>
+                  <div class="pb-import__result pb-import__result--skipped"><i data-icon="info"></i><span>Row 4: Lead "Kelvar Institute" already exists</span></div>
+                </section>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============================== REPORTS ============================== -->
+          <section class="ds-section" id="reports">
+            <h2 class="ds-section__title">Reports</h2>
+            <p class="ds-section__lead">The Reports place and the Leads map. The funnel shows how far the leads added in a period got, with the share that went on from each stage under the bars; won is green. Reasons are grouped by theme only when their words are clear, and what was said stays one click away. The priority map places each open lead by the fit of its best angle and how far along it is; the corners say what to do, a dot's size is its proposal's value, and a late next step shows the slipping mark.</p>
+            <div class="ds-demo">
+              <div class="ds-pane pb-root">
+                <div class="pb-tiles" style="max-width: 900px"><div class="pb-tile pb-tile--static"><span class="pb-tile__label">Win rate</span><span class="pb-tile__value">60%</span><span class="pb-tile__sub">3 won, 2 lost</span></div><div class="pb-tile pb-tile--static"><span class="pb-tile__label">Days to win</span><span class="pb-tile__value">34</span><span class="pb-tile__sub">Median, from being added</span></div><div class="pb-tile pb-tile--static"><span class="pb-tile__label">Added</span><span class="pb-tile__value">12</span><span class="pb-tile__sub">Leads this quarter</span></div><div class="pb-tile pb-tile--static"><span class="pb-tile__label">Gone quiet</span><span class="pb-tile__value">4</span><span class="pb-tile__sub">Open, no change in 30 days</span></div></div>
+                <div class="pb-funnel" style="max-width: 640px; margin-top: 20px">
+                  <div class="pb-funnel__row"><span class="pb-funnel__label">To contact</span><span class="pb-funnel__track"><span class="pb-funnel__fill" style="width: 100%"></span></span><span class="pb-funnel__count">12</span></div>
+                  <div class="pb-funnel__step">75% went on</div>
+                  <div class="pb-funnel__row"><span class="pb-funnel__label">In touch</span><span class="pb-funnel__track"><span class="pb-funnel__fill" style="width: 75%"></span></span><span class="pb-funnel__count">9</span></div>
+                  <div class="pb-funnel__step">67% went on</div>
+                  <div class="pb-funnel__row"><span class="pb-funnel__label">Meeting set</span><span class="pb-funnel__track"><span class="pb-funnel__fill" style="width: 50%"></span></span><span class="pb-funnel__count">6</span></div>
+                  <div class="pb-funnel__step">Too few to say</div>
+                  <div class="pb-funnel__row"><span class="pb-funnel__label">Won</span><span class="pb-funnel__track"><span class="pb-funnel__fill pb-funnel__fill--won" style="width: 25%"></span></span><span class="pb-funnel__count">3</span></div>
+                </div>
+                <div class="pb-reasons" style="max-width: 640px; margin-top: 20px">
+                  <div class="pb-reason"><button class="pb-disclosure" aria-expanded="true"><i data-icon="chevron-right"></i>Budget or price</button><span class="pb-reason__count">2</span><ul class="pb-reason__said"><li>“Too expensive for them” · Brightwater renewal</li><li>“No budget this year” · Harbour analytics pilot</li></ul></div>
+                  <div class="pb-reason"><button class="pb-disclosure" aria-expanded="false"><i data-icon="chevron-right"></i>Waiting for their budget round</button><span class="pb-reason__count">1</span></div>
+                </div>
+                <div class="pb-map pb-map--grid" style="max-width: 720px">
+                  <span class="pb-map__unassessed"></span>
+                  <span class="pb-map__line pb-map__line--y" style="left: 60%"></span>
+                  <span class="pb-map__line pb-map__line--x" style="bottom: 40%"></span>
+                  <span class="pb-map__quadrant" style="top: 0; right: 0">Close these</span>
+                  <span class="pb-map__quadrant" style="bottom: 0; right: 0">Start these</span>
+                  <span class="pb-map__quadrant" style="top: 0; left: 20%">Check these</span>
+                  <span class="pb-map__quadrant" style="bottom: 0; left: 20%">Park or drop</span>
+                  <span class="pb-map__row-label" style="bottom: 90%">Proposal</span><span class="pb-map__row-label" style="bottom: 50%">Meeting set</span><span class="pb-map__row-label" style="bottom: 10%">To contact</span>
+                  <span class="pb-map__col-label" style="left: 0">Not assessed</span><span class="pb-map__col-label" style="left: 40%">Later</span><span class="pb-map__col-label" style="left: 80%">Best</span>
+                  <button class="pb-map__dot pb-map__dot--lead" style="left: 90%; bottom: 90%; --pb-dot: 20px"><span>Brightwater renewal</span></button>
+                  <button class="pb-map__dot pb-map__dot--lead" style="left: 70%; bottom: 10%"><span>Pilot with Kelvar</span><i data-icon="slipping" class="pb-map__slip"></i></button>
+                  <button class="pb-map__dot pb-map__dot--lead" style="left: 10%; bottom: 30%"><span>Inbound enquiry</span></button>
+                </div>
+              </div>
+            </div>
           </section>
 
           <!-- ============================== NAVIGATION ============================== -->
@@ -699,6 +828,45 @@
                       <div class="pb-dialog__foot"><button class="pb-btn">Cancel</button><button class="pb-btn pb-btn--primary"><span class="pb-btn__people"><i data-icon="people-only" class="pb-icon--xs"></i></span>Decide: Go</button></div>
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+                      <h3 class="ds-sub">Meeting brief</h3>
+            <p class="ds-section__lead">A lead's brief before a meeting, assembled from its records: a wide dialog whose body scrolls, sections in the order people ask, a late step in red, the confidential items in the lock callout, never copied for others or sent to the agent.</p>
+            <div class="ds-demo">
+              <div class="ds-pane pb-root">
+                <div class="pb-dialog pb-dialog--doc" role="dialog" aria-label="Brief: meeting with Kelvar Institute" style="max-height: none">
+                  <div class="pb-dialog__head"><i data-icon="note"></i>Brief: meeting with Kelvar Institute</div>
+                  <div class="pb-dialog__body">
+                    <p class="pb-brief__summary">Met · Partnership · Mara Lind owns it · Kelvar Institute</p>
+                    <section class="pb-brief__section"><h3 class="pb-brief__heading">The meeting</h3><ul class="pb-brief__list"><li>Meeting: Data workshop<span class="pb-brief__detail">Thu 19 Nov, 10:00 Europe/Ljubljana · with Ana Novak · for us: Mara Lind</span></li></ul></section>
+                    <section class="pb-brief__section"><h3 class="pb-brief__heading">Why we talk to them</h3><ul class="pb-brief__list"><li>Signed records for their lab data<span class="pb-brief__detail">Best fit · stands for: Signed decision records</span></li></ul></section>
+                    <section class="pb-brief__section"><h3 class="pb-brief__heading">Open next steps</h3><ul class="pb-brief__list"><li class="pb-brief__late">Late: Send the outline<span class="pb-brief__detail">was due 2026-11-16 · Mara Lind</span></li><li>Book a room<span class="pb-brief__detail">due 2026-11-20 · Mara Lind</span></li></ul></section>
+                    <section class="pb-brief__section"><h3 class="pb-brief__heading">Where the proposal stands</h3><p class="pb-brief__empty">No live proposal.</p></section>
+                    <div class="pb-callout pb-callout--purple"><i data-icon="lock"></i><div class="pb-callout__body"><div class="pb-callout__title">Internal only: never copied for others or sent to the agent</div><ul class="pb-brief__list"><li>Their budget is €40k</li></ul></div></div>
+                  </div>
+                  <div class="pb-dialog__foot"><p class="pb-reassure"><i data-icon="shield"></i>Nothing is sent from Power BD. Copies and the agent leave out the internal items.</p><button class="pb-btn pb-btn--ghost pb-btn--sm">Copy for the team</button><button class="pb-btn pb-btn--sm"><i data-icon="copy"></i>Copy markdown</button><button class="pb-btn pb-btn--primary pb-btn--sm"><i data-icon="sparkles"></i>Refine with the agent</button><button class="pb-btn pb-btn--ghost pb-btn--sm">Close</button></div>
+                </div>
+              </div>
+            </div>
+                      <h3 class="ds-sub">Quick capture</h3>
+            <p class="ds-section__lead">Logging what just happened, from anywhere: "Log" in the top bar, and on a phone a floating button in thumb reach (the sidebar is gone there). On a phone the form rises from the bottom, its inputs big enough that the phone does not zoom. It saves a held entry in the record's history and an optional next step; nothing is sent.</p>
+            <div class="ds-demo">
+              <div class="ds-pane pb-root">
+                <div class="pb-backdrop pb-backdrop--sheet" style="position: relative; inset: auto; z-index: auto; min-height: 660px; border-radius: var(--pb-r-lg)">
+                  <div class="pb-dialog" role="dialog" aria-label="Log what happened">
+                    <div class="pb-dialog__head"><i data-icon="history"></i>Log what happened</div>
+                    <div class="pb-dialog__body">
+                      <div class="pb-field"><span class="pb-field__label">On</span><input class="pb-input" placeholder="Find a lead or funding opportunity" value="kel" />
+                        <div class="pb-capture__picks"><button class="pb-capture__pick"><i data-icon="funding"></i>Kelvar grant<span class="pb-capture__pick-kind">Funding</span></button><button class="pb-capture__pick is-active"><i data-icon="leads"></i>Kelvar pilot<span class="pb-capture__pick-kind">Lead</span></button></div></div>
+                      <div class="pb-segmented"><button class="pb-segmented__item is-active"><i data-icon="meeting"></i>Meeting</button><button class="pb-segmented__item"><i data-icon="phone"></i>Call</button><button class="pb-segmented__item"><i data-icon="mail"></i>Email</button><button class="pb-segmented__item"><i data-icon="message"></i>Message</button></div>
+                      <div class="pb-capture__row"><label class="pb-field"><span class="pb-field__label">Day</span><input class="pb-input" type="date" value="2026-11-18" /></label><label class="pb-field"><span class="pb-field__label">Time, Europe/Ljubljana</span><input class="pb-input" type="time" value="14:30" /></label></div>
+                      <label class="pb-field"><span class="pb-field__label">What happened</span><input class="pb-input" value="They want a pilot in January" /></label>
+                      <div class="pb-capture__row"><label class="pb-field"><span class="pb-field__label">Next step, if any</span><input class="pb-input" value="Send the pilot outline" /></label><label class="pb-field"><span class="pb-field__label">By</span><input class="pb-input" type="date" value="2026-11-20" /></label></div>
+                    </div>
+                    <div class="pb-dialog__foot"><p class="pb-reassure"><i data-icon="shield"></i>Nothing is sent from Power BD: this only records it.</p><button class="pb-btn pb-btn--ghost pb-btn--sm">Cancel</button><button class="pb-btn pb-btn--primary pb-btn--sm">Save</button></div>
+                  </div>
+                  <button class="pb-fab" style="position: absolute; top: var(--pb-s-4); bottom: auto; display: inline-flex" aria-label="Log what happened"><i data-icon="plus"></i>Log</button>
                 </div>
               </div>
             </div>

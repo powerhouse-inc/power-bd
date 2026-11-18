@@ -2,7 +2,19 @@ import { addDays, localTime } from "./time.js";
 import type { DueItem, DueKind, ItemRef, OverviewInput } from "./types.js";
 import { isClosedLead, isClosedOpportunity } from "./status.js";
 
-type Context = { today: string; last: string; now: number; ourZone: string };
+/**
+ * A dated item with what moving it needs: the id of the next step, meeting or
+ * funding step inside its record, and a timed item's instant.
+ */
+export type DatedItem = DueItem & {
+  itemId?: string;
+  at?: string;
+};
+
+type DatedInput = Pick<
+  OverviewInput,
+  "leads" | "opportunities" | "decisions" | "proposals"
+>;
 
 const ref = (
   kind: ItemRef["kind"],
@@ -13,13 +25,24 @@ const ref = (
 /** What falls inside the due window, in date order. Overdue items are slipping, not due. */
 export function buildDue(input: OverviewInput, ourZone: string): DueItem[] {
   const today = localTime(input.now, ourZone).day;
-  const ctx: Context = {
-    today,
-    last: addDays(today, input.settings.dueWindowDays),
-    now: Date.parse(input.now),
-    ourZone,
-  };
-  const items: DueItem[] = [];
+  const last = addDays(today, input.settings.dueWindowDays);
+  const now = Date.parse(input.now);
+  return datedItems(input, ourZone)
+    .filter((i) =>
+      i.at === undefined
+        ? i.day >= today && i.day <= last
+        : Date.parse(i.at) >= now && i.day <= last,
+    )
+    .map(({ itemId: _itemId, at: _at, ...due }) => due);
+}
+
+/**
+ * Every dated item of the open records, wherever it falls, in date order: the
+ * due list takes a window of it, the calendar a month or a week. Done next
+ * steps, held meetings and closed records have nothing left to happen.
+ */
+export function datedItems(input: DatedInput, ourZone: string): DatedItem[] {
+  const items: DatedItem[] = [];
 
   const wholeDay = (
     due: DueKind,
@@ -27,16 +50,18 @@ export function buildDue(input: OverviewInput, ourZone: string): DueItem[] {
     label: string,
     stored: string | null | undefined,
     people: (string | null | undefined)[],
+    itemId?: string,
   ) => {
     // A whole day is stored at 00:00 UTC: only its date part counts.
     const date = stored?.slice(0, 10);
-    if (date && date >= ctx.today && date <= ctx.last) {
+    if (date) {
       items.push({
         due,
         source,
         label,
         day: date,
         people: people.filter((p): p is string => !!p),
+        ...(itemId ? { itemId } : {}),
       });
     }
   };
@@ -47,13 +72,15 @@ export function buildDue(input: OverviewInput, ourZone: string): DueItem[] {
     at: string | null | undefined,
     zone: string | null | undefined,
     people: string[],
+    itemId: string,
   ) => {
-    if (!at || Date.parse(at) < ctx.now) return;
+    if (!at) return;
     const ours = localTime(at, ourZone);
-    if (ours.day > ctx.last) return;
     const theirTimeZone = zone ?? ourZone;
     const theirs = localTime(at, theirTimeZone);
     items.push({
+      itemId,
+      at,
       due,
       source,
       label,
@@ -71,12 +98,18 @@ export function buildDue(input: OverviewInput, ourZone: string): DueItem[] {
     const source = ref("lead", l.id, l.state.name);
     for (const n of l.state.nextSteps)
       if (!n.doneAt)
-        wholeDay("NEXT_STEP", source, n.text, n.dueDate, [n.owner]);
+        wholeDay("NEXT_STEP", source, n.text, n.dueDate, [n.owner], n.id);
     for (const m of l.state.interactions) {
       if (m.status === "SCHEDULED")
-        instant("MEETING", source, m.summary ?? m.kind, m.at, m.timeZone, [
-          ...m.teamMembers,
-        ]);
+        instant(
+          "MEETING",
+          source,
+          m.summary ?? m.kind,
+          m.at,
+          m.timeZone,
+          [...m.teamMembers],
+          m.id,
+        );
     }
   }
   for (const o of input.opportunities) {
@@ -85,12 +118,18 @@ export function buildDue(input: OverviewInput, ourZone: string): DueItem[] {
     const source = ref("opportunity", o.id, s.name);
     for (const n of s.nextSteps)
       if (!n.doneAt)
-        wholeDay("NEXT_STEP", source, n.text, n.dueDate, [n.owner]);
+        wholeDay("NEXT_STEP", source, n.text, n.dueDate, [n.owner], n.id);
     for (const m of s.interactions) {
       if (m.status === "SCHEDULED")
-        instant("MEETING", source, m.summary ?? m.kind, m.at, m.timeZone, [
-          ...m.teamMembers,
-        ]);
+        instant(
+          "MEETING",
+          source,
+          m.summary ?? m.kind,
+          m.at,
+          m.timeZone,
+          [...m.teamMembers],
+          m.id,
+        );
     }
     for (const st of s.steps)
       instant(
@@ -100,6 +139,7 @@ export function buildDue(input: OverviewInput, ourZone: string): DueItem[] {
         st.at,
         st.timeZone,
         s.owner ? [s.owner] : [],
+        st.id,
       );
     if (s.status === "TO_EVALUATE" || s.status === "DECIDING")
       wholeDay("DECIDE_BY", source, "Decide by", s.decideBy, [s.owner]);
@@ -137,6 +177,6 @@ export function buildDue(input: OverviewInput, ourZone: string): DueItem[] {
     );
   }
 
-  const key = (i: DueItem) => `${i.day} ${i.ourTime ?? ""}`;
+  const key = (i: DatedItem) => `${i.day} ${i.ourTime ?? ""}`;
   return items.sort((a, b) => (key(a) < key(b) ? -1 : key(a) > key(b) ? 1 : 0));
 }

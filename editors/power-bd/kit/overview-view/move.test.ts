@@ -18,8 +18,12 @@ import { leadStage, opportunityStage } from "../overview/board.js";
 import { ALICE, input, lead, list, opportunity } from "../overview/fixtures.js";
 import { cardKey } from "./cards.js";
 import {
+  LEAD_STATUSES as BOARD_STATUSES,
   canMove,
   cardMove,
+  leadMoveCard,
+  leadStatusMove,
+  leadStatusTargets,
   moveCards,
   moveHint,
   moveReassurance,
@@ -201,6 +205,112 @@ describe("moving a lead", () => {
   });
 });
 
+describe("moving a lead on the Leads board", () => {
+  const option = (o: MoveOutcome) =>
+    o.kind === "set" || o.kind === "reason" || o.kind === "confirm"
+      ? o.option
+      : null;
+
+  it("sets an active status at once", () => {
+    const o = leadStatusMove(aLead({ status: "IN_TOUCH" }), "MET");
+    expect(o.kind).toBe("set");
+    expect(option(o)).toMatchObject({ act: "LEAD_STATUS", status: "MET" });
+  });
+
+  it("stays on its own column", () => {
+    expect(leadStatusMove(aLead(), "IN_TOUCH")).toEqual({ kind: "stay" });
+  });
+
+  it("goes back to to contact without an owner or organisation", () => {
+    const o = leadStatusMove(
+      aLead({ status: "MET", owner: null, organisationId: null }),
+      "TO_CONTACT",
+    );
+    expect(option(o)).toMatchObject({ status: "TO_CONTACT" });
+  });
+
+  it("asks why when parked or lost", () => {
+    const parked = leadStatusMove(aLead(), "PARKED");
+    expect(parked.kind).toBe("reason");
+    expect(option(parked)).toMatchObject({
+      act: "PARK_LEAD",
+      ask: "Why is it parked?",
+    });
+    const lost = leadStatusMove(aLead(), "LOST");
+    expect(lost.kind).toBe("reason");
+    expect(option(lost)).toMatchObject({ status: "LOST", final: true });
+  });
+
+  it("asks to confirm a win, which is final", () => {
+    const won = leadStatusMove(aLead({ status: "PROPOSAL" }), "WON");
+    expect(won.kind).toBe("confirm");
+    expect(option(won)).toMatchObject({ status: "WON", final: true });
+    expect(moveHint(won)).toBe("Becomes Won · asks to confirm");
+    expect(moveReassurance(won)).toContain("Closing is final");
+  });
+
+  it("says what is missing before a lead leaves to contact", () => {
+    const why = (over: Partial<LeadCard>) => {
+      const o = leadStatusMove(aLead({ status: "TO_CONTACT", ...over }), "IN_TOUCH");
+      return o.kind === "refused" ? o.why : "";
+    };
+    expect(why({ owner: null })).toBe("Give the lead an owner first");
+    expect(why({ organisationId: null })).toBe(
+      "Link the lead to an organisation first",
+    );
+    expect(why({ owner: null, organisationId: null })).toBe(
+      "Give the lead an owner and an organisation first",
+    );
+  });
+
+  it("stops an investor lead at met", () => {
+    const investor = aLead({ status: "MET", leadKind: "INVESTOR" });
+    for (const to of ["PROPOSAL", "WON"] as const)
+      expect(leadStatusMove(investor, to)).toEqual({
+        kind: "refused",
+        why: "An investor lead goes no further than met",
+      });
+    expect(leadStatusMove(investor, "LOST").kind).toBe("reason");
+  });
+
+  it("takes a parked lead off hold only into the status it came from", () => {
+    const parked = aLead({ status: "PARKED", parkedFrom: "MET" });
+    expect(option(leadStatusMove(parked, "MET"))).toMatchObject({
+      act: "UNPARK_LEAD",
+      status: "MET",
+    });
+    expect(leadStatusMove(parked, "IN_TOUCH")).toEqual({
+      kind: "refused",
+      why: "Take it off hold first: it returns to Met",
+    });
+    expect(
+      leadStatusMove(aLead({ status: "PARKED", parkedFrom: null }), "MET"),
+    ).toEqual({ kind: "refused", why: "Open the lead to take it off hold" });
+  });
+
+  it("refuses every move of a won or lost lead", () => {
+    for (const status of ["WON", "LOST"] as const)
+      for (const t of leadStatusTargets(aLead({ status })))
+        expect(t.accepts).toBe(false);
+  });
+
+  it("lists every status column, in the board's order", () => {
+    const targets = leadStatusTargets(aLead({ status: "IN_TOUCH" }));
+    expect(targets.map((t) => t.stage)).toEqual(BOARD_STATUSES);
+    expect(targets.find((t) => t.stage === "IN_TOUCH")?.accepts).toBe(false);
+    expect(targets.find((t) => t.stage === "MET")?.accepts).toBe(true);
+  });
+
+  it("reads a lead's facts from its record", () => {
+    const state = lead({ status: "PARKED", parkedFrom: "MET" });
+    expect(leadMoveCard(state)).toMatchObject({
+      kind: "lead",
+      status: "PARKED",
+      parkedFrom: "MET",
+    });
+  });
+});
+
 describe("moving a funding opportunity", () => {
   it("hands go or no-go to the decision, never deciding it", () => {
     for (const status of ["TO_EVALUATE", "DECIDING"] as const)
@@ -208,6 +318,9 @@ describe("moving a funding opportunity", () => {
         expect(cardMove(anOpp({ status }), stage)).toEqual({
           kind: "decision",
           why: "Go or no-go is the team lead's decision, taken by a person on the opportunity's page",
+          hint: "Go or no-go is decided on its page",
+          open: "Open to decide",
+          people: true,
         });
   });
 
@@ -476,9 +589,23 @@ describe("agrees with the reducers", () => {
   const options = (o: MoveOutcome): MoveOption[] =>
     o.kind === "choose"
       ? o.options
-      : o.kind === "set" || o.kind === "reason"
+      : o.kind === "set" || o.kind === "reason" || o.kind === "confirm"
         ? [o.option]
         : [];
+  const statusOption = (status: LeadState["status"]): MoveOption => ({
+    act: "LEAD_STATUS",
+    status,
+    label: "",
+    reason: false,
+    final: false,
+  });
+  const parkOption: MoveOption = {
+    act: "PARK_LEAD",
+    status: "PARKED",
+    label: "",
+    reason: true,
+    final: false,
+  };
 
   const LEAD_STATUSES = [
     "TO_CONTACT",
@@ -546,6 +673,67 @@ describe("agrees with the reducers", () => {
                   expect(leadStage(done.status)).toBe(stage);
                   if (option.reason) expect(run().error).toBeTruthy();
                 }
+            }
+    expect(offered).toBeGreaterThan(40);
+  });
+
+  it("lead on the Leads board: what is offered is accepted, with a reason exactly where asked", () => {
+    let offered = 0;
+    for (const status of LEAD_STATUSES)
+      for (const leadKind of ["SALES", "INVESTOR"] as const)
+        for (const owner of [ALICE, null])
+          for (const organisationId of ["c1", null])
+            for (const parkedFrom of status === "PARKED"
+              ? (["TO_CONTACT", "MET"] as const)
+              : [null]) {
+              const state = {
+                ...leadUtils.createDocument().state.global,
+                status,
+                kind: leadKind,
+                owner,
+                organisationId,
+                parkedFrom,
+              } as LeadState;
+              const card = leadMoveCard(state);
+              for (const to of BOARD_STATUSES) {
+                const o = leadStatusMove(card, to);
+                const option = options(o).at(0);
+                const run = (act: MoveOption, reason?: string) => {
+                  const doc = leadUtils.createDocument({ global: state });
+                  const action =
+                    act.act === "PARK_LEAD"
+                      ? parkLead({ reason: reason ?? "", parkedAt: AT })
+                      : act.act === "UNPARK_LEAD"
+                        ? unparkLead({})
+                        : setLeadStatus({
+                            status: act.status as LeadState["status"],
+                            reason,
+                            changedAt: AT,
+                          });
+                  const next = leadReducer(doc, action);
+                  return {
+                    error: next.operations.global.at(-1)?.error,
+                    status: next.state.global.status,
+                  };
+                };
+                if (!option) {
+                  // What the board refuses, the reducer refuses too, reason or not.
+                  if (o.kind === "refused")
+                    expect(
+                      run(
+                        to === "PARKED" ? parkOption : statusOption(to),
+                        "Because",
+                      ).error,
+                      `${status} ✗ ${to}`,
+                    ).toBeTruthy();
+                  continue;
+                }
+                offered++;
+                const done = run(option, option.reason ? "Because" : undefined);
+                expect(done.error, `${status} → ${to}`).toBeFalsy();
+                expect(done.status).toBe(to);
+                if (option.reason) expect(run(option).error).toBeTruthy();
+              }
             }
     expect(offered).toBeGreaterThan(40);
   });

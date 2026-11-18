@@ -4,11 +4,23 @@
  */
 import { createAction } from "document-model";
 import {
+  SetExpectedCloseInputSchema,
   SetLeadDetailsInputSchema,
+  SetLeadSourceInputSchema,
   SetOwnerInputSchema,
 } from "../schema/zod.js";
-import type { SetLeadDetailsInput, SetOwnerInput } from "../types.js";
-import type { SetLeadDetailsAction, SetOwnerAction } from "./actions.js";
+import type {
+  SetExpectedCloseInput,
+  SetLeadDetailsInput,
+  SetLeadSourceInput,
+  SetOwnerInput,
+} from "../types.js";
+import type {
+  SetExpectedCloseAction,
+  SetLeadDetailsAction,
+  SetLeadSourceAction,
+  SetOwnerAction,
+} from "./actions.js";
 
 export const setLeadDetails = (input: SetLeadDetailsInput) =>
   createAction<SetLeadDetailsAction>(
@@ -25,5 +37,23 @@ export const setOwner = (input: SetOwnerInput) =>
     { ...input },
     undefined,
     SetOwnerInputSchema,
+    "global",
+  );
+
+export const setLeadSource = (input: SetLeadSourceInput) =>
+  createAction<SetLeadSourceAction>(
+    "SET_LEAD_SOURCE",
+    { ...input },
+    undefined,
+    SetLeadSourceInputSchema,
+    "global",
+  );
+
+export const setExpectedClose = (input: SetExpectedCloseInput) =>
+  createAction<SetExpectedCloseAction>(
+    "SET_EXPECTED_CLOSE",
+    { ...input },
+    undefined,
+    SetExpectedCloseInputSchema,
     "global",
   );

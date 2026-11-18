@@ -5,4 +5,5 @@ export const link = (contactId: string, personId: string | null) => ({
   contactId,
   personId,
   role: null,
+  dealRole: null,
 });

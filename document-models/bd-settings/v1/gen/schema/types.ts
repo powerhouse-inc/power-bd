@@ -71,6 +71,7 @@ export type AddTeamMemberInput = {
 export type BdSettingsState = {
   dueWindowDays: Scalars["Int"]["output"];
   retentionMonths: Scalars["Int"]["output"];
+  targets: Array<Target>;
   teamMembers: Array<TeamMember>;
   timeZone: Maybe<Scalars["String"]["output"]>;
   vaultDriveId: Maybe<Scalars["PHID"]["output"]>;
@@ -84,12 +85,23 @@ export type ReactivateTeamMemberInput = {
   id: Scalars["OID"]["input"];
 };
 
+export type RemoveTargetInput = {
+  id: Scalars["OID"]["input"];
+};
+
 export type SetDueWindowInput = {
   days: Scalars["Int"]["input"];
 };
 
 export type SetRetentionInput = {
   months: Scalars["Int"]["input"];
+};
+
+export type SetTargetInput = {
+  id: Scalars["OID"]["input"];
+  metric: TargetMetric;
+  quarter: Scalars["String"]["input"];
+  value: Scalars["Float"]["input"];
 };
 
 export type SetTimeZoneInput = {
@@ -99,6 +111,19 @@ export type SetTimeZoneInput = {
 export type SetVaultDriveInput = {
   driveId: Scalars["PHID"]["input"];
 };
+
+export type Target = {
+  id: Scalars["OID"]["output"];
+  metric: TargetMetric;
+  quarter: Scalars["String"]["output"];
+  value: Scalars["Float"]["output"];
+};
+
+export type TargetMetric =
+  | "LEADS_WON"
+  | "MEETINGS_HELD"
+  | "PROPOSALS_SENT"
+  | "VALUE_PROPOSED";
 
 export type TeamMember = {
   active: Scalars["Boolean"]["output"];

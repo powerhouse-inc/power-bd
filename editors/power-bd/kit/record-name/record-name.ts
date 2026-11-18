@@ -7,6 +7,7 @@ const NAMED_BY: Partial<Record<string, string>> = {
   "powerbd/contact": "name",
   "powerbd/decision": "question",
   "powerbd/proposal": "title",
+  "powerbd/market": "name",
 };
 
 const field = (from: unknown, key: string): unknown =>
