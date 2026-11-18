@@ -1,12 +1,12 @@
 /**
- * The eight people-only actions (spec, "People-only actions"), in the team's
- * words. In the chat they are ordinary writes: the agent takes one only when
+ * The people-only actions (spec, "People-only actions", and a market's
+ * approval), in the team's words. In the chat they are ordinary writes: the agent takes one only when
  * the person asks, names it first, and the approval card (or the person's
  * request, under auto-approve) is their approval. Operation permissions on
  * the BD drive still apply, since the agent signs with the person's key.
  */
 
-/** The eight people-only actions. */
+/** The people-only actions. */
 export const PEOPLE_ONLY_ACTIONS = [
   "APPROVE_MESSAGE",
   "MARK_MESSAGE_SENT",
@@ -16,6 +16,8 @@ export const PEOPLE_ONLY_ACTIONS = [
   "MARK_SUBMISSION",
   "APPROVE_PROPOSAL",
   "MARK_PROPOSAL_SENT",
+  "APPROVE_SIZE",
+  "REOPEN_SIZE",
 ] as const;
 
 export type PeopleOnlyAction = (typeof PEOPLE_ONLY_ACTIONS)[number];
@@ -30,4 +32,6 @@ export const PEOPLE_ONLY_STEPS: Record<PeopleOnlyAction, string> = {
   MARK_SUBMISSION: "marking a submission",
   APPROVE_PROPOSAL: "approving a proposal",
   MARK_PROPOSAL_SENT: "marking a proposal sent",
+  APPROVE_SIZE: "approving a market's figures",
+  REOPEN_SIZE: "reopening a market's approved figures",
 };

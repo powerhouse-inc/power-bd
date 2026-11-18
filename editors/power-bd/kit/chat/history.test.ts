@@ -43,6 +43,7 @@ describe("kindOf: records in the team's words", () => {
     ["powerbd/opportunity", "funding opportunity"],
     ["powerbd/contact", "organisation"],
     ["powerbd/decision", "company decision"],
+    ["powerbd/market", "market"],
     ["powerhouse/document-drive", "the BD space"],
   ])("calls %s a %s", (type, kind) => {
     expect(kindOf(type)).toBe(kind);

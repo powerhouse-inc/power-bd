@@ -3,7 +3,7 @@
  * rules hold whatever the model asks. The reactor's document tools read and
  * change records; the vault's tools read notes; Power BD's own read the BD
  * space's history. Drive administration, workflows and switchboard schemas
- * are left out. Every write, the eight people-only steps included, asks on
+ * are left out. Every write, the people-only steps included, asks on
  * the stack's approval card unless the person turned auto-approve on.
  *
  * For a shared space the reactor's tools come from Power BD, built on the

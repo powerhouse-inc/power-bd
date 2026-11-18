@@ -19,6 +19,7 @@ const KINDS: Record<string, string> = {
   "powerbd/investor-list": "investor list",
   "powerbd/playbook": "playbook",
   "powerbd/settings": "settings",
+  "powerbd/market": "market",
   "powerhouse/document-drive": "the BD space",
 };
 

@@ -10,7 +10,7 @@ const FACTS: InstructionFacts = {
   autoApprove: false,
 };
 
-describe("chatInstructions: the eight people-only steps", () => {
+describe("chatInstructions: the people-only steps", () => {
   it.each([
     "approving an outreach message",
     "marking an outreach message sent",
@@ -20,6 +20,8 @@ describe("chatInstructions: the eight people-only steps", () => {
     "marking a submission",
     "approving a proposal",
     "marking a proposal sent",
+    "approving a market's figures",
+    "reopening a market's approved figures",
   ])("names %s in the team's words", (step) => {
     expect(chatInstructions(FACTS)).toContain(step);
   });
@@ -64,6 +66,7 @@ describe("chatInstructions: where things are", () => {
       "powerbd/playbook",
       "powerbd/proposal",
       "powerbd/settings",
+      "powerbd/market",
     ])
       expect(text).toContain(type);
   });
@@ -78,6 +81,38 @@ describe("chatInstructions: where things are", () => {
     const text = chatInstructions({ ...FACTS, vaultDriveId });
     expect(text).toContain("No vault is named in Settings");
     expect(text).not.toContain("vault-drive-1");
+  });
+});
+
+describe("chatInstructions: the calendar, markets, reports and lead details", () => {
+  it("answers what is on the calendar from the records' dates, and never says there is none", () => {
+    const text = chatInstructions(FACTS);
+    expect(text).toContain("The app's Calendar shows every dated item of the open records, in the team's time zone");
+    expect(text).toContain("the valid-until day of a sent proposal whose lead is open");
+    expect(text).toContain("never say there is no calendar");
+  });
+
+  it("works a market's size out from its segments, and leaves approving it to a person", () => {
+    const text = chatInstructions(FACTS);
+    expect(text).toContain("TAM adds organisations × value per organisation per year over every segment");
+    expect(text).toContain("never counted as zero");
+    expect(text).toContain("only once a person has approved them");
+    expect(text).toContain("approving a market's figures (APPROVE_SIZE)");
+  });
+
+  it("knows the reports, the quarter's targets and the forecast as the app computes them", () => {
+    const text = chatInstructions(FACTS);
+    expect(text).toContain("won out of won and lost, given only once at least three closed");
+    expect(text).toContain("no change at all for 30 days or more");
+    expect(text).toContain("weighted by stage (to contact 5%, in touch 10%, meeting set 20%, met 30%, proposal 50%)");
+    expect(text).toContain("never converted");
+  });
+
+  it("knows where a lead came from, when it should close, the deal roles and how meetings went", () => {
+    const text = chatInstructions(FACTS);
+    expect(text).toContain("an expected close date");
+    expect(text).toContain("each contact's role in the deal");
+    expect(text).toContain("(went well, neutral or went badly)");
   });
 });
 
