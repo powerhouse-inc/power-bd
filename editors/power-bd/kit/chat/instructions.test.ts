@@ -167,3 +167,30 @@ describe("chatInstructions: citations", () => {
     expect(text).toContain("Cite vault documents only; name BD records in words.");
   });
 });
+
+describe("chatInstructions: what is newest in the vault", () => {
+  it("sends questions of recency in the vault to recent_changes, not to searches", () => {
+    const text = chatInstructions(FACTS);
+    expect(text).toContain("call the vault's recent_changes first, with documentType bai/source");
+    expect(text).toContain("never judge recency from searches or listings");
+  });
+
+  it("says nothing of the vault's tools when no vault is named", () => {
+    expect(chatInstructions({ ...FACTS, vaultDriveId: null })).not.toContain("recent_changes first");
+  });
+});
+
+describe("chatInstructions: a vault the person may not read", () => {
+  it("says the vault is out of reach, who can give access, and to answer from the records", () => {
+    const text = chatInstructions({ ...FACTS, vaultReadable: false });
+    expect(text).toContain("no access to the knowledge vault");
+    expect(text).toContain("an admin of the vault can give it");
+    expect(text).not.toContain("search_vault first");
+    expect(text).not.toContain("vault-drive-1");
+  });
+
+  it("keeps the vault's guidance when access is not refused", () => {
+    expect(chatInstructions({ ...FACTS, vaultReadable: true })).toContain("search_vault first");
+    expect(chatInstructions({ ...FACTS, vaultDriveId: null, vaultReadable: false })).toContain("No vault is named in Settings");
+  });
+});

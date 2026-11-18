@@ -39,17 +39,23 @@ export function ChatSetup({ driveId, service, reads }: Props) {
             <span className="pb-faint">this space</span>
           </li>
           <li>
-            <Icon name="note" />
+            <Icon name={reads.vault !== null && reads.vaultLocked ? "lock" : "note"} />
             {reads.vault === null ? (
               <span>No vault named in Settings</span>
             ) : (
               <>
                 <span className="pb-truncate">{reads.vault}</span>
-                <span className="pb-faint">the vault</span>
+                <span className="pb-faint">{reads.vaultLocked ? "no access" : "the vault"}</span>
               </>
             )}
           </li>
         </ul>
+        {reads.vault !== null && reads.vaultLocked ? (
+          <p className="pb-reassure">
+            <Icon name="info" />
+            You don't have access to this vault, so the agent can't read it. An admin of the vault can give you access.
+          </p>
+        ) : null}
         <div className="pb-key__actions">
           <button type="button" className="pb-btn pb-btn--sm" onClick={() => goTo("settings")}>
             Open Settings

@@ -132,6 +132,14 @@ export function probeVerdict(status: number, body: unknown): Probe {
     : { kind: "unreachable", detail: "The space was not found on this server." };
 }
 
+/**
+ * Whether reading a drive was refused to this person: signed out, or signed in
+ * without access. An unreachable server is no refusal: nothing is hidden on a guess.
+ */
+export function refusesReading(probe: Probe): boolean {
+  return probe.kind === "anonymous" || probe.kind === "unauthorized";
+}
+
 export type Verdict =
   | { kind: "allowed" }
   | { kind: "anonymous" }
