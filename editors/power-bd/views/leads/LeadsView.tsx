@@ -5,6 +5,7 @@ import {
   leadMoveCard,
   leadStatusTargets,
 } from "../../kit/overview-view/index.js";
+import { ImportLeads } from "./ImportLeads.js";
 import { LeadsBoard } from "./LeadsBoard.js";
 import { NextStep } from "./NextStep.js";
 import { useSetSelectedNode } from "@powerhousedao/reactor-browser";
@@ -34,6 +35,7 @@ export function LeadsView({ driveId }: { driveId: string }) {
   const select = useSetSelectedNode();
   const team = useTeam();
   const [asBoard, setAsBoard] = useState(true);
+  const [importing, setImporting] = useState(false);
 
   const organisationName = (id: string | null | undefined) =>
     id
@@ -58,6 +60,12 @@ export function LeadsView({ driveId }: { driveId: string }) {
       <div className="pb-page__head pb-page__head--row">
         <h1 className="pb-page__title">Leads</h1>
         <span className="pb-toolbar__spacer" />
+        {leads.length > 0 && !importing && (
+          <button type="button" className="pb-btn" onClick={() => setImporting(true)}>
+            <Icon name="inbox" />
+            Import
+          </button>
+        )}
         {leads.length > 0 && (
           <button
             className="pb-btn pb-btn--primary"
@@ -70,6 +78,9 @@ export function LeadsView({ driveId }: { driveId: string }) {
         )}
       </div>
       <ErrorLine message={error} />
+      {importing ? (
+        <ImportLeads driveId={driveId} onClose={() => setImporting(false)} onOpen={select} />
+      ) : null}
       {leads.length === 0 ? (
         <EmptyStart
           icon="leads"
@@ -81,15 +92,23 @@ export function LeadsView({ driveId }: { driveId: string }) {
               "Sales lead · Mara Lind owns it · next step: send the pilot outline by Fri 27 Nov",
           }}
           action={
-            <button
-              type="button"
-              className="pb-btn pb-btn--primary"
-              disabled={busy}
-              onClick={create}
-            >
-              <Icon name="plus" />
-              Add your first lead
-            </button>
+            <>
+              <button
+                type="button"
+                className="pb-btn pb-btn--primary"
+                disabled={busy}
+                onClick={create}
+              >
+                <Icon name="plus" />
+                Add your first lead
+              </button>
+              {importing ? null : (
+                <button type="button" className="pb-btn" onClick={() => setImporting(true)}>
+                  <Icon name="inbox" />
+                  Import from a spreadsheet
+                </button>
+              )}
+            </>
           }
         />
       ) : (

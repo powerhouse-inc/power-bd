@@ -686,6 +686,27 @@
                 <div class="pb-map__caption" style="max-width: 984px"><span>Left to right: Who builds it</span><span>Bottom to top: What the record shows</span></div>
               </div>
             </div>
+            <h3 class="ds-sub">Importing from a spreadsheet</h3>
+            <p class="ds-section__lead">Leads and organisations from a CSV: four steps on the status path, then each row as it will be imported, with what changes said in orange beside it and existing organisations linked rather than created twice. Nothing is created until Import.</p>
+            <div class="ds-demo">
+              <div class="ds-pane pb-root">
+                <section class="pb-import" style="max-width: 980px">
+                  <div class="pb-import__head"><h2 class="pb-import__title">Import leads from a spreadsheet</h2><span class="pb-toolbar__spacer"></span><button class="pb-btn pb-btn--ghost pb-btn--sm"><i data-icon="close"></i>Close</button></div>
+                  <ol class="pb-path"><li class="pb-path__step is-done"><span class="pb-path__dot"><i data-icon="check"></i></span>Paste or choose a file</li><li class="pb-path__step is-done"><span class="pb-path__dot"><i data-icon="check"></i></span>Match the columns</li><li class="pb-path__step is-current"><span class="pb-path__dot"></span>Check the rows</li><li class="pb-path__step"><span class="pb-path__dot"></span>Import</li></ol>
+                  <p class="pb-small">2 of 3 rows to import: 1 new organisation, 1 linked to an existing one. 1 already exists and is skipped.</p>
+                  <div class="pb-table-wrap"><table class="pb-table"><thead><tr><th>Row</th><th>Lead</th><th>Organisation</th><th>Status</th><th>Owner</th><th>What changes</th></tr></thead><tbody>
+                    <tr class="pb-import__row"><td>2</td><td>Cosylab</td><td>New: Cosylab</td><td>In touch</td><td>Mara Lind</td><td></td></tr>
+                    <tr class="pb-import__row"><td>3</td><td>SETCCE</td><td>Links to SETCCE d.o.o.</td><td>To contact</td><td><span class="pb-faint">No owner</span></td><td><ul class="pb-import__problems"><li>"Jonas" is not in the team: imported without an owner</li><li>Past To contact a lead needs an owner and an organisation: imported as To contact</li></ul></td></tr>
+                    <tr class="pb-import__row is-blocked"><td>4</td><td>Kelvar Institute</td><td>Links to Kelvar Institute</td><td>To contact</td><td><span class="pb-faint">No owner</span></td><td><label class="pb-small"><input type="checkbox" /> "Kelvar Institute" already exists: import anyway</label></td></tr>
+                  </tbody></table></div>
+                  <p class="pb-reassure"><i data-icon="shield"></i>Nothing is created until you press Import. Existing organisations are linked, not changed, except that imported notes are added after theirs.</p>
+                  <div class="pb-import__foot"><button class="pb-btn pb-btn--sm">Back</button><button class="pb-btn pb-btn--primary pb-btn--sm">Import 2 leads</button></div>
+                  <div class="pb-import__result pb-import__result--created"><i data-icon="check-circle"></i><span>Row 2: Cosylab with a new organisation</span></div>
+                  <div class="pb-import__result pb-import__result--failed"><i data-icon="alert-circle"></i><span>Row 5: the lead failed: A lead past to contact needs an owner</span></div>
+                  <div class="pb-import__result pb-import__result--skipped"><i data-icon="info"></i><span>Row 4: Lead "Kelvar Institute" already exists</span></div>
+                </section>
+              </div>
+            </div>
           </section>
 
           <!-- ============================== NAVIGATION ============================== -->
