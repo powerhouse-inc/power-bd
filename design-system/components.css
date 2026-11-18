@@ -2331,3 +2331,25 @@ a.pb-ref__title:focus-visible { outline: 2px solid var(--pb-accent); outline-off
   .pb-backdrop--sheet .pb-segmented__item { justify-content: center; }
   .pb-backdrop--sheet .pb-segmented__item > .pb-icon { display: none; }
 }
+
+/* =============================================================================
+   Phase 2 parts: how a held interaction went, a property with a choice and a
+   detail side by side, the forecast and this quarter's targets on the
+   Overview, and the targets form in Settings.
+   ============================================================================= */
+.pb-timeline__outcome { display: flex; flex-wrap: wrap; align-items: center; gap: var(--pb-s-2); margin-top: var(--pb-s-1-5); color: var(--pb-text-secondary); font-size: var(--pb-fs-xs); }
+.pb-prop__value--pair { display: flex; flex-wrap: wrap; align-items: center; gap: var(--pb-s-2); }
+.pb-prop__value--pair > .pb-input { flex: 1 1 200px; min-width: 0; }
+/* A target beside its actual: label, value, and a bar in the accent tint that turns green once met. Never red. */
+.pb-goals { display: grid; gap: var(--pb-s-3); }
+.pb-goal { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: var(--pb-s-1) var(--pb-s-3); }
+.pb-goal__label { color: var(--pb-text-secondary); font-size: var(--pb-fs-sm); }
+.pb-goal__value { color: var(--pb-text); font-size: var(--pb-fs-sm); font-weight: var(--pb-fw-semibold); font-variant-numeric: tabular-nums; }
+.pb-goal__bar { grid-column: 1 / -1; display: block; height: 6px; overflow: hidden; border-radius: var(--pb-r-full); background: var(--pb-bg-pressed); }
+.pb-goal__fill { display: block; height: 100%; border-radius: inherit; background: var(--pb-accent); }
+.pb-goal__bar.is-met .pb-goal__fill { background: var(--pb-green-text); }
+.pb-forecast__missing { display: grid; gap: var(--pb-s-0-5); margin: 0; padding-left: var(--pb-s-4); color: var(--pb-text-secondary); font-size: var(--pb-fs-xs); }
+/* An input that reads as text until it is used: a member's email in the team list. */
+.pb-input--quiet { margin-top: var(--pb-s-0-5); padding: var(--pb-s-0-5) var(--pb-s-1); border-color: transparent; background: none; color: var(--pb-text-secondary); font-size: var(--pb-fs-xs); }
+.pb-input--quiet:hover, .pb-input--quiet:focus { border-color: var(--pb-border); background: var(--pb-bg); color: var(--pb-text); }
+

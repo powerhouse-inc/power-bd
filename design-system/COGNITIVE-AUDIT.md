@@ -1398,3 +1398,58 @@ Logging what just happened, from anywhere, and above all from a phone right afte
 - **Language:** the history's words; the time zone named.
 - **Decision:** record, kind, when and one line, with sensible defaults; the next step optional.
 - **Emotion:** nothing is sent; it says where the entry went.
+
+### A lead's source, expected close and deal roles; how an interaction went (built, `records/lead/`, `components/shared/relationship/`, `components/capture/`)
+
+The Leads audit stands. Four small additions, each where the fact is born.
+
+1. **Vision and attention.** "Came from" and "Expected close" join the lead's properties, below Owner, in the same quiet rows; nothing new competes with the Next bar. "How did it go?" sits under a held entry's summary as three small choices; the chosen one is the only filled one. A deal role is an inline choice at the end of a linked person's row.
+2. **Wayfinding.** Each fact is set on the record it belongs to: the source and close date on the lead, the role on the linked person, the outcome on the interaction. Quick capture asks the outcome at the moment of logging, beside what it was.
+3. **Memory and semantics.** CRM conventions: a lead source with a free-text detail, an expected close date, a buying role (champion, decision maker, influencer, blocker, user).
+4. **Language.** "Came from", "Which event, person or campaign", "Expected close", "Role in the deal", "How did it go?" with "Went well", "Neutral", "Went badly". A spreadsheet's Source column is read as "Where it came from": a source's name, or words such as "week" or "conference" that point to an event, the cell kept as the detail.
+5. **Decision making.** Every one is optional and one click to undo (choosing the active outcome clears it). Only a held interaction asks how it went; a planned one cannot have gone any way yet.
+6. **Emotion.** "How did it go?" rates the relationship, never a person; it stays inside the team and feeds only the Mood map.
+
+**Concepts weighed:** a separate "deal" panel (A, more to visit), a scoring form after each meeting (C, heavier than the fact), the facts inline where they are born (B, chosen; the Notion-like record pattern the app already uses).
+
+**Implementation:** `.pb-prop__value--pair`, `.pb-timeline__outcome` with `.pb-segmented`; vocabulary `leadSource`, `dealRole`, `interactionOutcome` (on the showcase's vocabulary list).
+
+### The Overview's quarter: targets and the forecast (built, `views/overview/QuarterPanel.tsx`, `kit/targets/`, `kit/forecast/`)
+
+The Overview audit stands. One row is added under Attention and Coming up, above the board.
+
+1. **Vision and attention.** Two calm cards side by side. Each target is a label, the actual "4 of 12" and a thin bar in the accent tint that turns green once met; nothing turns red (a missed target is not a slipping item). The forecast is a small table: expected close quarter, weighted, if all close, leads.
+2. **Wayfinding.** "No targets for Q4 2026 yet. Set them in Settings" links to the place where they are set.
+3. **Memory and semantics.** A weighted pipeline by close quarter, as every CRM forecast; progress bars against goals.
+4. **Language.** Quarters as people say them ("Q4 2026"); "Weighted", "If all close", "No close date".
+5. **Decision making.** Each card says what it rests on (the stage weights, the lower end of a proposal's range, currencies never converted) and what is missing (leads with no proposal value, leads with no close date, investor leads not forecast), so a number is never trusted further than it goes. Value proposed in several currencies is shown per currency and not compared with one target.
+6. **Emotion.** No red: the quarter is information, not an alarm.
+
+**Concepts weighed:** a dashboard place (A, another place to visit), charts with trends (C, heavy for a few numbers), two cards on the Overview (B, chosen: the daily page already holds "where is everything").
+
+**Implementation:** `.pb-goals`, `.pb-goal` with `__label`, `__value`, `__bar` (`.is-met`) and `__fill`; `.pb-forecast__missing`; `.pb-table`.
+
+### Settings: targets per quarter, and a member's email (built, `records/settings/SettingsDetail.tsx`)
+
+1. **Vision and attention.** A "Targets" section with a quarter choice and four fields; a member's email sits under their address as quiet text until used (`.pb-input--quiet`).
+2. **Wayfinding.** The quarter defaults to this one; the next three are offered for planning ahead.
+3. **Memory and semantics.** Fields saved when left, as every other setting here.
+4. **Language.** "Meetings held", "Proposals sent", "Value proposed, in the currency you quote in", "Leads won"; "Email, for the daily digest".
+5. **Decision making.** An empty field means no target, and emptying one removes it. A target set again keeps its record and changes its value.
+6. **Emotion.** Nothing is sent to anyone from here; the email waits for the daily digest.
+
+### Reports: by where leads came from (built, `views/reports/ReportsView.tsx`)
+
+The Reports audit stands; one table is added with the same columns as By owner and By kind, a row per source and "Not recorded" for leads older than sources. Win rates keep the three-lead rule.
+
+### Leads map: Mood (built, `views/leads/LeadsMap.tsx`, `kit/lead-map/`)
+
+1. **Vision and attention.** The same map as Priority, switched with "Priority | Mood"; dots without size (value is the Priority map's question).
+2. **Wayfinding.** The corners say what to do: "Move to a proposal" (warm, active), "Re-engage" (warm, quiet), "Address the concern" (cool, active), "Park" (cool, quiet). A dot opens its lead.
+3. **Memory and semantics.** A 2×2 like the market map and the priority map.
+4. **Language.** Edges in plain words: "Went badly" to "Went well", "Quiet" to "Active". The caption says how each is worked out.
+5. **Decision making.** Positions are worked out, never dragged: the last three outcomes (the latest counting most) and the held interactions of the last 60 days with how recent the last one was. A neutral average counts as not yet warm. Leads with no outcome are listed under the map, not guessed.
+6. **Emotion.** It rates the relationship, never a person, and stays inside the team; the caption says so.
+
+**Concepts weighed:** a sentiment score from text (rejected: our own short notes, too little to read), a hand-placed map (rejected: it would go stale), outcomes recorded at the source and mapped (chosen).
+

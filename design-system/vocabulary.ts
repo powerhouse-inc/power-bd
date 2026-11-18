@@ -160,6 +160,32 @@ export const VOCABULARY = {
     { value: "HELD", label: "Held", tone: "green" },
     { value: "CANCELLED", label: "Cancelled", tone: "default" },
   ],
+  interactionOutcome: [
+    { value: "POSITIVE", label: "Went well", tone: "green" },
+    { value: "NEUTRAL", label: "Neutral", tone: "gray" },
+    { value: "NEGATIVE", label: "Went badly", tone: "orange" },
+  ],
+  leadSource: [
+    { value: "EVENT", label: "Event", tone: "default", icon: "event" },
+    { value: "REFERRAL", label: "Referral", tone: "default", icon: "users" },
+    { value: "INBOUND", label: "Inbound", tone: "default", icon: "mail" },
+    { value: "OUTBOUND", label: "Outbound", tone: "default", icon: "send" },
+    { value: "PARTNER", label: "Partner", tone: "default", icon: "partnership" },
+    { value: "OTHER", label: "Other", tone: "default", icon: "note" },
+  ],
+  dealRole: [
+    { value: "CHAMPION", label: "Champion", tone: "green" },
+    { value: "DECISION_MAKER", label: "Decision maker", tone: "purple" },
+    { value: "INFLUENCER", label: "Influencer", tone: "blue" },
+    { value: "BLOCKER", label: "Blocker", tone: "orange" },
+    { value: "USER", label: "User", tone: "gray" },
+  ],
+  targetMetric: [
+    { value: "MEETINGS_HELD", label: "Meetings held", tone: "default" },
+    { value: "PROPOSALS_SENT", label: "Proposals sent", tone: "default" },
+    { value: "VALUE_PROPOSED", label: "Value proposed", tone: "default" },
+    { value: "LEADS_WON", label: "Leads won", tone: "default" },
+  ],
   slipping: [
     {
       value: "NO_OWNER",
@@ -254,5 +280,9 @@ export const VOCABULARY_TITLES: Record<VocabularyName, string> = {
   submissionResult: "Submission result",
   interactionKind: "Interaction kind",
   interactionStatus: "Interaction status",
+  interactionOutcome: "How an interaction went",
+  leadSource: "Where a lead came from",
+  dealRole: "Role in the deal",
+  targetMetric: "Quarterly target",
   slipping: "Slipping reason",
 };
