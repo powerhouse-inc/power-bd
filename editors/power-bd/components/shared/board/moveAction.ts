@@ -2,7 +2,9 @@ import { actions as investorListActions } from "document-models/investor-list";
 import { actions as leadActions } from "document-models/lead";
 import { actions as opportunityActions } from "document-models/opportunity";
 import { actions as proposalActions } from "document-models/proposal";
+import { generateId } from "document-model";
 import type { MoveOption } from "../../../kit/overview-view/index.js";
+import { reminderStep } from "../../../kit/reminder/index.js";
 
 /**
  * The action that reaches a move's status, as the record pages send it. A
@@ -57,4 +59,9 @@ export function moveAction(
     case "WITHDRAW_PROPOSAL":
       return proposalActions.withdrawProposal({ reason: reason ?? "" });
   }
+}
+
+/** The next step that brings a parked lead back on a day: "Check back: <reason>", for its owner. */
+export function reminderAction(reason: string, day: string, owner: string | null) {
+  return leadActions.addNextStep(reminderStep({ id: generateId(), reason, day, owner }));
 }

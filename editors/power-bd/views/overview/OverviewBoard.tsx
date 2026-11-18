@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 import { VOCABULARY } from "../../../../design-system/vocabulary.js";
 import { Icon } from "../../components/Icon.js";
 import { ErrorLine } from "../../components/shared/ErrorLine.js";
-import { moveAction } from "../../components/shared/board/moveAction.js";
+import { moveAction, reminderAction } from "../../components/shared/board/moveAction.js";
 import { fmtDay } from "../../components/shared/relationship/common.js";
 import type {
   Board,
@@ -250,16 +250,26 @@ export function OverviewBoard({
   };
 
   /** Sends the move to the card's record; a refusal shows beside the card, which stays where the record says. */
-  const apply = (entry: BoardEntry, option: MoveOption, reason?: string) => {
+  const apply = (entry: BoardEntry, option: MoveOption, reason?: string, remindOn?: string) => {
     const key = cardKey(entry);
     setBusy(true);
     setError(null);
-    const refuse = (errors: Error[]) =>
+    let refused = false;
+    const refuse = (errors: Error[]) => {
+      refused = true;
       setError({
         key,
         message: errors.at(0)?.message ?? "That was not accepted.",
       });
+    };
+    const card = facts.get(key);
+    // The reminder a park asked for goes only after the park is accepted.
+    const follow =
+      remindOn && option.act === "PARK_LEAD"
+        ? reminderAction(reason ?? "", remindOn, card?.kind === "lead" ? card.owner : null)
+        : null;
     dispatchTo(moveAction(option, reason), entry.id, refuse)
+      .then(() => (!refused && follow ? dispatchTo(follow, entry.id, refuse) : undefined))
       .catch((e: unknown) => refuse(e instanceof Error ? [e] : []))
       .finally(() => {
         setBusy(false);
@@ -410,8 +420,8 @@ export function OverviewBoard({
                 stage={term.label}
                 outcome={asking.outcome}
                 busy={busy}
-                onApply={(option, reason) =>
-                  apply(asking.entry, option, reason)
+                onApply={(option, reason, remindOn) =>
+                  apply(asking.entry, option, reason, remindOn)
                 }
                 onOpenRecord={() => onOpen(asking.entry)}
                 onCancel={cancel}

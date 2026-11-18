@@ -1304,3 +1304,33 @@ A third view on Leads beside Board and List: every open lead placed by the fit o
 - **Language:** vocabulary names, corners as verbs.
 - **Decision:** worked-out positions, no upkeep; filters; a fixed layout.
 - **Emotion:** nothing to place wrongly; the caption says how it is drawn.
+
+### A reminder when a lead is parked (built, `views/overview/MoveAsk.tsx`, `records/lead/LeadDetail.tsx`, `kit/reminder/`)
+
+The board, list and lead audits stand. This covers one addition: parking a lead can set the day it comes back.
+
+1. **Vision and attention.** One quiet choice under the reason, "Remind me", defaulting to no reminder; nothing new competes with the reason field or the Move button.
+2. **Wayfinding.** The reminder becomes an ordinary next step, "Check back: <reason>", on the lead, so it appears where next steps always appear: the lead page, the Calendar, Coming up, and as slipping when it passes.
+3. **Memory and semantics.** Snooze-style quick picks (in 1, 3 or 6 months, with the date), as mail and task apps offer.
+4. **Language.** "Remind me", "No reminder", "In 3 months · Thu 18 Feb", "Check back: Waiting for their budget round". On a lost lead: "A lost lead leaves the calendar. To check back later, park it with a reminder instead."
+5. **Decision making.** The reason is asked first, then whether to come back to it. Only a park offers a reminder: a lost lead is closed, and the Calendar, Coming up and the slipping checks leave closed leads out, so a reminder on it would never show; the Lost question says so instead of pretending.
+6. **Emotion.** Fear: "parking means forgetting". The reminder answers it, and it is added only once the park is accepted, so a refused park never leaves a stray step.
+
+**Concepts weighed:** a separate "snooze" date on the lead (needs a model change, and a second place for dates), a reminder on the organisation (organisations have no next steps), and a next step on the lead (chosen: no model change, and it surfaces everywhere next steps do).
+
+**Implementation:** `.pb-field` with `.pb-select` inside `.pb-ask`, `.pb-ask__note` for the lost line; the step from `reminderStep`, the days from `reminderChoices` (month ends clamped); sent after the park with `dispatchTo` (boards and lists through `useBoardMove`'s `remind`), or `useRun`'s done callback on the lead page. Tests run the park and the step through the lead reducer and check the Calendar shows it, and that a lost lead's step would not show.
+
+### Importing leads from a spreadsheet (built, `views/leads/ImportLeads.tsx`, `kit/lead-import/`)
+
+A panel on the Leads place ("Import", and "Import from a spreadsheet" on the empty place): leads and their organisations from a CSV, as the team keeps them today (`bd-leads.csv`: Name, Company, Role, Type, Status, Source, Meeting date, Owner, Contact, Next step, Notes).
+
+1. **Vision and attention.** One step at a time on the status path, each with one primary button ("Match the columns", "Check the rows", "Import 6 leads"). In the check, what changes is the only coloured text (orange), beside the row it concerns; rows that won't be imported are faded.
+2. **Wayfinding.** The path shows where the person is and what follows; Back returns a step without losing anything; after the import each created lead is a link to open it.
+3. **Memory and semantics.** The spreadsheet-import pattern of CRMs and mail tools: choose or paste, match columns (guessed from the headers), preview, import with progress and a result per row.
+4. **Language.** The app's words for fields ("Organisation", "Contact person", "Kind of lead", "Next step due", "Add to notes"), statuses by their labels, and what changes said plainly: "\"Jonas\" is not in the team: imported without an owner", "Won needs a reason: imported as To contact; set it on the lead page", "Links to SETCCE d.o.o.", "Same as row 2".
+5. **Decision making.** Problems are found before anything is created, by the same rules the records keep (an owner and an organisation past "to contact", no won, lost or parked without a reason, an investor stops at met), so the import never half-fails on a rule. Organisations are matched by name (without case, punctuation or legal forms such as d.o.o. or GmbH) or by website, and to earlier rows, so nothing is created twice; a lead that already exists for the organisation is skipped unless the person ticks "import anyway".
+6. **Emotion.** Fears: "will this make a mess of our drive?", "will it overwrite what we have?". "Nothing is created until you press Import"; existing organisations are linked, not changed, and imported notes are added after theirs, never replacing them; a failed row says which step failed and what already exists, and the rest go on.
+
+**Concepts weighed:** a one-box paste like the investor list (too little: leads have many fields and rules), a wizard in a modal (hides the drive behind it while matching names), and a panel on the place with the status path (chosen: the leads stay in view, and the path is a pattern the app already uses).
+
+**Implementation:** `.pb-import` (`__head`, `__title`, `__foot`, `__example`, `__problems`, `__row.is-blocked`, `__result--created|failed|skipped`), on `.pb-path`, `.pb-table`, `.pb-select`, `.pb-textarea`, `.pb-reassure`; shown on the showcase. `kit/lead-import`: `parseCsv` (quotes, separators and line breaks in quotes, CRLF, BOM, comma, semicolon or tab), `guessMapping`, `planImport`, `runImport` (one row at a time, a failure ends that row only), and the actions for each record; tests run the import through the contact and lead reducers. Records are created on the drive's server (`useCreateRecord`) and filled through `dispatchTo`.

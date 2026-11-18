@@ -4,6 +4,7 @@ import { VOCABULARY } from "../../../../design-system/vocabulary.js";
 import { Icon } from "../../components/Icon.js";
 import { ErrorLine } from "../../components/shared/ErrorLine.js";
 import { ProposalBadge } from "../../components/shared/ProposalBadge.js";
+import { reminderAction } from "../../components/shared/board/moveAction.js";
 import { useBoardMove } from "../../components/shared/board/useBoardMove.js";
 import { nextAction } from "../../kit/lead-view/index.js";
 import {
@@ -43,6 +44,10 @@ export function LeadsBoard({
   const nameOf = (id: string) => byId.get(id)?.name || "Untitled lead";
   const board = useBoardMove({
     root,
+    remind: (id, reason, day) => ({
+      documentId: id,
+      action: reminderAction(reason, day, byId.get(id)?.owner ?? null),
+    }),
     targetsOf: (id) => {
       const s = byId.get(id);
       return s ? leadStatusTargets(leadMoveCard(s)) : [];
@@ -76,8 +81,8 @@ export function LeadsBoard({
                 stage={term?.label ?? ""}
                 outcome={asking.outcome}
                 busy={board.busy}
-                onApply={(option, reason) =>
-                  board.apply(asking.key, option, reason)
+                onApply={(option, reason, remindOn) =>
+                  board.apply(asking.key, option, reason, remindOn)
                 }
                 onOpenRecord={() => onOpen(asking.key)}
                 onCancel={board.cancel}

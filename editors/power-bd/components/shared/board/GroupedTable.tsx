@@ -6,7 +6,7 @@ import {
 import { MoveAsk } from "../../../views/overview/MoveAsk.js";
 import { MoveList } from "../../../views/overview/MoveMenu.js";
 import { ErrorLine } from "../ErrorLine.js";
-import { useBoardMove, type BoardSend } from "./useBoardMove.js";
+import { useBoardMove, type BoardRemind, type BoardSend } from "./useBoardMove.js";
 
 type Term = { value: string; label: string; tone: string };
 
@@ -38,6 +38,7 @@ export function GroupedTable<K extends string, R extends GroupedRow<K>>({
   after,
   targetsOf,
   send,
+  remind,
   onOpenRecord,
 }: {
   /** The list's own headings, as `th` cells. */
@@ -59,11 +60,13 @@ export function GroupedTable<K extends string, R extends GroupedRow<K>>({
   after?: (row: R, span: number) => ReactNode;
   targetsOf: (key: string) => ColumnTarget<K>[];
   send?: BoardSend;
+  /** Adds the reminder a park asked for (leads only). */
+  remind?: BoardRemind;
   /** What a question's "Open …" does: opens the record, or the step the drop asked for. */
   onOpenRecord: (key: string) => void;
 }) {
   const root = useRef<HTMLDivElement>(null);
-  const board = useBoardMove({ root, targetsOf, send });
+  const board = useBoardMove({ root, targetsOf, send, remind });
   const span = columns + 1;
   const nameOf = (key: string) => rows.find((r) => r.key === key)?.name ?? "";
   const panel = (content: ReactNode) => (
@@ -111,8 +114,8 @@ export function GroupedTable<K extends string, R extends GroupedRow<K>>({
                         stage={term?.label ?? ""}
                         outcome={asking.outcome}
                         busy={board.busy}
-                        onApply={(option, reason) =>
-                          board.apply(asking.key, option, reason)
+                        onApply={(option, reason, remindOn) =>
+                          board.apply(asking.key, option, reason, remindOn)
                         }
                         onOpenRecord={() => {
                           board.cancel();

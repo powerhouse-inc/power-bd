@@ -1,9 +1,11 @@
 import { GroupedTable } from "../../components/shared/board/GroupedTable.js";
+import { reminderAction } from "../../components/shared/board/moveAction.js";
 import {
   LEAD_STATUSES,
   leadMoveCard,
   leadStatusTargets,
 } from "../../kit/overview-view/index.js";
+import { ImportLeads } from "./ImportLeads.js";
 import { LeadsBoard } from "./LeadsBoard.js";
 import { LeadsMap } from "./LeadsMap.js";
 import { buildProposals } from "../../kit/overview/proposals.js";
@@ -36,6 +38,7 @@ export function LeadsView({ driveId }: { driveId: string }) {
   const select = useSetSelectedNode();
   const team = useTeam();
   const [view, setView] = useState<"board" | "list" | "map">("board");
+  const [importing, setImporting] = useState(false);
 
   const organisationName = (id: string | null | undefined) =>
     id
@@ -60,6 +63,12 @@ export function LeadsView({ driveId }: { driveId: string }) {
       <div className="pb-page__head pb-page__head--row">
         <h1 className="pb-page__title">Leads</h1>
         <span className="pb-toolbar__spacer" />
+        {leads.length > 0 && !importing && (
+          <button type="button" className="pb-btn" onClick={() => setImporting(true)}>
+            <Icon name="inbox" />
+            Import
+          </button>
+        )}
         {leads.length > 0 && (
           <button
             className="pb-btn pb-btn--primary"
@@ -72,6 +81,9 @@ export function LeadsView({ driveId }: { driveId: string }) {
         )}
       </div>
       <ErrorLine message={error} />
+      {importing ? (
+        <ImportLeads driveId={driveId} onClose={() => setImporting(false)} onOpen={select} />
+      ) : null}
       {leads.length === 0 ? (
         <EmptyStart
           icon="leads"
@@ -83,15 +95,23 @@ export function LeadsView({ driveId }: { driveId: string }) {
               "Sales lead · Mara Lind owns it · next step: send the pilot outline by Fri 27 Nov",
           }}
           action={
-            <button
-              type="button"
-              className="pb-btn pb-btn--primary"
-              disabled={busy}
-              onClick={create}
-            >
-              <Icon name="plus" />
-              Add your first lead
-            </button>
+            <>
+              <button
+                type="button"
+                className="pb-btn pb-btn--primary"
+                disabled={busy}
+                onClick={create}
+              >
+                <Icon name="plus" />
+                Add your first lead
+              </button>
+              {importing ? null : (
+                <button type="button" className="pb-btn" onClick={() => setImporting(true)}>
+                  <Icon name="inbox" />
+                  Import from a spreadsheet
+                </button>
+              )}
+            </>
           }
         />
       ) : (
@@ -159,6 +179,14 @@ export function LeadsView({ driveId }: { driveId: string }) {
                 const s = leads.find((d) => d.header.id === id)?.state.global;
                 return s ? leadStatusTargets(leadMoveCard(s)) : [];
               }}
+              remind={(id, reason, day) => ({
+                documentId: id,
+                action: reminderAction(
+                  reason,
+                  day,
+                  leads.find((d) => d.header.id === id)?.state.global.owner ?? null,
+                ),
+              })}
               onRow={(r) => select(r.key)}
               onOpenRecord={select}
               cells={({ key, state: s }) => {
