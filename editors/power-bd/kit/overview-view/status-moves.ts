@@ -301,7 +301,7 @@ export function proposalStatusMove(
       : {
           kind: "choose",
           options,
-          note: "Which option did the client choose?",
+          note: "Pick the option the client chose",
         };
   }
   return refused(

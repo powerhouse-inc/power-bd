@@ -8,6 +8,9 @@ import { Menu } from "../../components/shared/Menu.js";
 import { DraftValue } from "../../components/shared/ProposalBadge.js";
 import { useProposalRows } from "../../components/shared/useProposalRows.js";
 import { WaitsOn } from "../../components/shared/WaitsOn.js";
+import { useProposalDocumentsInSelectedDrive } from "../../components/useDriveDocuments.js";
+import { proposalMoveCard } from "../../kit/overview-view/index.js";
+import { ProposalsBoard } from "./ProposalsBoard.js";
 import {
   filterRows,
   statusOptions,
@@ -16,12 +19,19 @@ import {
 
 const STATUSES = statusOptions();
 
-/** The Proposals place: every proposal with its lead, status, value, valid-until day and what it waits on. */
+/** The Proposals place: every proposal with its lead, status, value, valid-until day and what it waits on, on a board by status or in a list. */
 export function ProposalsView(_: { driveId: string }) {
   const select = useSetSelectedNode();
   const goTo = useGoToPlace();
   const all = useProposalRows();
   const [status, setStatus] = useState("");
+  const [asBoard, setAsBoard] = useState(true);
+  const cards = new Map(
+    (useProposalDocumentsInSelectedDrive() ?? []).map((d) => [
+      d.header.id,
+      proposalMoveCard(d.state.global),
+    ]),
+  );
   const rows = filterRows(all, status);
   const { us, client } = waitSummary(all);
 
@@ -63,12 +73,31 @@ export function ProposalsView(_: { driveId: string }) {
       ) : (
         <>
           <div className="pb-toolbar pb-mb-8">
-            <Menu
-              label="Status"
-              value={status}
-              options={STATUSES}
-              onChange={setStatus}
-            />
+            <div className="pb-segmented">
+              <button
+                className={`pb-segmented__item${asBoard ? " is-active" : ""}`}
+                onClick={() => setAsBoard(true)}
+              >
+                <Icon name="board" />
+                Board
+              </button>
+              <button
+                className={`pb-segmented__item${asBoard ? "" : " is-active"}`}
+                onClick={() => setAsBoard(false)}
+              >
+                <Icon name="table" />
+                List
+              </button>
+            </div>
+            {/* On the board the columns are the statuses, so the filter is the list's. */}
+            {asBoard ? null : (
+              <Menu
+                label="Status"
+                value={status}
+                options={STATUSES}
+                onChange={setStatus}
+              />
+            )}
             <span className="pb-toolbar__spacer" />
             <div className="pb-pulse">
               <span>
@@ -80,7 +109,9 @@ export function ProposalsView(_: { driveId: string }) {
               </span>
             </div>
           </div>
-          {rows.length === 0 ? (
+          {asBoard ? (
+            <ProposalsBoard rows={all} cards={cards} onOpen={select} />
+          ) : rows.length === 0 ? (
             <EmptyPlace
               icon="proposal"
               title="No proposals with this status"

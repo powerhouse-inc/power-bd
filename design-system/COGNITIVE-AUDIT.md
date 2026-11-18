@@ -1025,3 +1025,35 @@ The Investors audit and *Moving a lead on the Leads board* stand. This covers on
 - **Language:** state names; refusals say what to do first.
 - **Decision:** excluding asks why; engaging opens the panel that says what it creates.
 - **Emotion:** a drop creates nothing and contacts nobody; reasons are kept.
+
+### Moving a proposal on the Proposals board (built, `views/proposals/ProposalsBoard.tsx`)
+
+The Proposals audit and *Moving a lead on the Leads board* stand. This covers one change: Proposals gets a board, one column per status (Draft, Approved, Sent, Accepted, Declined, Withdrawn, Superseded), beside today's list (Board and List, as on Leads). On the board the status filter gives way to the columns; the "waits on you / the client" pulse stays.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** A card shows the organisation, the title, the lead, the valid-until day, what it waits on (on its own line, so it never wraps beside the value) and the value with its "draft" mark. While a card is in the hand, columns tint or fade with their one line, as on Leads.
+2. **Wayfinding.** Columns in the order a proposal lives, the same as the status path on the proposal's page. A step the board does not take opens the proposal's page, where its status panel takes it.
+3. **Memory and semantics.** The Leads board's drag and "Move to…" list; the proposal page's status panel and its actions (reopen, record the answer, withdraw), so the board offers what the panel offers.
+4. **Language.** Status names from the vocabulary; the panel's own words on the buttons: "Reopen to edit", "The client accepted “Pilot”", "Open to approve", "Open to mark sent". Refusals say what to do first: "Approve it first: a draft is approved before it is sent", "Send it first: the client answers a sent proposal", "A proposal is superseded when the revision that replaces it is marked sent".
+5. **Decision making.** Approve and Mark sent are people-only on the page (the people mark): a drop on Approved or Sent changes nothing and opens the proposal there, with the reason ("after its checks"; "Nothing is sent from Power BD"). Reopening an approved proposal asks once, with the panel's line "Reopening clears the approval; it stays in the history." Accepting asks which option the client chose (a single option is confirmed by name); declining and withdrawing ask why. Superseding has no button on the page (a revision marked sent does it), so the column refuses and says so.
+6. **Emotion.** Fears: "did I approve it without its checks?", "did that send something?", "did I record the wrong answer?". A drop never approves or marks sent; answers carry "Recording the answer changes this proposal only; nothing is sent to the client. The answer is final."; withdrawing says the proposal keeps its history; a refused move leaves the card where it was with the reason beside it.
+
+**2. Concepts weighed**
+
+- **A · Task-oriented:** keep the list and its status filter only. Exact, but the user asked for a board, and where proposals wait is clearer by column.
+- **B · Conventional:** free drag with every status set on drop. Familiar, but approval has checks and a person, sending happens outside Power BD, and an acceptance must name its option.
+- **C · Immersive:** a pipeline with value totals per column. Appealing, but totals across currencies and drafts would mislead.
+
+**Chosen:** the Leads board's pattern with one column per status, the list one click away, and the page's people-only steps opened, not taken, by a drop. Evidence: the proposal reducer approves only a complete draft, marks sent only an approved one, needs an existing option to accept and a reason to decline or withdraw, and supersedes only with a replacement; the status panel marks Approve and Mark sent as people-only and supersedes only when a revision is marked sent.
+
+**3. Implementation:** the Leads board's parts (`pb-board--drop`, `pb-board__hint`, `pb-ask` with its choose, reason, confirm and decision variants, `MoveList`, `ErrorLine`); a confirm's button can carry its own words (`verb`). The rules are pure, in `kit/overview-view/status-moves.ts` (`proposalStatusMove`, `proposalStatusTargets`, `proposalMoveCard`); a test runs every status, with and without options, against the proposal reducer.
+
+**4. Mapping**
+
+- **Vision:** what it waits on on its own line; tinted columns take the card.
+- **Wayfinding:** columns in the order of the status path; people-only steps open the page.
+- **Memory:** the Leads board's drag; the status panel's actions and words.
+- **Language:** status names and the panel's button words; refusals say what to do first.
+- **Decision:** approval and sending stay a person's; the answer names its option; reasons where the reducer needs them.
+- **Emotion:** nothing is approved or sent by a drop; answers say nothing reaches the client.
