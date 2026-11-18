@@ -1,3 +1,9 @@
+import { GroupedTable } from "../../components/shared/board/GroupedTable.js";
+import {
+  LEAD_STATUSES,
+  leadMoveCard,
+  leadStatusTargets,
+} from "../../kit/overview-view/index.js";
 import { LeadsBoard } from "./LeadsBoard.js";
 import { NextStep } from "./NextStep.js";
 import { useSetSelectedNode } from "@powerhousedao/reactor-browser";
@@ -114,82 +120,87 @@ export function LeadsView({ driveId }: { driveId: string }) {
               onOpen={select}
             />
           ) : (
-            <div className="pb-table-wrap">
-              <table className="pb-table">
-                <thead>
-                  <tr>
-                    <th>Lead</th>
-                    <th>Organisation</th>
-                    <th>Kind</th>
-                    <th>Status</th>
-                    <th>Owner</th>
-                    <th>Proposal</th>
-                    <th>Next step</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {leads.map((d) => {
-                    const s = d.state.global;
-                    const kind = VOCABULARY.relationshipKind.find(
-                      (k) => k.value === s.kind,
-                    );
-                    const status = VOCABULARY.leadStatus.find(
-                      (k) => k.value === s.status,
-                    );
-                    const next = nextAction(s, today);
-                    const badge = badges[d.header.id];
-                    return (
-                      <tr
-                        key={d.header.id}
-                        className="pb-clickable"
-                        onClick={() => select(d.header.id)}
-                      >
-                        <td className="pb-table__title">
-                          {s.name || "Untitled lead"}
-                        </td>
-                        <td>
-                          {organisationName(s.organisationId) ?? (
-                            <span className="pb-faint">—</span>
-                          )}
-                        </td>
-                        <td>
-                          {kind ? (
-                            <span className="pb-tag pb-tag--default">
-                              {kind.icon ? <Icon name={kind.icon} /> : null}
-                              {kind.label}
-                            </span>
-                          ) : (
-                            <span className="pb-faint">Not set</span>
-                          )}
-                        </td>
-                        <td>
-                          <span className={`pb-tag pb-tag--${status?.tone}`}>
-                            {status?.label}
-                          </span>
-                        </td>
-                        <td>
-                          {s.owner ? (
-                            team.ownerName(s.owner)
-                          ) : (
-                            <span className="pb-faint">No owner</span>
-                          )}
-                        </td>
-                        <td>
-                          {badge ? (
-                            <ProposalBadge badge={badge} />
-                          ) : (
-                            <span className="pb-faint">—</span>
-                          )}
-                        </td>
-                        <td>
-                          <NextStep next={next} />
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+            <GroupedTable
+              head={
+                <>
+                  <th>Lead</th>
+                  <th>Organisation</th>
+                  <th>Kind</th>
+                  <th>Status</th>
+                  <th>Owner</th>
+                  <th>Proposal</th>
+                  <th>Next step</th>
+                </>
+              }
+              columns={7}
+              statuses={LEAD_STATUSES}
+              terms={VOCABULARY.leadStatus}
+              rows={leads.map((d) => ({
+                key: d.header.id,
+                status: d.state.global.status,
+                name: d.state.global.name || "Untitled lead",
+                state: d.state.global,
+              }))}
+              targetsOf={(id) => {
+                const s = leads.find((d) => d.header.id === id)?.state.global;
+                return s ? leadStatusTargets(leadMoveCard(s)) : [];
+              }}
+              onRow={(r) => select(r.key)}
+              onOpenRecord={select}
+              cells={({ key, state: s }) => {
+                const kind = VOCABULARY.relationshipKind.find(
+                  (k) => k.value === s.kind,
+                );
+                const status = VOCABULARY.leadStatus.find(
+                  (k) => k.value === s.status,
+                );
+                const badge = badges[key];
+                return (
+                  <>
+                    <td className="pb-table__title">
+                      {s.name || "Untitled lead"}
+                    </td>
+                    <td>
+                      {organisationName(s.organisationId) ?? (
+                        <span className="pb-faint">—</span>
+                      )}
+                    </td>
+                    <td>
+                      {kind ? (
+                        <span className="pb-tag pb-tag--default">
+                          {kind.icon ? <Icon name={kind.icon} /> : null}
+                          {kind.label}
+                        </span>
+                      ) : (
+                        <span className="pb-faint">Not set</span>
+                      )}
+                    </td>
+                    <td>
+                      <span className={`pb-tag pb-tag--${status?.tone}`}>
+                        {status?.label}
+                      </span>
+                    </td>
+                    <td>
+                      {s.owner ? (
+                        team.ownerName(s.owner)
+                      ) : (
+                        <span className="pb-faint">No owner</span>
+                      )}
+                    </td>
+                    <td>
+                      {badge ? (
+                        <ProposalBadge badge={badge} />
+                      ) : (
+                        <span className="pb-faint">—</span>
+                      )}
+                    </td>
+                    <td>
+                      <NextStep next={nextAction(s, today)} />
+                    </td>
+                  </>
+                );
+              }}
+            />
           )}
         </>
       )}
