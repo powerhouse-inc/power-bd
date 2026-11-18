@@ -50,7 +50,7 @@ export function LeadsBoard({
   });
 
   return (
-    <div className="pb-board" ref={root}>
+    <div className="pb-board pb-board--drop" ref={root}>
       {LEAD_STATUSES.map((status) => {
         const term = VOCABULARY.leadStatus.find((t) => t.value === status);
         const inCol = leads.filter((d) => d.state.global.status === status);
