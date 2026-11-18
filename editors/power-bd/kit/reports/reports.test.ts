@@ -11,6 +11,7 @@ import {
   quietLeads,
   splitBy,
   type ReportLead,
+  bySource,
 } from "./reports.js";
 
 const Z = "UTC";
@@ -233,5 +234,21 @@ describe("percent", () => {
   it("rounds a share to a whole percentage", () => {
     expect(percent(2 / 3)).toBe("67%");
     expect(percent(0)).toBe("0%");
+  });
+});
+
+describe("bySource", () => {
+  it("counts per source, with leads recorded before sources existed under the empty key", () => {
+    const rows = bySource(
+      [
+        lead({ source: "EVENT", status: "WON", closedAt: "2026-11-02T00:00:00.000Z" }),
+        lead({ source: "EVENT" }),
+        lead({ source: null }),
+        lead({}),
+      ],
+      "2026-10-01",
+      Z,
+    );
+    expect(rows.map((r) => [r.key, r.entered, r.won])).toEqual([["EVENT", 2, 1], ["", 2, 0]]);
   });
 });

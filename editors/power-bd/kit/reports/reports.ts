@@ -17,6 +17,8 @@ export type ReportLead = {
   createdAt: string;
   /** When the record last changed, whatever changed. */
   changedAt: string;
+  /** Where the lead came from; absent on leads recorded before sources existed. */
+  source?: LeadState["source"];
 };
 
 export type Period = "quarter" | "90days" | "all";
@@ -273,6 +275,10 @@ export function splitBy(
     .map((r) => ({ ...r, winRate: r.won + r.lost >= MIN_SAMPLE ? r.won / (r.won + r.lost) : null }))
     .sort((a, b) => b.entered + b.won + b.lost - (a.entered + a.won + a.lost) || a.key.localeCompare(b.key));
 }
+
+/** The same counts per source; "" for leads whose source is not recorded. */
+export const bySource = (leads: readonly ReportLead[], start: string | null, zone: string): SplitRow[] =>
+  splitBy(leads, (l) => l.source ?? "", start, zone);
 
 /** A share as a whole percentage: "67%". */
 export const percent = (share: number) => `${Math.round(share * 100)}%`;

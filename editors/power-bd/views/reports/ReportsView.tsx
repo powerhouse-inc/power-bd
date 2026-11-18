@@ -18,6 +18,7 @@ import {
   percent,
   periodStart,
   quietLeads,
+  bySource,
   splitBy,
   type Period,
   type ReasonGroup,
@@ -141,6 +142,7 @@ export function ReportsView(_props: { driveId: string }) {
       closedAt: s.closedAt ?? null,
       createdAt: d.header.createdAtUtcIso,
       changedAt: d.header.lastModifiedAtUtcIso,
+      source: d.state.global.source ?? null,
     };
   });
   const start = periodStart(period, today);
@@ -299,6 +301,16 @@ export function ReportsView(_props: { driveId: string }) {
           <h2 className="pb-section__title">By kind</h2>
         </div>
         <SplitTable title="Kind" rows={splitBy(leads, (l) => l.kind ?? "", start, zone)} name={kindLabel} />
+      </section>
+      <section className="pb-section">
+        <div className="pb-section__head">
+          <h2 className="pb-section__title">By where they came from</h2>
+        </div>
+        <SplitTable
+          title="Came from"
+          rows={bySource(leads, start, zone)}
+          name={(k) => VOCABULARY.leadSource.find((t) => t.value === k)?.label ?? "Not recorded"}
+        />
       </section>
     </div>
   );

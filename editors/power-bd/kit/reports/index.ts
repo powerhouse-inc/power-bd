@@ -11,6 +11,7 @@ export {
   percent,
   periodStart,
   quietLeads,
+  bySource,
   splitBy,
   type Funnel,
   type FunnelStep,
