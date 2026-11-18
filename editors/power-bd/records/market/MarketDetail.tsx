@@ -1,10 +1,11 @@
 import type { DocumentDispatch } from "@powerhousedao/reactor-browser";
 import { actions, type MarketAction, type MarketDocument } from "document-models/market";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Icon } from "../../components/Icon.js";
 import { ErrorLine } from "../../components/shared/ErrorLine.js";
 import { dispatchWith, useRun, type OnErrors } from "../../components/shared/relationship/common.js";
 import { useRenameRecord } from "../../components/shared/useRenameRecord.js";
+import { useViewportBox } from "../../components/shared/useViewportBox.js";
 import {
   useContactDocumentsInSelectedDrive,
   useLeadDocumentsInSelectedDrive,
@@ -28,6 +29,9 @@ export function MarketDetail({
   const details = useRun();
   const renameEntry = useRenameRecord(document.header.id);
   const [selected, setSelected] = useState<Selected>(null);
+  const host = useRef<HTMLDivElement>(null);
+  // The side peek sits over the part of the page in view, not at the page's top, so opening it from the map keeps the map in sight.
+  const inView = useViewportBox(host, selected !== null);
   const [currencyError, setCurrencyError] = useState<string | null>(null);
   const contacts = (useContactDocumentsInSelectedDrive() ?? []).map((d) => ({
     id: d.header.id,
@@ -47,7 +51,7 @@ export function MarketDetail({
   const locked = s.sizeStatus === "APPROVED";
 
   return (
-    <div className="pb-peek-host">
+    <div className="pb-peek-host" ref={host}>
       <div className="pb-page pb-page--wide">
         <div className="pb-page__head">
           <span className="pb-page__icon pb-page__icon--blue">
@@ -143,6 +147,7 @@ export function MarketDetail({
           positioning={playbook?.positioning ?? []}
           neverClaims={playbook?.neverClaims ?? []}
           send={send}
+          place={inView}
           onClose={() => setSelected(null)}
         />
       ) : null}

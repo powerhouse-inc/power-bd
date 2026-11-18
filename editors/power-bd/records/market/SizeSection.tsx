@@ -69,8 +69,9 @@ function SegmentRow({
       <tr>
         <td>
           <input
-            className="pb-input pb-input--auto"
+            className="pb-input pb-input--cell"
             aria-label="Segment"
+            title={g.name}
             defaultValue={g.name}
             key={`n-${g.name}`}
             disabled={locked}

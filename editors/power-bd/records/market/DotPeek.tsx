@@ -1,5 +1,7 @@
 import { actions, type MarketState } from "document-models/market";
 import { useSetSelectedNode } from "@powerhousedao/reactor-browser";
+import { useEffect, useRef } from "react";
+import type { ViewportBox } from "../../components/shared/useViewportBox.js";
 import { Icon } from "../../components/Icon.js";
 import { ErrorLine } from "../../components/shared/ErrorLine.js";
 import { VaultNotes } from "../../components/shared/VaultNotes.js";
@@ -25,6 +27,7 @@ export function DotPeek({
   positioning,
   neverClaims,
   send,
+  place,
   onClose,
 }: {
   market: MarketState;
@@ -34,12 +37,17 @@ export function DotPeek({
   positioning: readonly Positioning[];
   neverClaims: readonly (NeverClaimItem & { claim: string })[];
   send: Send;
+  /** Where the page is in view: the peek covers that part. */
+  place: ViewportBox | null;
   onClose: () => void;
 }) {
   const open = useSetSelectedNode();
   const note = useRun();
   const evidence = useRun();
   const remove = useRun();
+  const closeButton = useRef<HTMLButtonElement>(null);
+  // Focus without scrolling: autoFocus would scroll the page to the peek's top and lose the map.
+  useEffect(() => closeButton.current?.focus({ preventScroll: true }), []);
   const player = selected.kind === "player" ? s.players.find((p) => p.id === selected.id) : undefined;
   const us = selected.kind === "us" ? s.us : undefined;
   if (!player && !us) return null;
@@ -60,9 +68,15 @@ export function DotPeek({
     );
 
   return (
-    <aside className="pb-peek" role="dialog" aria-label={title} onKeyDown={(e) => e.key === "Escape" && onClose()}>
+    <aside
+      className="pb-peek"
+      role="dialog"
+      aria-label={title}
+      style={place ? { top: place.top, bottom: "auto", height: place.height } : undefined}
+      onKeyDown={(e) => e.key === "Escape" && onClose()}
+    >
       <div className="pb-peek__bar">
-        <button type="button" className="pb-btn pb-btn--ghost pb-btn--sm" autoFocus onClick={onClose}>
+        <button type="button" className="pb-btn pb-btn--ghost pb-btn--sm" ref={closeButton} onClick={onClose}>
           <Icon name="close" />
           Close
         </button>
