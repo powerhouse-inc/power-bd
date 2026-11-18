@@ -1,6 +1,6 @@
-import { dispatchActions } from "@powerhousedao/reactor-browser";
 import { useRef, useState, type DragEvent } from "react";
 import { Icon } from "../../components/Icon.js";
+import { useDriveWrite } from "../../components/data/driveData.js";
 import { ErrorLine } from "../../components/shared/ErrorLine.js";
 import { fmtDay } from "../../components/shared/relationship/common.js";
 import {
@@ -66,6 +66,7 @@ export function CalendarDays({
   const [over, setOver] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<Confirm | null>(null);
   const [adding, setAdding] = useState<string | null>(null);
+  const { dispatchTo } = useDriveWrite();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const dragged = drag ? byKey.get(drag.key) : undefined;
@@ -75,7 +76,7 @@ export function CalendarDays({
   const apply = (r: Reschedule) => {
     setBusy(true);
     setError(null);
-    dispatchActions(rescheduleAction(r), r.documentId, (errors) =>
+    dispatchTo(rescheduleAction(r), r.documentId, (errors) =>
       setError(errors.at(0)?.message ?? "That was not accepted."),
     )
       .catch((e: unknown) =>

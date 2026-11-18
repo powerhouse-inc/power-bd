@@ -1,6 +1,6 @@
-import { dispatchActions } from "@powerhousedao/reactor-browser";
 import { useState } from "react";
 import { Icon } from "../../components/Icon.js";
+import { useDriveWrite } from "../../components/data/driveData.js";
 import { ErrorLine } from "../../components/shared/ErrorLine.js";
 import { fmtDay } from "../../components/shared/relationship/common.js";
 import type { Addable } from "../../kit/calendar/index.js";
@@ -30,6 +30,7 @@ export function AddPanel({
   const [recordId, setRecordId] = useState("");
   const [text, setText] = useState("");
   const [time, setTime] = useState("10:00");
+  const { dispatchTo } = useDriveWrite();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const record = records.find((r) => r.id === recordId);
@@ -45,7 +46,7 @@ export function AddPanel({
         ? addStepAction(record, day, text.trim(), me)
         : addMeetingAction(record, day, time, zone, text.trim(), me);
     let refused = false;
-    dispatchActions(action, record.id, (errors) => {
+    dispatchTo(action, record.id, (errors) => {
       refused = true;
       setError(errors.at(0)?.message ?? "That was not accepted.");
     })
