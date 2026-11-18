@@ -24,6 +24,7 @@ import {
 import { driveIconToSet } from "../kit/app-icon.js";
 import { countsByPlace, planDriveSetup } from "../kit/drive-plan.js";
 import { setUpDrive, type SetupDeps } from "../kit/init-drive.js";
+import { openingSpot, spotStore, type CameFrom } from "../kit/last-spot/last-spot.js";
 import {
   hashOf,
   placeById,
@@ -63,7 +64,7 @@ import { TopBar } from "./TopBar.js";
 import { AgentView } from "./chat/AgentView.js";
 import { ChatDock } from "./chat/ChatDock.js";
 import { ChatHolder } from "./chat/ChatHolder.js";
-import { useChatPresentation } from "./chat/useChatChoices.js";
+import { browserStorage, useChatPresentation, usePerson } from "./chat/useChatChoices.js";
 import { useProposalDocumentsInSelectedDrive } from "./useDriveDocuments.js";
 
 function subscribeOnline(notify: () => void) {
@@ -83,6 +84,9 @@ const useOnline = () =>
 
 /** Drives whose records this page has loaded once: coming back paints at once. */
 const loadedOnce = new Set<string>();
+
+/** Where each person last was in each space, in this browser (kit/last-spot). */
+const spots = spotStore(browserStorage);
 
 /** This address with another hash; an empty one removes it. */
 const addressWith = (hash: string) => `${window.location.pathname}${window.location.search}${hash}`;
@@ -108,16 +112,30 @@ export function Shell({
   driveId: string;
   children: ReactNode;
 }) {
-  // The place is in the address (`#leads`): a reload stays and a link opens it.
-  const [place, setPlace] = useState<PlaceId>(
-    () => placeFromHash(window.location.hash) ?? "overview",
+  // Where the space opens: the place the address names (`#leads`), so a reload
+  // stays and a link opens it; else where this person last was here, with the
+  // record and the agent as they were. So opening the space from Connect's
+  // sidebar, after following a citation into the vault, comes back.
+  const person = usePerson();
+  const [opening] = useState(() =>
+    openingSpot(
+      {
+        place: placeFromHash(window.location.hash),
+        namesRecord: !addressShows(window.location.pathname, undefined),
+      },
+      spots.read(driveId, person),
+    ),
   );
+  const [place, setPlace] = useState<PlaceId>(opening.place);
+  // The record this person had open, still to open again (see below); any move
+  // the person makes first cancels it, so it never lands on top of their choice.
+  const reopen = useRef(opening.record);
   const [searching, setSearching] = useState(false);
   const [investorRow, setInvestorRow] = useState<InvestorRowRequest>();
   // The agent: in full view it is the Agent place; beside, a panel that
   // stays open across places. "Ask the agent" opens the person's choice.
-  const [chatBeside, setChatBeside] = useState(false);
-  const [cameFrom, setCameFrom] = useState<{ place: PlaceId; recordId?: string }>();
+  const [chatBeside, setChatBeside] = useState(opening.beside);
+  const [cameFrom, setCameFrom] = useState<CameFrom | undefined>(opening.from);
   const [presentation, setPresentation] = useChatPresentation();
   const online = useOnline();
   const nodes = useDriveNodes();
@@ -256,6 +274,7 @@ export function Shell({
   /** A record opened or closed here that Connect has not finished moving to yet. */
   const connectMove = useRef<{ to: string | undefined; at: number } | null>(null);
   const goTo = (id: PlaceId, recordId?: string) => {
+    reopen.current = undefined;
     requestOpen(recordId);
     setPlace(id);
     setInvestorRow(undefined);
@@ -270,6 +289,7 @@ export function Shell({
   // Back and Forward: the address names the place, and Connect restores the record.
   useEffect(() => {
     const onPop = () => {
+      reopen.current = undefined;
       requestOpen(undefined);
       setPlace(placeFromHash(window.location.hash) ?? "overview");
       setInvestorRow(undefined);
@@ -309,6 +329,38 @@ export function Shell({
     if (!addressShows(window.location.pathname, selectedId)) return;
     if (placeFromHash(window.location.hash) === undefined)
       window.history.replaceState(window.history.state, "", addressWith(hashOf(place)));
+  });
+  // The record this person had open, opened again once the space's records are
+  // known, if it is still here and they have not moved first (another place,
+  // or a record Connect opened). It takes the opening's history entry, so Back
+  // does not lead to the space without it.
+  useEffect(() => {
+    const id = reopen.current;
+    if (id === undefined) return;
+    if (place !== opening.place || selectedId !== undefined) {
+      reopen.current = undefined;
+      return;
+    }
+    if (!nodes) return;
+    reopen.current = undefined;
+    if (!nodes.some((n) => n.kind === "file" && n.id === id)) return;
+    requestOpen(id);
+    connectMove.current = { to: id, at: Date.now() };
+    setSelectedNode(id, { replace: true });
+  }, [nodes, setSelectedNode, place, opening.place, selectedId]);
+  // Where this person is, kept for the next time the space opens: never while
+  // a record is still to reopen or Connect is still moving, and a record only
+  // when it is this space's.
+  const openId = open?.id;
+  useEffect(() => {
+    if (reopen.current !== undefined || connectMove.current) return;
+    const recordId = place !== "agent" && openId && nodes?.some((n) => n.id === openId) ? openId : undefined;
+    spots.write(driveId, person, {
+      place,
+      ...(recordId ? { recordId } : {}),
+      beside: chatBeside,
+      ...(cameFrom ? { from: cameFrom } : {}),
+    });
   });
   /** The full view: remembers where the person was, and closes the side panel. */
   const openFull = () => {

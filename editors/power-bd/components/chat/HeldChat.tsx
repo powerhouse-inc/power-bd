@@ -15,7 +15,7 @@ import { useChatPlaces } from "./useChatPlaces.js";
 import { useAutoApprove, usePerson } from "./useChatChoices.js";
 import { useChatService, type ChatService } from "./useChatService.js";
 import { useChatSetup } from "./useChatSetup.js";
-import { useCitedChat } from "./useCitedChat.js";
+import { useCitationClicks, useCitedChat } from "./useCitedChat.js";
 import { useKeptChat } from "./useKeptChat.js";
 
 const SUGGESTIONS = [
@@ -59,16 +59,30 @@ export default function HeldService({ driveId, slots, onService }: Props) {
 }
 
 /** What shows before the first question, with the mode it works in. */
-function Welcome({ userName, autoApprove }: { userName?: string; autoApprove: boolean }) {
+function Welcome({
+  userName,
+  autoApprove,
+  vaultLocked,
+}: {
+  userName?: string;
+  autoApprove: boolean;
+  /** The vault refused this person: the agent reads the space only. */
+  vaultLocked: boolean;
+}) {
+  const reads = vaultLocked
+    ? "It reads this space. You don't have access to the vault, so it can't read it."
+    : "It reads this space and the vault.";
   return (
     <div className="pb-chat__welcome">
       <p className="pb-chat__welcome-title">
-        {userName ? `Hi ${userName}. ` : ""}Ask about your leads, funding and the vault.
+        {userName ? `Hi ${userName}. ` : ""}
+        {vaultLocked ? "Ask about your leads and funding." : "Ask about your leads, funding and the vault."}
       </p>
       <p className="pb-chat__welcome-text">
+        {reads}{" "}
         {autoApprove
-          ? "It reads this space and the vault. Auto-approve is on, so it changes records and takes the steps you ask for without asking you first."
-          : "It reads this space and the vault. Anything that changes a record asks you first."}
+          ? "Auto-approve is on, so it changes records and takes the steps you ask for without asking you first."
+          : "Anything that changes a record asks you first."}
       </p>
       <ul className="pb-chat__promises">
         <li className="pb-reassure">
@@ -103,6 +117,7 @@ function HeldConversation({
     reads.space,
     vaultDriveId,
     autoApprove,
+    reads.vaultLocked,
   );
   const kept = useKeptChat(keptChats.of(driveId, person), tools, {
     connection,
@@ -110,7 +125,8 @@ function HeldConversation({
     autoApprove,
   });
   // Shown with the vault's documents cited by title, each opening in the vault app.
-  const chat = useCitedChat(kept, vaultDriveId);
+  const chat = useCitedChat(kept, vaultDriveId, reads.vaultLocked);
+  useCitationClicks(slots.panel);
 
   return (
     <>
@@ -130,7 +146,7 @@ function HeldConversation({
           <ChatPanel
             chat={chat}
             suggestions={SUGGESTIONS}
-            emptyState={<Welcome userName={userName} autoApprove={autoApprove} />}
+            emptyState={<Welcome userName={userName} autoApprove={autoApprove} vaultLocked={reads.vaultLocked} />}
           />
           <div className="pb-chat__foot">
             {autoApprove ? (

@@ -4,6 +4,7 @@ import {
   gateVerdict,
   isLastManager,
   probeVerdict,
+  refusesReading,
   readAddress,
   readAnswer,
   rosterRows,
@@ -171,3 +172,12 @@ describe("mayChange", () => {
   });
 });
 
+
+describe("refusesReading", () => {
+  it("counts a refusal, signed out or without access, and nothing else", () => {
+    expect(refusesReading({ kind: "anonymous" })).toBe(true);
+    expect(refusesReading({ kind: "unauthorized" })).toBe(true);
+    expect(refusesReading({ kind: "allowed" })).toBe(false);
+    expect(refusesReading({ kind: "unreachable", detail: "HTTP 502" })).toBe(false);
+  });
+});

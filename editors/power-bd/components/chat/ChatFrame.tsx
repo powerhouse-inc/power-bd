@@ -15,6 +15,8 @@ export interface ChatReads {
   space: string;
   /** The vault's name, or null when Settings names none. */
   vault: string | null;
+  /** The vault refused this person: the agent does not read it. */
+  vaultLocked: boolean;
 }
 
 interface Props {
@@ -53,10 +55,12 @@ export function ChatFrame({ reads, onClose, actions, children }: Props) {
           Reads {reads.space}
         </span>
         <span>
-          <Icon name="note" />
+          <Icon name={reads.vault !== null && reads.vaultLocked ? "lock" : "note"} />
           {reads.vault === null
             ? "No vault named in Settings"
-            : `and the vault ${reads.vault}`}
+            : reads.vaultLocked
+              ? `No access to the vault ${reads.vault}`
+              : `and the vault ${reads.vault}`}
         </span>
       </div>
       <div className="pb-chat__body">{children}</div>

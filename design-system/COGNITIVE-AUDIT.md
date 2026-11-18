@@ -951,7 +951,7 @@ The Lead and Opportunity audits stand. Found while testing every editor's contro
 
 Asked on 2026-11-18: the chat should "cite the sources it found just like the original chat inside the vault app", each citation opening the document, with "the title from the note or source docs, not ids". The reference was the vault chat's answer: a numbered chip after the claim, then "From the vault" with each document's number, kind and title, and "Found with 1 search of the vault."
 
-**1. Checkpoints.** *Vision:* the answer stays the anchor; a citation is a small numbered chip in the accent tint where its claim ends, and the row under a rule is quieter (a tertiary label, outlined chips). *Wayfinding:* a chip opens its document in the vault app in a new tab, at the address Connect gives it (localhost or a deployed Connect), so the conversation stays where it is. *Memory:* the vault chat's own chips (number, kind, title); numbered sources as in Perplexity and Notion AI. *Language:* the vault's words ("From the vault", "source", "MoC", "Found with 2 searches of the vault") and the document's title, never its id (the lexicon's "Note in the vault, or the note's title"). *Decision:* the reader checks a claim by its number, then opens the document; a citation that cannot open (an id the model made up, a BD record) is left out rather than offered. *Emotion:* every claim from the vault shows where it came from, and every chip opens.
+**1. Checkpoints.** *Vision:* the answer stays the anchor; a citation is a small numbered chip in the accent tint where its claim ends, and the row under a rule is quieter (a tertiary label, outlined chips). *Wayfinding:* a chip opens its document in the vault app in this tab, as the vault's own chat opens its citations, and Back returns to the conversation as it was; Ctrl- or ⌘-click opens a new tab. The address is the one Connect gives the document, on localhost or a deployed Connect (a fresh tab on the protected hosted site did not reach the document, so a plain click stays in the running app). *Memory:* the vault chat's own chips (number, kind, title); numbered sources as in Perplexity and Notion AI. *Language:* the vault's words ("From the vault", "source", "MoC", "Found with 2 searches of the vault") and the document's title, never its id (the lexicon's "Note in the vault, or the note's title"). *Decision:* the reader checks a claim by its number, then opens the document; a citation that cannot open (an id the model made up, a BD record) is left out rather than offered. *Emotion:* every claim from the vault shows where it came from, and every chip opens.
 
 **2. Concepts weighed:** links on the titles inside the prose (no new parts, but long titles break the sentence, and the model would have to write them), the vault's chips and row (chosen: the team already reads the vault's answers this way, and the user sent it as the reference), and cards on hover with the passage behind each claim (the vault's evidence pipeline, which the stack's panel cannot host).
 
@@ -960,8 +960,46 @@ Asked on 2026-11-18: the chat should "cite the sources it found just like the or
 **4. Mapping**
 
 - **Vision:** small accent chips at the claims; a quiet row under a rule.
-- **Wayfinding:** each chip opens its document in the vault app, beside the conversation.
+- **Wayfinding:** each chip opens its document in the vault app; Back returns to the conversation.
 - **Memory:** the vault chat's chips and row.
 - **Language:** the vault's words, and the document's title.
 - **Decision:** check by number, open by click; nothing offered that cannot open.
 - **Emotion:** every claim from the vault shows its source.
+
+### Coming back to where you were (built, `kit/last-spot/`, `components/Shell.tsx`; ticket 52)
+
+Asked on 2026-11-18, after a citation opened a note in the vault: "if i don't click back and actually open myself the bd app from connect, the chat is not open … make sure that even if I don't click back and click on the app icon to open it myself, then you should return to where i was last time."
+
+**1. Checkpoints.** *Vision:* the space opens on what the person last looked at, so the eye lands where it left off. *Wayfinding:* the place, the record open in it, and the agent (full view or beside) come back however the space is opened: from Connect's sidebar, with Back, after a reload or on another day. An address that names a place or a record still wins, so links and reloads open what they say; a reopened record takes the opening's history entry, so Back does not lead to an empty space. *Memory:* a workspace reopens where it was left, as Notion and a browser's tabs do. *Language:* nothing new to read. *Decision:* no step spent finding the conversation again. *Emotion:* the conversation was already kept, and now it is not hidden either.
+
+**2. Concepts weighed:** leaving it to Back (the complaint: the sidebar opened the Overview with the agent closed), bringing back only the agent (the place and the record the person was in would still be lost), and bringing back the place, the record and the agent (chosen: "return to where i was last time").
+
+**3. Implementation:** `kit/last-spot` (pure, tested) holds the spot (place, record, the agent beside or not, and where the full view was opened from) for each person in each space, in this browser, in memory when storage fails. `openingSpot` decides how a space opens: the address's place, else the person's spot, the agent's panel as they left it either way. The Shell reopens the record once the space's records are known, if it is still there, and keeps the spot after every move, never while Connect is still moving. No new parts.
+
+**4. Mapping**
+
+- **Vision:** the space opens on what the person last looked at.
+- **Wayfinding:** the sidebar, Back and a reload all lead back; links still open what they name.
+- **Memory:** a workspace reopens where it was left.
+- **Language:** nothing new.
+- **Decision:** no hunting for the conversation.
+- **Emotion:** nothing the person had open is lost.
+
+### The chat without access to the vault (built, `components/chat/useVaultLocked.ts`, `kit/access/`, `kit/chat/`; ticket 53)
+
+Asked on 2026-11-18: "what about if the user doesn't have access to the knowledge vault? how that works?" Before this, the server refused each of the agent's vault calls under the person's own identity, so nothing leaked. But the agent spent its turns on refusals with no words for them, and the chat still said it read the vault.
+
+**1. Checkpoints.** *Vision:* the vault row carries a lock and "no access" where it said "the vault", and the welcome stops promising the vault. *Wayfinding:* the side panel's line, Set-up's card and the welcome all say the same, where the person looks for what the agent reads. *Memory:* the wording the vault links on records already use ("You don't have access to this vault…"). *Language:* "access" and "an admin of the vault", the team's words (lexicon: Access, give access). *Decision:* the person learns before asking that research questions need access, and from whom. *Emotion:* no confusing errors, and no wondering whether the agent saw something it should not: it reads only the space.
+
+**2. Concepts weighed:** leaving the agent to meet refusals (errors mid-answer, and a chat still claiming the vault), hiding every mention of the vault (the person would not learn why research questions go unanswered, or that access can be asked for), and saying it plainly in the three places that already say what the agent reads (chosen).
+
+**3. Implementation:** `useVaultLocked` reads the vault's drive the way every view does (`probeDrive`), once per person and vault, on the server the directory places it. Only a refusal counts (`refusesReading`): while the answer is coming, or when the server cannot answer, nothing is hidden. A refused vault leaves out the vault's tools (`withoutVault`), tells the agent to say so and name who can give access (`vaultReadable: false`), and links no citations to it. The words: "No access to the vault <name>" (the side panel, with a lock), "no access" and the info line in Set-up, and the welcome ("Ask about your leads and funding. It reads this space. You don't have access to the vault, so it can't read it."). No new parts.
+
+**4. Mapping**
+
+- **Vision:** a lock and "no access" where the vault was named.
+- **Wayfinding:** the same answer wherever the agent's reading is shown.
+- **Memory:** the vault links' own wording.
+- **Language:** "access", "an admin of the vault".
+- **Decision:** research questions are known to need access before they are asked.
+- **Emotion:** no errors to decode, and nothing read that should not be.

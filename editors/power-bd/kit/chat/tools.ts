@@ -65,6 +65,8 @@ export interface OwnTools {
   reactor?: readonly ChatTool[];
   /** Power BD's own tools, such as the BD space's history. */
   bd?: readonly ChatTool[];
+  /** Leave the vault's tools out: the person may not read the vault. */
+  withoutVault?: boolean;
 }
 
 /** The tools the chat offers, each wrapped by the rules that apply to it. */
@@ -74,7 +76,7 @@ export function bdChatTools(
   own: OwnTools = {},
 ): ChatTool[] {
   const reactor = own.reactor ?? tools.filter((tool) => REACTOR_TOOLS.has(tool.name));
-  const vault = tools.filter(isVaultTool).map((tool) => routed(tool, drives));
+  const vault = own.withoutVault ? [] : tools.filter(isVaultTool).map((tool) => routed(tool, drives));
   const taken = new Set([...reactor, ...vault].map((tool) => tool.name));
   const bd = (own.bd ?? []).filter((tool) => !taken.has(tool.name));
   return [...reactor, ...vault, ...bd].map(redacted);

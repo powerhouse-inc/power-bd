@@ -22,6 +22,8 @@ export function useChatSetup(
   spaceName: string,
   vaultDriveId: string | null,
   autoApprove: boolean,
+  /** The vault refused this person: its tools are left out, and the agent says why. */
+  vaultLocked = false,
 ) {
   const { timeZone } = settingsOrDefaults(
     useBdSettingsDocumentsInSelectedDrive()?.[0]?.state.global,
@@ -38,9 +40,9 @@ export function useChatSetup(
       bdChatTools(
         await getHostAiTools(),
         { vaultDriveId, bdDriveId: driveId },
-        ownTools(backend, driveId, (address) => team.nameFor(address)),
+        { ...ownTools(backend, driveId, (address) => team.nameFor(address)), withoutVault: vaultLocked },
       ),
-    [vaultDriveId, driveId, backend, team],
+    [vaultDriveId, driveId, backend, team, vaultLocked],
   );
   const instructions = useMemo(
     () =>
@@ -52,8 +54,9 @@ export function useChatSetup(
         userName,
         autoApprove,
         mayChange,
+        vaultReadable: !vaultLocked,
       }),
-    [today, timeZone, driveId, spaceName, vaultDriveId, userName, autoApprove, mayChange],
+    [today, timeZone, driveId, spaceName, vaultDriveId, userName, autoApprove, mayChange, vaultLocked],
   );
   return { tools, instructions, userName };
 }

@@ -181,3 +181,14 @@ describe("readsTheVault: which of the chat's tools read the vault", () => {
     for (const name of ["search_vault", "read_document", "list_sources"]) expect(readsTheVault(name)).toBe(true);
   });
 });
+
+describe("bdChatTools: a vault the person may not read", () => {
+  it("leaves the vault's tools out, and keeps the space's", () => {
+    const tools = bdChatTools(
+      [hostTool("getDocument").tool, hostTool("search_vault", { vault: true }).tool],
+      DRIVES,
+      { bd: [hostTool("getRecentChanges").tool], withoutVault: true },
+    );
+    expect(tools.map((t) => t.name)).toEqual(["getDocument", "getRecentChanges"]);
+  });
+});
