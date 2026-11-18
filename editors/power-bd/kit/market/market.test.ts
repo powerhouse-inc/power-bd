@@ -1,3 +1,4 @@
+import * as m from "document-models/market/v1";
 import { describe, expect, it } from "vitest";
 import {
   marketCardLine,
@@ -141,5 +142,33 @@ describe("marketCardLine", () => {
       market([seg({ id: "a", serviceable: false })], { currency: null }),
     );
     expect(line).toBe("€1m · – · –");
+  });
+});
+
+describe("agrees with the reducer", () => {
+  it("lists nothing exactly when APPROVE_SIZE accepts the figures", () => {
+    const URL_ = "https://example.org/r";
+    const at = "2026-11-18T09:00:00.000Z";
+    const me = "0x1111111111111111111111111111111111111111";
+    const add = (id: string) => m.addSegment({ id, name: `Segment ${id}` });
+    const count = (id: string) => m.updateSegment({ id, accounts: 10, annualValue: 100, serviceable: true });
+    const src = (id: string, figure: "ACCOUNTS" | "ANNUAL_VALUE") =>
+      m.setSegmentSource({ id, figure, title: "Source", url: URL_ });
+    const cases = [
+      [],
+      [add("a")],
+      [add("a"), count("a")],
+      [add("a"), count("a"), src("a", "ACCOUNTS")],
+      [add("a"), count("a"), src("a", "ACCOUNTS"), src("a", "ANNUAL_VALUE")],
+      [add("a"), count("a"), src("a", "ACCOUNTS"), src("a", "ANNUAL_VALUE"), add("b")],
+      [add("a"), count("a"), src("a", "ACCOUNTS"), src("a", "ANNUAL_VALUE"), add("b"), count("b")],
+    ];
+    for (const actions of cases) {
+      const doc = actions.reduce((d, a) => m.reducer(d, a), m.utils.createDocument());
+      const findings = sizeChecks(doc.state.global);
+      const approved = m.reducer(doc, m.approveSize({ approvedBy: me, approvedAt: at }));
+      const refused = approved.operations.global.at(-1)?.error;
+      expect(findings.length === 0, `${actions.length} actions: ${String(refused)}`).toBe(!refused);
+    }
   });
 });
