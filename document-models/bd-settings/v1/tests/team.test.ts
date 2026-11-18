@@ -34,7 +34,7 @@ describe("the team list", () => {
 
     expect(document.operations.global[0].error).toBeUndefined();
     expect(document.state.global.teamMembers).toStrictEqual([
-      { id: "m1", name: "Jonas Brandt", address: JONAS, active: true },
+      { id: "m1", name: "Jonas Brandt", address: JONAS, active: true, email: null },
     ]);
   });
 
@@ -84,6 +84,7 @@ describe("the team list", () => {
       name: "Jonas B.",
       address: MIRA,
       active: true,
+      email: null,
     });
   });
 
@@ -139,5 +140,21 @@ describe("the team list", () => {
     expect(
       document.operations.global.slice(2).map((operation) => operation.error),
     ).toStrictEqual(["Team member m9 not found", "Team member m9 not found"]);
+  });
+});
+
+describe("a member's email, for the daily digest", () => {
+  const ADA = "0x1111111111111111111111111111111111111111";
+  it("keeps the email given when adding, changes it, keeps it when left out, and clears it", () => {
+    let doc = reducer(utils.createDocument(), addTeamMember({ id: "m1", name: "Ada", address: ADA, email: "ada@example.org" }));
+    expect(doc.state.global.teamMembers[0].email).toBe("ada@example.org");
+    doc = reducer(doc, updateTeamMember({ id: "m1", email: "ada@powerhouse.example" }));
+    expect(doc.state.global.teamMembers[0].email).toBe("ada@powerhouse.example");
+    doc = reducer(doc, updateTeamMember({ id: "m1", name: "Ada L." }));
+    expect(doc.state.global.teamMembers[0].email).toBe("ada@powerhouse.example");
+    doc = reducer(doc, updateTeamMember({ id: "m1", email: null }));
+    expect(doc.state.global.teamMembers[0].email).toBeNull();
+    doc = reducer(doc, addTeamMember({ id: "m2", name: "Bo", address: "0x2222222222222222222222222222222222222222" }));
+    expect(doc.state.global.teamMembers[1].email).toBeNull();
   });
 });

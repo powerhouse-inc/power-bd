@@ -30,6 +30,7 @@ export const initialGlobalState: BdSettingsGlobalState = {
   dueWindowDays: 14,
   vaultDriveId: null,
   retentionMonths: 12,
+  targets: [],
 };
 export const initialLocalState: BdSettingsLocalState = {};
 

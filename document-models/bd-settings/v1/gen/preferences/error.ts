@@ -2,7 +2,10 @@ export type ErrorCode =
   | "INVALID_TIME_ZONE"
   | "INVALID_DUE_WINDOW"
   | "VAULT_DRIVE_REQUIRED"
-  | "INVALID_RETENTION";
+  | "INVALID_RETENTION"
+  | "INVALID_QUARTER"
+  | "NEGATIVE_TARGET"
+  | "TARGET_NOT_FOUND";
 
 export interface ReducerError {
   errorCode: ErrorCode;
@@ -36,6 +39,27 @@ export class InvalidRetentionError extends Error implements ReducerError {
   }
 }
 
+export class InvalidQuarterError extends Error implements ReducerError {
+  errorCode = "INVALID_QUARTER" as ErrorCode;
+  constructor(message = "InvalidQuarterError") {
+    super(message);
+  }
+}
+
+export class NegativeTargetError extends Error implements ReducerError {
+  errorCode = "NEGATIVE_TARGET" as ErrorCode;
+  constructor(message = "NegativeTargetError") {
+    super(message);
+  }
+}
+
+export class TargetNotFoundError extends Error implements ReducerError {
+  errorCode = "TARGET_NOT_FOUND" as ErrorCode;
+  constructor(message = "TargetNotFoundError") {
+    super(message);
+  }
+}
+
 export const errors = {
   SetTimeZone: { InvalidTimeZoneError },
 
@@ -44,4 +68,8 @@ export const errors = {
   SetVaultDrive: { VaultDriveRequiredError },
 
   SetRetention: { InvalidRetentionError },
+
+  SetTarget: { InvalidQuarterError, NegativeTargetError },
+
+  RemoveTarget: { TargetNotFoundError },
 };

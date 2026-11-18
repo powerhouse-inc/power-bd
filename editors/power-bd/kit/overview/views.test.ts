@@ -85,8 +85,8 @@ describe("filterItems", () => {
 
 describe("ownerName", () => {
   const team = [
-    { id: "t1", name: "Ada Example", address: ALICE, active: true },
-    { id: "t2", name: "Bo Sample", address: BOB, active: false },
+    { id: "t1", name: "Ada Example", address: ALICE, active: true, email: null },
+    { id: "t2", name: "Bo Sample", address: BOB, active: false, email: null },
   ];
   it("resolves an active member", () =>
     expect(ownerName(ALICE, team)).toEqual({

@@ -20,10 +20,10 @@ export const documentModel: DocumentModelGlobalState = {
         },
         global: {
           schema:
-            "type BdSettingsState {\n  teamMembers: [TeamMember!]!\n  timeZone: String\n  dueWindowDays: Int!\n  vaultDriveId: PHID\n  retentionMonths: Int!\n}\n\ntype TeamMember {\n  id: OID!\n  name: String!\n  address: EthereumAddress!\n  active: Boolean!\n}",
+            "type BdSettingsState {\n  teamMembers: [TeamMember!]!\n  timeZone: String\n  dueWindowDays: Int!\n  vaultDriveId: PHID\n  retentionMonths: Int!\n  targets: [Target!]!\n}\n\ntype TeamMember {\n  id: OID!\n  name: String!\n  address: EthereumAddress!\n  active: Boolean!\n  email: EmailAddress\n}\n\ntype Target {\n  id: OID!\n  quarter: String!\n  metric: TargetMetric!\n  value: Float!\n}\n\nenum TargetMetric {\n  MEETINGS_HELD\n  PROPOSALS_SENT\n  VALUE_PROPOSED\n  LEADS_WON\n}\n",
           examples: [],
           initialValue:
-            '{"teamMembers":[],"timeZone":null,"dueWindowDays":14,"vaultDriveId":null,"retentionMonths":12}',
+            '{"teamMembers":[],"timeZone":null,"dueWindowDays":14,"vaultDriveId":null,"retentionMonths":12,"targets":[]}',
         },
       },
       modules: [
@@ -37,10 +37,10 @@ export const documentModel: DocumentModelGlobalState = {
               name: "ADD_TEAM_MEMBER",
               description: "Add a person to the team list",
               schema:
-                "input AddTeamMemberInput {\n  id: OID!\n  name: String!\n  address: EthereumAddress!\n}",
+                "input AddTeamMemberInput {\n  id: OID!\n  name: String!\n  address: EthereumAddress!\n  email: EmailAddress\n}",
               template: "Add a person to the team list",
               reducer:
-                'const { id, name, address } = action.input;\nif (state.teamMembers.some((member) => member.id === id))\n  throw new DuplicateTeamMemberIdError(`Team member ${id} already exists`);\nif (\n  state.teamMembers.some(\n    (member) => member.address.toLowerCase() === address.toLowerCase(),\n  )\n)\n  throw new DuplicateTeamMemberAddressError(\n    `Another team member already has the address ${address}`,\n  );\nif (name.trim() === "")\n  throw new TeamMemberNameRequiredError("A team member needs a name");\nstate.teamMembers.push({\n  id: action.input.id,\n  name: action.input.name,\n  address: action.input.address,\n  active: true,\n});',
+                'const { id, name, address } = action.input;\nif (state.teamMembers.some((member) => member.id === id))\n  throw new DuplicateTeamMemberIdError(`Team member ${id} already exists`);\nif (\n  state.teamMembers.some(\n    (member) => member.address.toLowerCase() === address.toLowerCase(),\n  )\n)\n  throw new DuplicateTeamMemberAddressError(\n    `Another team member already has the address ${address}`,\n  );\nif (name.trim() === "")\n  throw new TeamMemberNameRequiredError("A team member needs a name");\nstate.teamMembers.push({\n  id: action.input.id,\n  name: action.input.name,\n  address: action.input.address,\n  active: true,\n  email: action.input.email ?? null,\n});',
               errors: [
                 {
                   id: "11f16279-7321-42ca-b5fc-130e9c156930",
@@ -72,10 +72,10 @@ export const documentModel: DocumentModelGlobalState = {
               name: "UPDATE_TEAM_MEMBER",
               description: "Change a team member's name or address",
               schema:
-                "input UpdateTeamMemberInput {\n  id: OID!\n  name: String\n  address: EthereumAddress\n}",
+                "input UpdateTeamMemberInput {\n  id: OID!\n  name: String\n  address: EthereumAddress\n  email: EmailAddress\n}",
               template: "Change a team member's name or address",
               reducer:
-                'const { id, name, address } = action.input;\nconst member = state.teamMembers.find((candidate) => candidate.id === id);\nif (!member)\n  throw new TeamMemberNotFoundError(`Team member ${id} not found`);\nif (\n  address != null &&\n  state.teamMembers.some(\n    (other) =>\n      other.id !== id &&\n      other.address.toLowerCase() === address.toLowerCase(),\n  )\n)\n  throw new DuplicateTeamMemberAddressError(\n    `Another team member already has the address ${address}`,\n  );\nif (name != null && name.trim() === "")\n  throw new TeamMemberNameRequiredError("A team member needs a name");\nif (name != null) member.name = name;\nif (address != null) member.address = address;',
+                'const { id, name, address } = action.input;\nconst member = state.teamMembers.find((candidate) => candidate.id === id);\nif (!member)\n  throw new TeamMemberNotFoundError(`Team member ${id} not found`);\nif (\n  address != null &&\n  state.teamMembers.some(\n    (other) =>\n      other.id !== id &&\n      other.address.toLowerCase() === address.toLowerCase(),\n  )\n)\n  throw new DuplicateTeamMemberAddressError(\n    `Another team member already has the address ${address}`,\n  );\nif (name != null && name.trim() === "")\n  throw new TeamMemberNameRequiredError("A team member needs a name");\nif (name != null) member.name = name;\nif (address != null) member.address = address;\nif (action.input.email !== undefined) member.email = action.input.email ?? null;',
               errors: [
                 {
                   id: "c71c4b90-765a-47df-8805-8ad15de6c119",
@@ -231,6 +231,56 @@ export const documentModel: DocumentModelGlobalState = {
                   code: "INVALID_RETENTION",
                   description:
                     "The retention period must be at least one month",
+                  template: "",
+                },
+              ],
+              examples: [],
+              scope: "global",
+            },
+            {
+              id: "9694b405-6756-477d-8cb1-1687ef389b7e",
+              name: "SET_TARGET",
+              description:
+                "Set the target for one measure in one quarter; a target already set for both is changed, keeping its id",
+              schema:
+                "input SetTargetInput {\n  id: OID!\n  quarter: String!\n  metric: TargetMetric!\n  value: Float!\n}",
+              template:
+                "Set the target for one measure in one quarter; a target already set for both is changed, keeping its id",
+              reducer:
+                'const { id, quarter, metric, value } = action.input;\nif (!/^\\d{4}-Q[1-4]$/.test(quarter))\n  throw new InvalidQuarterError("A quarter is written like 2026-Q4");\nif (value < 0) throw new NegativeTargetError("A target can\'t be negative");\n// Settings saved before targets existed have no list yet.\nif (!(state.targets as typeof state.targets | undefined)) state.targets = [];\nconst existing = state.targets.find((t) => t.quarter === quarter && t.metric === metric);\nif (existing) existing.value = value;\nelse state.targets.push({ id, quarter, metric, value });',
+              errors: [
+                {
+                  id: "1ad04674-2c05-4872-970a-5f2b7cdfbd75",
+                  name: "InvalidQuarterError",
+                  code: "INVALID_QUARTER",
+                  description: "The quarter is not written like 2026-Q4",
+                  template: "",
+                },
+                {
+                  id: "07961c04-0ead-4f27-8e42-f5083d107442",
+                  name: "NegativeTargetError",
+                  code: "NEGATIVE_TARGET",
+                  description: "The target is below zero",
+                  template: "",
+                },
+              ],
+              examples: [],
+              scope: "global",
+            },
+            {
+              id: "0715cf61-d51a-4f25-98c6-a5968197c2f3",
+              name: "REMOVE_TARGET",
+              description: "Remove a target",
+              schema: "input RemoveTargetInput {\n  id: OID!\n}",
+              template: "Remove a target",
+              reducer:
+                "// Settings saved before targets existed have no list yet.\nconst targets = (state.targets as typeof state.targets | undefined) ?? [];\nconst index = targets.findIndex((t) => t.id === action.input.id);\nif (index === -1) throw new TargetNotFoundError(`Target ${action.input.id} not found`);\ntargets.splice(index, 1);",
+              errors: [
+                {
+                  id: "d8cbfea0-6399-49dd-a39b-a3a4dfe7cf90",
+                  name: "TargetNotFoundError",
+                  code: "TARGET_NOT_FOUND",
+                  description: "No target has this id",
                   template: "",
                 },
               ],

@@ -25,6 +25,7 @@ type BdSettingsState {
   dueWindowDays: Int!
   vaultDriveId: PHID
   retentionMonths: Int!
+  targets: [Target!]!
 }
 
 type TeamMember {
@@ -32,6 +33,21 @@ type TeamMember {
   name: String!
   address: EthereumAddress!
   active: Boolean!
+  email: EmailAddress
+}
+
+type Target {
+  id: OID!
+  quarter: String!
+  metric: TargetMetric!
+  value: Float!
+}
+
+enum TargetMetric {
+  MEETINGS_HELD
+  PROPOSALS_SENT
+  VALUE_PROPOSED
+  LEADS_WON
 }
 
 # team
@@ -40,12 +56,14 @@ input AddTeamMemberInput {
   id: OID!
   name: String!
   address: EthereumAddress!
+  email: EmailAddress
 }
 
 input UpdateTeamMemberInput {
   id: OID!
   name: String
   address: EthereumAddress
+  email: EmailAddress
 }
 
 input DeactivateTeamMemberInput {
@@ -72,4 +90,15 @@ input SetVaultDriveInput {
 
 input SetRetentionInput {
   months: Int!
+}
+
+input SetTargetInput {
+  id: OID!
+  quarter: String!
+  metric: TargetMetric!
+  value: Float!
+}
+
+input RemoveTargetInput {
+  id: OID!
 }

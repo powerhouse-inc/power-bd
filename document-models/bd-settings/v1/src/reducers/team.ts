@@ -26,6 +26,7 @@ export const bdSettingsTeamOperations: BdSettingsTeamOperations = {
       name: action.input.name,
       address: action.input.address,
       active: true,
+      email: action.input.email ?? null,
     });
   },
   updateTeamMemberOperation(state, action) {
@@ -48,6 +49,8 @@ export const bdSettingsTeamOperations: BdSettingsTeamOperations = {
       throw new TeamMemberNameRequiredError("A team member needs a name");
     if (name != null) member.name = name;
     if (address != null) member.address = address;
+    if (action.input.email !== undefined)
+      member.email = action.input.email ?? null;
   },
   deactivateTeamMemberOperation(state, action) {
     const member = state.teamMembers.find(

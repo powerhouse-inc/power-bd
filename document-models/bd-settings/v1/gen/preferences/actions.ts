@@ -4,8 +4,10 @@
  */
 import type { Action } from "document-model";
 import type {
+  RemoveTargetInput,
   SetDueWindowInput,
   SetRetentionInput,
+  SetTargetInput,
   SetTimeZoneInput,
   SetVaultDriveInput,
 } from "../types.js";
@@ -26,9 +28,19 @@ export type SetRetentionAction = Action & {
   type: "SET_RETENTION";
   input: SetRetentionInput;
 };
+export type SetTargetAction = Action & {
+  type: "SET_TARGET";
+  input: SetTargetInput;
+};
+export type RemoveTargetAction = Action & {
+  type: "REMOVE_TARGET";
+  input: RemoveTargetInput;
+};
 
 export type BdSettingsPreferencesAction =
   | SetTimeZoneAction
   | SetDueWindowAction
   | SetVaultDriveAction
-  | SetRetentionAction;
+  | SetRetentionAction
+  | SetTargetAction
+  | RemoveTargetAction;
