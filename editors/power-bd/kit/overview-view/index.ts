@@ -113,12 +113,17 @@ export {
   relativeDay,
 } from "./when.js";
 export {
+  LEAD_STATUSES,
   canMove,
   cardMove,
+  leadMoveCard,
+  leadStatusMove,
+  leadStatusTargets,
   moveCards,
   moveHint,
   moveReassurance,
   moveTargets,
+  type ColumnTarget,
   type MoveCard,
   type MoveOption,
   type MoveOutcome,

@@ -1,19 +1,21 @@
 import { VOCABULARY } from "../../../../design-system/vocabulary.js";
-import type { CommonStage } from "../../kit/overview/index.js";
-import { moveHint, type MoveTarget } from "../../kit/overview-view/index.js";
+import { moveHint, type ColumnTarget } from "../../kit/overview-view/index.js";
 
 /**
- * The stages a card can be moved to without dragging, listed inside the card:
- * each says what it does, or why it cannot take the card. The card's own stage
- * shows only when it has another status to offer.
+ * The columns a card can be moved to without dragging, listed inside the card:
+ * each says what it does, or why it cannot take the card. The card's own
+ * column shows only when it has another status to offer. Columns are the
+ * Overview's stages unless the board names its own (the Leads board's statuses).
  */
-export function MoveList({
+export function MoveList<K extends string>({
   targets,
+  terms = VOCABULARY.commonStage,
   onMove,
   onClose,
 }: {
-  targets: MoveTarget[];
-  onMove: (stage: CommonStage) => void;
+  targets: ColumnTarget<K>[];
+  terms?: readonly { value: string; label: string; tone: string }[];
+  onMove: (column: K) => void;
   onClose: () => void;
 }) {
   return (
@@ -46,7 +48,7 @@ export function MoveList({
           (t) => t.outcome.kind !== "stay" && targets.some((x) => x.accepts),
         )
         .map((t, i) => {
-          const term = VOCABULARY.commonStage.find((s) => s.value === t.stage);
+          const term = terms.find((s) => s.value === t.stage);
           return (
             <button
               key={t.stage}

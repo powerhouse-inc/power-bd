@@ -1,14 +1,9 @@
 import { ProposalBadge } from "../../components/shared/ProposalBadge.js";
-import {
-  actions as leadActions,
-} from "document-models/lead";
-import {
-  actions as opportunityActions,
-} from "document-models/opportunity";
 import { useRef, useState } from "react";
 import { VOCABULARY } from "../../../../design-system/vocabulary.js";
 import { Icon } from "../../components/Icon.js";
 import { ErrorLine } from "../../components/shared/ErrorLine.js";
+import { moveAction } from "../../components/shared/board/moveAction.js";
 import { fmtDay } from "../../components/shared/relationship/common.js";
 import type {
   Board,
@@ -56,36 +51,16 @@ const plain = <S,>(d: { header: { id: string }; state: { global: S } }) => ({
   state: d.state.global,
 });
 
-/** The action that reaches a move's status, as the record pages send it. */
-function moveAction(option: MoveOption, reason: string | undefined) {
-  const at = new Date().toISOString();
-  switch (option.act) {
-    case "LEAD_STATUS":
-      return leadActions.setLeadStatus({
-        status: option.status,
-        reason,
-        changedAt: at,
-      });
-    case "PARK_LEAD":
-      return leadActions.parkLead({ reason: reason ?? "", parkedAt: at });
-    case "UNPARK_LEAD":
-      return leadActions.unparkLead({});
-    case "OPPORTUNITY_STATUS":
-      return opportunityActions.setOpportunityStatus({
-        status: option.status,
-        reason,
-        changedAt: at,
-      });
-  }
-}
-
 /** A card in the hand, with what each stage would do to it. */
 type Drag = { key: string; targets: MoveTarget[]; away: boolean };
 /** A move that waits for an answer, in the stage the card was put on. */
 type Ask = {
   entry: BoardEntry;
   stage: CommonStage;
-  outcome: Extract<MoveOutcome, { kind: "choose" | "reason" | "decision" }>;
+  outcome: Extract<
+    MoveOutcome,
+    { kind: "choose" | "reason" | "confirm" | "decision" }
+  >;
 };
 
 /** One relationship: its kind and owner, name, organisation, next step, status, value, what slips and when it last changed. */

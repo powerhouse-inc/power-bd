@@ -1,4 +1,5 @@
-import { NextStep, NextStepSignal } from "./NextStep.js";
+import { LeadsBoard } from "./LeadsBoard.js";
+import { NextStep } from "./NextStep.js";
 import { useSetSelectedNode } from "@powerhousedao/reactor-browser";
 import { ErrorLine } from "../../components/shared/ErrorLine.js";
 import { useState } from "react";
@@ -105,64 +106,13 @@ export function LeadsView({ driveId }: { driveId: string }) {
             </div>
           </div>
           {asBoard ? (
-            <div className="pb-board">
-              {VOCABULARY.leadStatus.map((st) => {
-                const inCol = leads.filter(
-                  (d) => d.state.global.status === st.value,
-                );
-                return (
-                  <div className="pb-board__col" key={st.value}>
-                    <div className="pb-board__head">
-                      <span className={`pb-tag pb-tag--${st.tone}`}>
-                        {st.label}
-                      </span>
-                      <span>{inCol.length}</span>
-                    </div>
-                    {inCol.map((d) => {
-                      const s = d.state.global;
-                      const kind = VOCABULARY.relationshipKind.find(
-                        (k) => k.value === s.kind,
-                      );
-                      const badge = badges[d.header.id];
-                      return (
-                        <div
-                          className="pb-card pb-clickable"
-                          key={d.header.id}
-
-                          onClick={() => select(d.header.id)}
-                        >
-                          <div className="pb-card__title">
-                            {kind?.icon ? <Icon name={kind.icon} /> : null}
-                            {s.name || "Untitled lead"}
-                          </div>
-                          <div className="pb-card__row">
-                            <span>{kind?.label ?? "Kind not set"}</span>
-                          </div>
-                          <div className="pb-card__row">
-                            <NextStep next={nextAction(s, today)} inCard />
-                          </div>
-                          {badge ? (
-                            <div className="pb-card__row">
-                              <ProposalBadge badge={badge} />
-                            </div>
-                          ) : null}
-                          <div className="pb-card__foot">
-                            <span className="pb-small">
-                              {s.owner ? (
-                                team.ownerName(s.owner)
-                              ) : (
-                                <span className="pb-faint">No owner</span>
-                              )}
-                            </span>
-                          </div>
-                          <NextStepSignal next={nextAction(s, today)} />
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })}
-            </div>
+            <LeadsBoard
+              leads={leads}
+              badges={badges}
+              today={today}
+              ownerName={team.ownerName}
+              onOpen={select}
+            />
           ) : (
             <div className="pb-table-wrap">
               <table className="pb-table">
