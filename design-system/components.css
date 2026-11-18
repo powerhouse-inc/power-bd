@@ -2184,6 +2184,7 @@ a.pb-ref__title:focus-visible { outline: 2px solid var(--pb-accent); outline-off
 .pb-cal__day:nth-child(7n - 1) > .pb-ask { right: var(--pb-s-1); left: auto; }
 .pb-cal__title { margin: 0; font-size: var(--pb-fs-lg); font-weight: var(--pb-fw-semibold); }
 
+/* =============================================================================
    Market: the list of markets, the three totals, a number's source, and the
    market map (two named axes, organisations as dots, Powerhouse distinct).
    ============================================================================= */
