@@ -108,7 +108,7 @@ Record pages blend the same way:
 |---|---|
 | Vision | `.pb-attention` panel (the anchor); red and orange reason lines on slipping cards and rows (`.pb-signal`); quiet summary tiles (`.pb-tiles`), neutral and smaller than the attention count; one charcoal primary per view |
 | Wayfinding | `.pb-path` status path with gates; `.pb-peek` side peek; breadcrumbs; motion that matches space: dialogs rise, the peek slides from the right, menus drop, toasts rise |
-| Memory | Gear for settings, bin for delete; `.pb-search-trigger` with ⌘K; `.pb-save-state` (Saved, Saving, Offline); undo in toasts; inline validation |
+| Memory | Gear for settings, bin for delete; `.pb-search-trigger` with ⌘K; `.pb-save-state` (Saved, Saving, Offline, Can't reach the server); undo in toasts; inline validation |
 | Language | The lexicon below; `vocabulary.ts` labels; `.pb-disclosure` for tiered detail; tooltips naming time zones in full |
 | Decision | `.pb-next` bar with the next action; every slipping reason carries its fix (`vocabulary.ts`, `action`); prerequisites-first go-or-no-go dialog; `.pb-hint` help at the point of decision |
 | Emotion | `.pb-reassure` lines at risky actions; `.pb-ring` readiness; check and celebration motion; "All caught up" |
@@ -179,7 +179,7 @@ The frame every place and every record sits in. It has no content of its own yet
 3. **Memory and semantics.** Notion's layout: sidebar left, search top-right with ⌘K, gear for Settings, save state beside search. The search trigger is shown but disabled, with a title that says when it arrives, rather than a control that does nothing.
 4. **Language.** Place names and counts only, from the lexicon. Folders and singleton records the app creates on first open are never named in the UI. The empty states say what the place will hold ("Leads will appear here"), never how it is stored.
 5. **Decision making.** No decisions in the shell. The only choice is where to go, and the sidebar is the only way to make it.
-6. **Emotion.** The save state always shows: "Setting up" while the first-open set-up runs, "Up to date" after, "Offline" when the connection drops. Opening the app twice changes nothing, so nothing can be lost or doubled.
+6. **Emotion.** The save state always shows: "Setting up" while the first-open set-up runs, "Up to date" after, "Offline" when the connection drops, "Can't reach the server" when a shared drive's server did not answer the last read. Opening the app twice changes nothing, so nothing can be lost or doubled.
 
 **2. Concepts weighed**
 
@@ -911,3 +911,21 @@ The Lead and Opportunity audits stand. Found while testing every editor's contro
 - **Language:** the panel's and Coming up's words.
 - **Decision:** decide-by dates can be set.
 - **Emotion:** no remove-and-re-add.
+
+### A shared space reads from its server (built, `components/data/`, `kit/live-drive/`, `components/serverWrites.ts`; tickets 48, 49)
+
+**1. Checkpoints.** *Vision:* nothing moves on screen; records come from the space's server, so a member's first visit shows the space as it is instead of an empty one. *Wayfinding:* unchanged. *Memory:* the same controls; a change made by a colleague appears within seconds without reloading. *Language:* one new save state, "Can't reach the server", in the save state's place and look. *Decision:* a refused change says why beside the control, as before, instead of waiting unsent. *Emotion:* nothing a member does can leave changes stuck; a member's record is accepted like the owner's.
+
+**2. Concepts weighed:** swapping Connect's client for the whole page as the vault does (two packages would fight over it), syncing through Connect and repairing refusals (the server refuses whole batches), and the app keeping its own live copy of a shared space (chosen).
+
+**3. Implementation:** a live copy per space read from its server and kept current by the server's change feed, with a slow re-read as a safety net; writes go to the server and the reply updates the copy at once. A space kept only in the browser stays on Connect.
+
+**4. Mapping**
+
+- **Vision:** the place shows the space's content on a member's first visit.
+- **Wayfinding:** no change.
+- **Memory:** colleagues' changes appear without a reload.
+- **Language:** "Can't reach the server" joins the save states.
+- **Decision:** refusals are named where the change was made.
+- **Emotion:** no change waits unsent.
+

@@ -1,4 +1,4 @@
-import { dispatchActions, useUser } from "@powerhousedao/reactor-browser";
+import { useUser } from "@powerhousedao/reactor-browser";
 import { generateId } from "document-model";
 import type { Action } from "document-model";
 import {
@@ -28,6 +28,7 @@ import {
   parseAmount,
 } from "../../../kit/first-run/index.js";
 import { useContactDocumentsInSelectedDrive } from "../../../components/useDriveDocuments.js";
+import { useDriveWrite } from "../../../components/data/driveData.js";
 
 type Kind = "lead" | "opportunity";
 type Problems = ReturnType<typeof missingFields> & {
@@ -57,6 +58,7 @@ const WORDS = {
 
 /** Step 5: the first lead or funding opportunity, with an owner and a next step. */
 export function RelationshipStep({ driveId }: { driveId: string }) {
+  const { dispatchTo } = useDriveWrite();
   const contacts = useContactDocumentsInSelectedDrive() ?? [];
   const team = useTeam();
   const mine = useUser()?.address;
@@ -101,7 +103,7 @@ export function RelationshipStep({ driveId }: { driveId: string }) {
     if (!id) return null;
     let failed: string | null = null;
     try {
-      await dispatchActions(steps, id, (errors) => {
+      await dispatchTo(steps, id, (errors) => {
         failed = errors[0]?.message ?? words.failure;
       });
     } catch (e) {

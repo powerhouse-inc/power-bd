@@ -2,7 +2,7 @@ import { useUser } from "@powerhousedao/reactor-browser";
 import { generateId } from "document-model";
 import {
   actions,
-  useBdSettingsDocumentById,
+  isBdSettingsDocument,
 } from "document-models/bd-settings";
 import { useState } from "react";
 import { Icon } from "../../../components/Icon.js";
@@ -15,6 +15,7 @@ import {
   isAddress,
   memberName,
 } from "../../../kit/settings/index.js";
+import { useRecordById } from "../../../components/data/driveData.js";
 
 /** Step 1: the people who can own work, added one at a time. */
 export function TeamStep({
@@ -27,7 +28,7 @@ export function TeamStep({
   onStay: () => void;
   onNext: () => void;
 }) {
-  const [document, dispatch] = useBdSettingsDocumentById(settingsId);
+  const [document, dispatch] = useRecordById(settingsId, isBdSettingsDocument);
   const mine = useUser()?.address;
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");

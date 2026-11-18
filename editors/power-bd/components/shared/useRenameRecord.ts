@@ -1,18 +1,14 @@
-import {
-  renameDriveNode,
-  useNodesInSelectedDrive,
-  useSelectedDriveId,
-} from "@powerhousedao/reactor-browser";
+import { useDriveNodes, useDriveWrite, type DriveWrite } from "../data/driveData.js";
 import { useEffect } from "react";
 import { nameToSync } from "../../kit/record-name/index.js";
 
 /** The name last asked for per record, so one change is sent once however many parts of the page notice it. */
 const asked = new Map<string, string>();
 
-function rename(driveId: string, documentId: string, name: string) {
+function rename(write: DriveWrite, documentId: string, name: string) {
   if (asked.get(documentId) === name) return;
   asked.set(documentId, name);
-  renameDriveNode(driveId, documentId, name).catch(() => {
+  write.rename(documentId, name).catch(() => {
     /* the page already shows the saved name; the entry catches up on the next save or opening */
     asked.delete(documentId);
   });
@@ -21,14 +17,14 @@ function rename(driveId: string, documentId: string, name: string) {
 /**
  * Keeps a record's entry in the team's space (and the document's own name) in step with the name
  * its page shows. Call the returned function after the page's name or title was saved.
- * `renameDriveNode` renames the entry and the document together.
+ * The rename covers the entry and the document together, on the drive's server for a shared drive.
  */
 export function useRenameRecord(documentId: string) {
-  const driveId = useSelectedDriveId();
+  const write = useDriveWrite();
   return (name: string) => {
     const clean = name.trim();
-    if (!driveId || !clean) return;
-    rename(driveId, documentId, clean);
+    if (!clean) return;
+    rename(write, documentId, clean);
   };
 }
 
@@ -43,14 +39,11 @@ export function useNameInStep(
   documentName: string | null | undefined,
   title: string | null,
 ) {
-  const driveId = useSelectedDriveId();
-  const entryName = useNodesInSelectedDrive()?.find(
-    (n) => n.id === documentId,
-  )?.name;
+  const write = useDriveWrite();
+  const entryName = useDriveNodes()?.find((n) => n.id === documentId)?.name;
   const name = nameToSync(title, [documentName, entryName]);
   useEffect(() => {
     // Only a record that has an entry in this space; one opened from elsewhere is left alone.
-    if (driveId && name && entryName !== undefined)
-      rename(driveId, documentId, name);
-  }, [driveId, documentId, name, entryName]);
+    if (name && entryName !== undefined) rename(write, documentId, name);
+  }, [write, documentId, name, entryName]);
 }

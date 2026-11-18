@@ -1,18 +1,17 @@
 import {
-  useInvestorListDocumentById,
+  isInvestorListDocument,
 } from "document-models/investor-list";
 import { EmptyPlace } from "../../components/EmptyPlace.js";
 import { useInvestorRowRequest } from "../../components/PlaceContext.js";
 import { InvestorListDetail } from "../../records/investor-list/InvestorListDetail.js";
 import { useInvestorListDocumentsInSelectedDrive } from "../../components/useDriveDocuments.js";
+import { useRecordById } from "../../components/data/driveData.js";
 
 /** The Investors place: the drive's one investor list. */
 export function InvestorsView() {
   const lists = useInvestorListDocumentsInSelectedDrive();
   const asked = useInvestorRowRequest();
-  const [document, dispatch] = useInvestorListDocumentById(
-    lists?.[0]?.header.id,
-  );
+  const [document, dispatch] = useRecordById(lists?.[0]?.header.id, isInvestorListDocument);
   if (!document || !dispatch) {
     return (
       <div className="pb-page pb-page--wide">

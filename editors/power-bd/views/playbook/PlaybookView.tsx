@@ -1,18 +1,18 @@
-import { useNodesInSelectedDrive } from "@powerhousedao/reactor-browser";
-import { usePlaybookDocumentById } from "document-models/playbook";
+import { isPlaybookDocument } from "document-models/playbook";
+import { useDriveNodes, useRecordById } from "../../components/data/driveData.js";
 import { EmptyPlace } from "../../components/EmptyPlace.js";
 import { PlaybookDetail } from "../../records/playbook/PlaybookDetail.js";
 
 /** The Playbook place: the drive's one playbook. */
 export function PlaybookView() {
-  const nodes = useNodesInSelectedDrive();
+  const nodes = useDriveNodes();
   const node = nodes?.find(
     (n) =>
       n.kind === "file" &&
       "documentType" in n &&
       n.documentType === "powerbd/playbook",
   );
-  const [document, dispatch] = usePlaybookDocumentById(node?.id);
+  const [document, dispatch] = useRecordById(node?.id, isPlaybookDocument);
   if (!document || !dispatch)
     return (
       <div className="pb-page pb-page--wide">

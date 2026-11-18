@@ -1,7 +1,4 @@
-import {
-  dispatchActions,
-  type DocumentDispatch,
-} from "@powerhousedao/reactor-browser";
+import { type DocumentDispatch } from "@powerhousedao/reactor-browser";
 import {
   actions,
   type ProposalAction,
@@ -22,6 +19,7 @@ import {
 } from "../../kit/proposal-view/index.js";
 import { FilePicker, FileSlot, type useAttach } from "./Files.js";
 import type { Send } from "./tabs/types.js";
+import { useDriveWrite } from "../../components/data/driveData.js";
 
 const PERSON_BUTTON = "pb-btn pb-btn--primary";
 
@@ -129,6 +127,7 @@ export function StatusPanel({
   findings: number;
   lapsed: boolean;
 }) {
+  const { dispatchTo } = useDriveWrite();
   const team = useTeam();
   const status = useRun();
   const [answerOption, setAnswerOption] = useState("");
@@ -153,7 +152,7 @@ export function StatusPanel({
 
   const supersedeOld = (e: Parameters<Send>[1]) => {
     if (s.revisesProposalId)
-      void dispatchActions(
+      void dispatchTo(
         actions.supersedeProposal({ supersededByProposalId: documentId }),
         s.revisesProposalId,
         e,

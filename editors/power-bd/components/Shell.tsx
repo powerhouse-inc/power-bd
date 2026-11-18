@@ -1,11 +1,7 @@
 import {
   addDocument,
-  addFolder,
   dispatchActions,
   loadDriveNodes,
-  useDocumentSafe,
-  useDriveById,
-  useNodesInSelectedDrive,
   useSelectedNode,
   useSetSelectedNode,
 } from "@powerhousedao/reactor-browser";
@@ -27,7 +23,7 @@ import {
 } from "../kit/search/index.js";
 import { driveIconToSet } from "../kit/app-icon.js";
 import { countsByPlace, planDriveSetup } from "../kit/drive-plan.js";
-import { setUpDrive } from "../kit/init-drive.js";
+import { setUpDrive, type SetupDeps } from "../kit/init-drive.js";
 import {
   hashOf,
   placeById,
@@ -44,6 +40,16 @@ import {
 } from "./PlaceContext.js";
 import { SEARCH_PROVIDERS } from "./search/providers.js";
 import { SearchPalette } from "./search/SearchPalette.js";
+import { readServerDrive } from "./access/accessApi.js";
+import {
+  useDriveBackend,
+  useDriveIcon,
+  useDriveNodes,
+  useDriveProblem,
+  useRecordSafe,
+} from "./data/driveData.js";
+import { addTopFolders } from "./driveSetup.js";
+import { addFoldersOnServer, createOnServer, setIconOnServer } from "./serverWrites.js";
 import { useCreateRecord } from "./shared/useCreateRecord.js";
 import { Sidebar } from "./Sidebar.js";
 import { ShellProvider } from "./ShellContext.js";
@@ -111,21 +117,24 @@ export function Shell({
   const [cameFrom, setCameFrom] = useState<{ place: PlaceId; recordId?: string }>();
   const [presentation, setPresentation] = useChatPresentation();
   const online = useOnline();
-  const nodes = useNodesInSelectedDrive();
+  const nodes = useDriveNodes();
+  // A shared drive whose server did not answer the last read: say so, not "Up to date".
+  const problem = useDriveProblem();
   const selected = useSelectedNode();
   const setSelectedNode = useSetSelectedNode();
 
   // The drive's icon as the set-up finds it: an icon-less drive gets the app's own.
-  const [drive] = useDriveById(driveId);
-  const icon = drive.state.global.icon;
+  const icon = useDriveIcon(driveId);
   const driveIcon = useRef(icon);
   useEffect(() => {
     driveIcon.current = icon;
   }, [icon]);
 
   // What the drive is missing, as far as the records known here show. A space
-  // set up before asks the server nothing on opening; one missing something
-  // is set up from the server's tree, so a stale copy cannot cause duplicates.
+  // set up before asks nothing on opening. One that looks incomplete asks the
+  // drive's home: its server for a shared drive, so a member whose copy is
+  // still arriving makes nothing (the server would refuse the second set),
+  // and this browser for a drive kept only here. Unplaced, nothing is made.
   const known = nodes !== undefined;
   const plan = known ? planDriveSetup(nodes) : undefined;
   const missing = plan !== undefined && plan.folders.length + plan.singletons.length > 0;
@@ -140,22 +149,35 @@ export function Shell({
   useEffect(() => {
     if (ready) loadedOnce.add(driveId);
   }, [ready, driveId]);
+  const backend = useDriveBackend();
   useEffect(() => {
-    if (!needsSetUp) return;
-    setUpDrive(driveId, {
-      loadNodes: () => loadDriveNodes(driveId, { refresh: true }),
-      addFolder: (name) => addFolder(driveId, name),
-      addDocument: (name, type) => addDocument(driveId, name, type),
-      icon: {
-        current: driveIcon.current,
-        set: (icon) => dispatchActions(setDriveIcon({ icon }), driveId),
-      },
-    })
+    if (!needsSetUp || !backend) return;
+    // A shared drive is set up on its server, where a member's writes are
+    // checked against the drive; one kept only here, through Connect.
+    const server = backend.kind === "server" ? backend : undefined;
+    const deps: SetupDeps = server
+        ? {
+            loadDrive: () => readServerDrive(server.base, driveId),
+            addFolders: (names) => addFoldersOnServer(server.base, driveId, names),
+            addDocument: (name, type) => createOnServer(server.base, driveId, name, type),
+            setIcon: (icon) => setIconOnServer(server.base, driveId, icon),
+          }
+        : {
+            loadDrive: async () => ({
+              nodes: await loadDriveNodes(driveId, { refresh: true }),
+              icon: driveIcon.current,
+            }),
+            addFolders: (names) => addTopFolders(driveId, names),
+            addDocument: (name, type) => addDocument(driveId, name, type),
+            setIcon: (icon) => dispatchActions(setDriveIcon({ icon }), driveId),
+          };
+    setUpDrive(driveId, deps)
+      .then((made) => (server && made > 0 ? server.live.syncTree() : undefined))
       .catch((error: unknown) => {
         console.error("Power BD: drive set-up failed", error);
         setSetUpFailed(driveId);
       });
-  }, [driveId, needsSetUp]);
+  }, [driveId, needsSetUp, backend]);
 
   // ⌘K or Ctrl+K opens search from anywhere in the app, and closes it again.
   useEffect(() => {
@@ -197,7 +219,9 @@ export function Shell({
 
   const saveState: SaveState = !online
     ? "offline"
-    : missing && setUpFailed !== driveId
+    : problem
+      ? "unreachable"
+      : missing && setUpFailed !== driveId
       ? "setting-up"
       : "up-to-date";
   const current = placeById(place);
@@ -207,7 +231,7 @@ export function Shell({
   const besideOpen = chatBeside && !atAgent;
   // The crumb reads the record's own title once it has loaded (the entry's
   // name can lag behind it), without holding up the frame until then.
-  const openDocument = useDocumentSafe(open?.id).data;
+  const openDocument = useRecordSafe(open?.id);
   const openTitle = open
     ? (recordTitle(openDocument?.header.documentType, openDocument?.state) ??
       open.name)

@@ -1,4 +1,3 @@
-import { dispatchActions } from "@powerhousedao/reactor-browser";
 import {
   actions,
   reducer,
@@ -10,6 +9,7 @@ import { Icon } from "../../../components/Icon.js";
 import { ErrorLine } from "../../../components/shared/ErrorLine.js";
 import { useCreateRecord } from "../../../components/shared/useCreateRecord.js";
 import { firstRefusal } from "../../../kit/first-run/index.js";
+import { useDriveWrite } from "../../../components/data/driveData.js";
 
 /** Step 4: the first organisation, with just enough to tell it apart. */
 export function OrganisationStep({
@@ -22,6 +22,7 @@ export function OrganisationStep({
   count: number;
   onNext: () => void;
 }) {
+  const { dispatchTo } = useDriveWrite();
   const [name, setName] = useState("");
   const [website, setWebsite] = useState("");
   const [country, setCountry] = useState("");
@@ -59,7 +60,7 @@ export function OrganisationStep({
     if (!id) return;
     let failed: string | undefined;
     try {
-      await dispatchActions(steps, id, (errors) => {
+      await dispatchTo(steps, id, (errors) => {
         failed = errors[0]?.message;
       });
     } catch (e) {

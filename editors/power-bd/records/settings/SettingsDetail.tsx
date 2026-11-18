@@ -2,7 +2,7 @@ import { generateId } from "document-model";
 import { ErrorLine } from "../../components/shared/ErrorLine.js";
 import {
   actions,
-  useBdSettingsDocumentById,
+  isBdSettingsDocument,
   type BdSettingsAction,
 } from "document-models/bd-settings";
 import { useMemo, useState, type ReactNode } from "react";
@@ -19,6 +19,7 @@ import {
 import { CommitField } from "./CommitField.js";
 import { VaultField } from "./VaultField.js";
 import "../../kit/design.js";
+import { useRecordById } from "../../components/data/driveData.js";
 
 type Errors = Record<string, string | undefined>;
 
@@ -31,7 +32,7 @@ export function SettingsDetail({
   /** Further sections, shown after the rules (the Settings place adds the set-up guide's). */
   children?: ReactNode;
 }) {
-  const [document, dispatch] = useBdSettingsDocumentById(documentId);
+  const [document, dispatch] = useRecordById(documentId, isBdSettingsDocument);
   const [errors, setErrors] = useState<Errors>({});
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");

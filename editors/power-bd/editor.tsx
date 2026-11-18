@@ -5,6 +5,7 @@
 import { useSetPHAppConfig } from "@powerhousedao/reactor-browser";
 import type { EditorProps } from "document-model";
 import { AccessGate } from "./components/access/AccessGate.js";
+import { DriveDataProvider } from "./components/data/driveData.js";
 import { Shell } from "./components/Shell.js";
 import { editorConfig } from "./config.js";
 
@@ -17,7 +18,9 @@ export default function Editor({ document, children }: EditorProps) {
   if (!document) return null;
   return (
     <AccessGate driveId={document.header.id}>
-      <Shell driveId={document.header.id}>{children}</Shell>
+      <DriveDataProvider driveId={document.header.id}>
+        <Shell driveId={document.header.id}>{children}</Shell>
+      </DriveDataProvider>
     </AccessGate>
   );
 }

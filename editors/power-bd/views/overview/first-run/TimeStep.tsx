@@ -1,6 +1,6 @@
 import {
   actions,
-  useBdSettingsDocumentById,
+  isBdSettingsDocument,
 } from "document-models/bd-settings";
 import { useMemo, useState } from "react";
 import { Icon } from "../../../components/Icon.js";
@@ -11,6 +11,7 @@ import {
   parseWholeNumber,
   runtimeTimeZones,
 } from "../../../kit/settings/index.js";
+import { useRecordById } from "../../../components/data/driveData.js";
 
 /** The time zone this browser reports, if it reports one. */
 function resolvedTimeZone(): string | undefined {
@@ -29,7 +30,7 @@ export function TimeStep({
   settingsId: string;
   onNext: () => void;
 }) {
-  const [document, dispatch] = useBdSettingsDocumentById(settingsId);
+  const [document, dispatch] = useRecordById(settingsId, isBdSettingsDocument);
   const zones = useMemo(() => runtimeTimeZones(), []);
   const guess = useMemo(
     () => browserTimeZone(resolvedTimeZone(), zones),

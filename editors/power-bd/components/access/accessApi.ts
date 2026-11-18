@@ -12,6 +12,8 @@ import {
   type Level,
   type Probe,
 } from "../../kit/access/access.js";
+import { DRIVE_TREE_QUERY, serverDriveFrom } from "../../kit/drive/server-drive.js";
+import type { DriveSnapshot } from "../../kit/init-drive.js";
 
 type Reply = { status: number; body: unknown } | { failed: string };
 
@@ -86,3 +88,16 @@ export const revokeAccess = (base: string, driveId: string, address: string) =>
        revokeDocumentPermission(documentIdOrSlug: $id, userAddress: $a) }`,
     { id: driveId, a: address },
   );
+
+/**
+ * The drive as its server holds it: its tree and its icon. Throws, saying
+ * why, when the server won't hand it over, so a set-up built on it makes
+ * nothing rather than guessing.
+ */
+export async function readServerDrive(base: string, driveId: string): Promise<DriveSnapshot> {
+  const reply = await post(`${base}/graphql`, DRIVE_TREE_QUERY, { id: driveId });
+  if ("failed" in reply) throw new Error(unreachable(reply.failed));
+  const read = serverDriveFrom(reply.status, reply.body);
+  if ("problem" in read) throw new Error(read.problem);
+  return read.drive;
+}

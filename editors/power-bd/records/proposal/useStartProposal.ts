@@ -1,12 +1,9 @@
-import {
-  dispatchActions,
-  useSelectedDriveId,
-  useSetSelectedNode,
-} from "@powerhousedao/reactor-browser";
+import { useSelectedDriveId, useSetSelectedNode } from "@powerhousedao/reactor-browser";
 import { actions, type ProposalAction } from "document-models/proposal";
 import { useCreateRecord } from "../../components/shared/useCreateRecord.js";
 import type { OnErrors } from "../../components/shared/useRun.js";
 import type { CopyStep } from "../../kit/proposal-copy/index.js";
+import { useDriveWrite } from "../../components/data/driveData.js";
 
 /**
  * A copy step names its creator in `actions` and carries that creator's input.
@@ -29,6 +26,7 @@ export function stepAction(step: CopyStep): ProposalAction {
  * rejects goes to `onErrors`.
  */
 export function useStartProposal() {
+  const { dispatchTo } = useDriveWrite();
   const driveId = useSelectedDriveId();
   const select = useSetSelectedNode();
   const { create, error } = useCreateRecord(
@@ -46,7 +44,7 @@ export function useStartProposal() {
     const id = await create(name, { open: false });
     if (!id) return;
     try {
-      await dispatchActions(steps, id, onErrors);
+      await dispatchTo(steps, id, onErrors);
       select(id);
     } catch (e) {
       onErrors([

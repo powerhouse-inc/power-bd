@@ -122,9 +122,13 @@ export function countFor(id: PlaceId, counts: PlaceCounts): number | undefined {
   return undefined;
 }
 
-export type SaveState = "setting-up" | "up-to-date" | "offline";
+export type SaveState = "setting-up" | "up-to-date" | "offline" | "unreachable";
 
-/** The save state's label, icon and CSS modifier. Offline wins over the rest. */
+/**
+ * The save state's label, icon and CSS modifier. Offline wins over the rest;
+ * "unreachable" is a shared drive whose server did not answer the last read:
+ * what shows may be out of date, and it reads again on its own.
+ */
 export function saveStateView(state: SaveState): {
   label: string;
   icon: IconName;
@@ -134,6 +138,12 @@ export function saveStateView(state: SaveState): {
     case "offline":
       return {
         label: "Offline",
+        icon: "cloud-off",
+        className: "pb-save-state is-offline",
+      };
+    case "unreachable":
+      return {
+        label: "Can't reach the server",
         icon: "cloud-off",
         className: "pb-save-state is-offline",
       };

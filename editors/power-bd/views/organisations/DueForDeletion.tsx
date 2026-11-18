@@ -1,4 +1,3 @@
-import { dispatchActions } from "@powerhousedao/reactor-browser";
 import { organisationLabel } from "../../kit/organisation-list/index.js";
 import { ErrorLine } from "../../components/shared/ErrorLine.js";
 import {
@@ -10,6 +9,7 @@ import { Icon } from "../../components/Icon.js";
 import { fmtDay } from "../../components/shared/relationship/common.js";
 import { peopleDue, type HeldFile } from "../../kit/retention/index.js";
 import { useBdSettingsDocumentsInSelectedDrive, useContactDocumentsInSelectedDrive, useLeadDocumentsInSelectedDrive, useOpportunityDocumentsInSelectedDrive, useProposalDocumentsInSelectedDrive } from "../../components/useDriveDocuments.js";
+import { useDriveWrite } from "../../components/data/driveData.js";
 
 const FILE_LABEL: Record<HeldFile, string> = {
   SENT_COPY: "sent copy",
@@ -19,6 +19,7 @@ const FILE_LABEL: Record<HeldFile, string> = {
 
 /** People whose relationships all closed badly longer ago than the retention period. */
 export function DueForDeletion() {
+  const { dispatchTo } = useDriveWrite();
   const contacts = useContactDocumentsInSelectedDrive() ?? [];
   const leads = useLeadDocumentsInSelectedDrive() ?? [];
   const opportunities = useOpportunityDocumentsInSelectedDrive() ?? [];
@@ -57,7 +58,7 @@ export function DueForDeletion() {
     setError(undefined);
     let failure: Error | undefined;
     try {
-      await dispatchActions(
+      await dispatchTo(
         actions.removePerson({ id: personId }),
         contactId,
         (errors) => {

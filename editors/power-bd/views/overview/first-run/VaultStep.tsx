@@ -1,13 +1,14 @@
 import { useDrives } from "@powerhousedao/reactor-browser";
 import {
   actions,
-  useBdSettingsDocumentById,
+  isBdSettingsDocument,
 } from "document-models/bd-settings";
 import { useState } from "react";
 import { vaultDrives } from "../../../kit/first-run/index.js";
 import { Icon } from "../../../components/Icon.js";
 import { ErrorLine } from "../../../components/shared/ErrorLine.js";
 import { dispatchWith, useRun } from "../../../components/shared/useRun.js";
+import { useRecordById } from "../../../components/data/driveData.js";
 
 /** Step 3: the vault whose notes are linked from leads and opportunities. It can wait. */
 export function VaultStep({
@@ -22,7 +23,7 @@ export function VaultStep({
   onSkip?: () => void;
   onNext: () => void;
 }) {
-  const [document, dispatch] = useBdSettingsDocumentById(settingsId);
+  const [document, dispatch] = useRecordById(settingsId, isBdSettingsDocument);
   const drives = useDrives();
   const [picked, setPicked] = useState<string>();
   const saving = useRun();

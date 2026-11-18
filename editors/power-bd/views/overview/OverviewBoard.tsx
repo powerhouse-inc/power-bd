@@ -1,5 +1,4 @@
 import { ProposalBadge } from "../../components/shared/ProposalBadge.js";
-import { dispatchActions } from "@powerhousedao/reactor-browser";
 import {
   actions as leadActions,
 } from "document-models/lead";
@@ -46,6 +45,7 @@ import { MoveList } from "./MoveMenu.js";
 import { OwnerAvatar } from "./OwnerAvatar.js";
 import { SlipSignal } from "./SlipSignal.js";
 import { useInvestorListDocumentsInSelectedDrive, useLeadDocumentsInSelectedDrive, useOpportunityDocumentsInSelectedDrive } from "../../components/useDriveDocuments.js";
+import { useDriveWrite } from "../../components/data/driveData.js";
 
 const SHORTLISTED = VOCABULARY.investorRow.find(
   (t) => t.value === "SHORTLISTED",
@@ -253,6 +253,7 @@ export function OverviewBoard({
   onShowClosed: (show: boolean) => void;
   onOpen: (r: ItemRef) => void;
 }) {
+  const { dispatchTo } = useDriveWrite();
   const root = useRef<HTMLDivElement>(null);
   const facts = moveCards({
     leads: (useLeadDocumentsInSelectedDrive() ?? []).map(plain),
@@ -283,7 +284,7 @@ export function OverviewBoard({
         key,
         message: errors.at(0)?.message ?? "That was not accepted.",
       });
-    dispatchActions(moveAction(option, reason), entry.id, refuse)
+    dispatchTo(moveAction(option, reason), entry.id, refuse)
       .catch((e: unknown) => refuse(e instanceof Error ? [e] : []))
       .finally(() => {
         setBusy(false);

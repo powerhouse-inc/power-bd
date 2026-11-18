@@ -36,6 +36,7 @@ describe("places", () => {
     expect(saveStateView("up-to-date").label).toBe("Up to date");
     expect(saveStateView("setting-up").className).toContain("is-saving");
     expect(saveStateView("offline").className).toContain("is-offline");
+    expect(saveStateView("unreachable")).toMatchObject({ label: "Can't reach the server", icon: "cloud-off" });
   });
 });
 

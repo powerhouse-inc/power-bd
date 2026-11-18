@@ -1,5 +1,4 @@
 import {
-  dispatchActions,
   type DocumentDispatch,
   useSelectedDriveId,
   useSetSelectedNode,
@@ -34,6 +33,7 @@ import { ImportPanel } from "../../views/investors/ImportPanel.js";
 import { InvestorRowDetail } from "../../views/investors/InvestorRowDetail.js";
 import { StartRelationshipPanel } from "../../views/investors/StartRelationshipPanel.js";
 import "../../kit/design.js";
+import { useDriveWrite, type DriveWrite } from "../../components/data/driveData.js";
 
 type Dispatch = DocumentDispatch<InvestorListAction>;
 type Panel = { rowId: string; kind: "details" | "exclude" | "start" };
@@ -49,14 +49,14 @@ const TABS: { id: StateFilter; label: string }[] = [
 const stateTerm = (state: string) =>
   VOCABULARY.investorRow.find((t) => t.value === state);
 
-/** Sends an action to any document by id and throws the reducer's message on rejection. */
-async function send(action: Action, documentId: string) {
+/** Sends an action to any document of the drive by id and throws the reducer's message on rejection. */
+const sender = (dispatchTo: DriveWrite["dispatchTo"]) => async (action: Action, documentId: string) => {
   let error: Error | undefined;
-  await dispatchActions(action, documentId, (errors) => {
+  await dispatchTo(action, documentId, (errors) => {
     error = errors[0];
   });
   if (error) throw error;
-}
+};
 
 /** Brings a row asked for from outside into view, once, when it is first drawn. */
 const reveal = (row: HTMLElement | null) =>
@@ -76,6 +76,7 @@ export function InvestorListDetail({
   dispatch: Dispatch;
   openRow?: string;
 }) {
+  const send = sender(useDriveWrite().dispatchTo);
   const rows: InvestorRow[] = document.state.global.rows;
   const driveId = useSelectedDriveId();
   const organisations = useCreateRecord(
