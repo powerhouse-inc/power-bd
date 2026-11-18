@@ -154,6 +154,8 @@ describe("targets", () => {
       delete (doc.state.global as { targets?: unknown }).targets;
       return doc;
     };
+    // The app finds a drive's settings with this check: an older record must still pass it.
+    expect(isBdSettingsDocument(stored())).toBe(true);
     const removed = reducer(stored(), removeTarget({ id: "t1" }));
     expect(lastError(removed)).toBe("Target t1 not found");
     const set = reducer(stored(), setTarget({ id: "t1", quarter: "2027-Q1", metric: "LEADS_WON", value: 2 }));

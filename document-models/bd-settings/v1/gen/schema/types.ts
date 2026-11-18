@@ -71,7 +71,7 @@ export type AddTeamMemberInput = {
 export type BdSettingsState = {
   dueWindowDays: Scalars["Int"]["output"];
   retentionMonths: Scalars["Int"]["output"];
-  targets: Array<Target>;
+  targets: Maybe<Array<Target>>;
   teamMembers: Array<TeamMember>;
   timeZone: Maybe<Scalars["String"]["output"]>;
   vaultDriveId: Maybe<Scalars["PHID"]["output"]>;

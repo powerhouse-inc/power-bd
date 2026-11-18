@@ -4,7 +4,8 @@ import { quarterOf } from "../forecast/index.js";
 import { valueOf } from "../overview/proposals.js";
 import { localTime } from "../overview/time.js";
 
-export type Target = BdSettingsState["targets"][number];
+// Settings stored before targets existed have no list, so the field may be empty.
+export type Target = NonNullable<BdSettingsState["targets"]>[number];
 export type TargetMetric = Target["metric"];
 export const METRICS: readonly TargetMetric[] = ["MEETINGS_HELD", "PROPOSALS_SENT", "VALUE_PROPOSED", "LEADS_WON"];
 

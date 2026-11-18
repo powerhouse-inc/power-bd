@@ -59,7 +59,7 @@ export function BdSettingsStateSchema(): z.ZodObject<
     __typename: z.literal("BdSettingsState").optional(),
     dueWindowDays: z.number(),
     retentionMonths: z.number(),
-    targets: z.array(z.lazy(() => TargetSchema())),
+    targets: z.array(z.lazy(() => TargetSchema())).nullish(),
     teamMembers: z.array(z.lazy(() => TeamMemberSchema())),
     timeZone: z.string().nullish(),
     vaultDriveId: z.string().nullish(),

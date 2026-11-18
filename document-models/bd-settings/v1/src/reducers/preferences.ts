@@ -56,8 +56,7 @@ export const bdSettingsPreferencesOperations: BdSettingsPreferencesOperations =
       if (value < 0)
         throw new NegativeTargetError("A target can't be negative");
       // Settings saved before targets existed have no list yet.
-      if (!(state.targets as typeof state.targets | undefined))
-        state.targets = [];
+      state.targets ??= [];
       const existing = state.targets.find(
         (t) => t.quarter === quarter && t.metric === metric,
       );
@@ -66,7 +65,7 @@ export const bdSettingsPreferencesOperations: BdSettingsPreferencesOperations =
     },
     removeTargetOperation(state, action) {
       // Settings saved before targets existed have no list yet.
-      const targets = (state.targets as typeof state.targets | undefined) ?? [];
+      const targets = state.targets ?? [];
       const index = targets.findIndex((t) => t.id === action.input.id);
       if (index === -1)
         throw new TargetNotFoundError(`Target ${action.input.id} not found`);

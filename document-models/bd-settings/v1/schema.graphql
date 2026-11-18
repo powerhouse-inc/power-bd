@@ -25,7 +25,7 @@ type BdSettingsState {
   dueWindowDays: Int!
   vaultDriveId: PHID
   retentionMonths: Int!
-  targets: [Target!]!
+  targets: [Target!]
 }
 
 type TeamMember {
