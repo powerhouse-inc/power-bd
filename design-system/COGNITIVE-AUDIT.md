@@ -1235,3 +1235,36 @@ A new place, after Decisions: what converts, where leads go quiet and why they a
 - **Language:** status names, "went on", the team's own reasons under a theme.
 - **Decision:** every figure says what it counts; what is unknown is said; small samples say "Too few".
 - **Emotion:** trust earned by showing the rules and the raw reasons.
+
+### Leads map (built, `views/leads/LeadsMap.tsx`, `kit/lead-map/`)
+
+A third view on Leads beside Board and List: every open lead placed by the fit of its best angle and how far along it is.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** The four corner names ("Close these", "Start these", "Check these", "Park or drop") are what the eye reads first; dots are named, and a bigger dot is a bigger proposal. A late next step carries the slipping mark in red, the only colour signal on the map. The "not assessed" column is grey, set apart from the four fits.
+2. **Wayfinding.** The same Leads place and its view switch; rows are the statuses in the board's order, columns the fits in the vocabulary's order, with their names at the edges. A dot opens its lead. A line under the map says what is not on it (won, lost, parked) and how many leads have no angle yet.
+3. **Memory and semantics.** A prioritisation matrix, the 2×2 every sales team draws; the market map's look, so the two maps read alike.
+4. **Language.** Status and fit names from the vocabulary; corners in verbs; "Not assessed" for a lead with no angle, and what to do about it.
+5. **Decision making.** Positions are worked out, not dragged: a dot moves when the lead's status or angles change, so the map never needs upkeep and never goes stale. Moving a lead is the board's job. Filters Mine and kind narrow it. Dots sharing a cell spread in a fixed order, so the map looks the same each visit.
+6. **Emotion.** Fear: "did I place that right?". Nobody places anything; the map shows what the records say, and how (a caption names both axes and what size means).
+
+**2. Concepts weighed**
+
+- **A · Task-oriented:** a ranked list by a score. Exact, but a score hides why.
+- **B · Conventional:** a 2×2 with named corners, positions from the lead's own fields. Familiar and explainable.
+- **C · Immersive:** draggable dots with free axes, like the market map. Rich, but positions would be opinions to maintain on every lead.
+
+**Chosen:** B. Evidence: every lead already has a status, and angles carry a fit (Unlikely, Later, Good, Best); live proposals carry a value. Nothing new needs entering.
+
+**3. Implementation:** `.pb-map--grid` on the market map's `.pb-map`, with `__line`, `__row-label`, `__col-label`, `__unassessed`, `__quadrant`, `.pb-map__dot--lead` (its size from `--pb-dot`) and `__slip`; the `scatter` icon on the view switch. Pure placement in `kit/lead-map/` (`priorityMap`, `quadrantOf`, `leftOutLine`), tested.
+
+**4. Mapping**
+
+- **Vision:** corner names first, size for money, red only for late.
+- **Wayfinding:** a view of Leads; rows and columns named at the edges; dots open leads.
+- **Memory:** the sales 2×2, in the market map's look.
+- **Language:** vocabulary names, corners as verbs.
+- **Decision:** worked-out positions, no upkeep; filters; a fixed layout.
+- **Emotion:** nothing to place wrongly; the caption says how it is drawn.
+

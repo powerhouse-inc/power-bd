@@ -2210,7 +2210,7 @@ a.pb-ref__title:focus-visible { outline: 2px solid var(--pb-accent); outline-off
 
 /* =============================================================================
    Reports: the funnel as bars with the share that went on from each stage,
-   and a group of reasons with what was said. Bars use
+   a group of reasons with what was said, and the priority map's grid. Bars use
    the accent tint and won the green tone; nothing is red but a late signal.
    ============================================================================= */
 .pb-funnel { display: grid; gap: var(--pb-s-0-5); }
@@ -2228,3 +2228,19 @@ a.pb-ref__title:focus-visible { outline: 2px solid var(--pb-accent); outline-off
 .pb-reason__count { color: var(--pb-text-secondary); font-size: var(--pb-fs-sm); font-variant-numeric: tabular-nums; }
 /* What was said, word for word, under its group when asked for. */
 .pb-reason__said { display: grid; gap: var(--pb-s-0-5); grid-column: 1 / -1; margin: 0; padding: 0 0 var(--pb-s-1) var(--pb-s-6); color: var(--pb-text-secondary); font-size: var(--pb-fs-xs); list-style: none; }
+
+/* The priority map: the market map's surface with a grid of fits and stages.
+   Row labels sit to the left, column labels below; quadrant names in the
+   corners say what to do; the "not assessed" column is set apart. */
+.pb-map--grid { margin: var(--pb-s-4) var(--pb-s-12) var(--pb-s-10) 112px; }
+.pb-map__line { position: absolute; background: var(--pb-border); opacity: 0.5; pointer-events: none; }
+.pb-map__line--x { right: 0; left: 0; height: 1px; }
+.pb-map__line--y { top: 0; bottom: 0; width: 1px; }
+.pb-map__row-label { position: absolute; right: 100%; width: 104px; margin-right: var(--pb-s-2); color: var(--pb-text-secondary); font-size: var(--pb-fs-xs); text-align: right; transform: translateY(50%); pointer-events: none; }
+.pb-map__col-label { position: absolute; top: 100%; width: 20%; margin-top: var(--pb-s-1-5); color: var(--pb-text-secondary); font-size: var(--pb-fs-xs); text-align: center; pointer-events: none; }
+.pb-map__unassessed { position: absolute; top: 0; bottom: 0; left: 0; width: 20%; border-radius: var(--pb-r-lg) 0 0 var(--pb-r-lg); background: var(--pb-bg-hover); pointer-events: none; }
+.pb-map__quadrant { position: absolute; padding: var(--pb-s-1-5) var(--pb-s-2); color: var(--pb-text-tertiary); font-size: var(--pb-fs-xs); font-weight: var(--pb-fw-semibold); text-transform: uppercase; letter-spacing: 0.04em; pointer-events: none; }
+/* A lead's dot opens the lead; its size says what its proposal is worth. */
+.pb-map__dot--lead { max-width: 160px; cursor: pointer; }
+.pb-map__dot--lead::before { width: var(--pb-dot, 10px); height: var(--pb-dot, 10px); background: var(--pb-accent); opacity: 0.7; }
+.pb-map__slip { flex: none; width: 12px; height: 12px; color: var(--pb-red-text); }
