@@ -993,3 +993,35 @@ The Funding audit and *Moving a lead on the Leads board* stand. This covers one 
 - **Language:** status names; refusals say what to do first.
 - **Decision:** go or no-go stays a person's decision; reasons and confirmation where the reducer and the stakes need them.
 - **Emotion:** no close in one careless drop; a refused move leaves the card in place with the reason.
+
+### Moving an investor on the Investors board (built, `views/investors/InvestorsBoard.tsx`, `records/investor-list/`)
+
+The Investors audit and *Moving a lead on the Leads board* stand. This covers one change: the investor list gets a board, one column per state (Listed, Shortlisted, Excluded, Engaged), beside today's list with its tabs (Board and List, as on Leads), and its cards are the list's rows.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** The columns are the narrowing the list exists for: a long Listed column, a short Shortlisted one, the few Engaged. A card shows the list it came from, the name, the website, why it was excluded, and how many funded comparables it has. While a card is in the hand, columns tint or fade with their one line, as on Leads.
+2. **Wayfinding.** On the board the tabs give way to the columns, which say the same thing; the list filter stays. Opening a card goes to where its details are: its row in the list, opened, or for an engaged investor its lead. A row asked for from search opens in the list, on that row.
+3. **Memory and semantics.** The Leads board's drag and "Move to…" list; the list page's own buttons and actions (Shortlist, Exclude, Put back on the list, Start relationship), each sent to the list document for that row.
+4. **Language.** State names from the vocabulary. One line per column: "Becomes Shortlisted", "Becomes Excluded · asks why", "Starts a relationship · opens its panel". Refusals say what to do first: "Shortlist it first: a relationship starts from the shortlist", "An engaged investor is a relationship now: open its lead".
+5. **Decision making.** Shortlisting and putting back on the list happen at once. Excluding asks why ("Why exclude it?") with the list's own reassurance, "You can put it back on the list later." Engaging is never done by a drop: it creates the organisation and the investor lead, so the drop changes nothing and offers "Start relationship", which opens the same panel as the list, in the Engaged column, listing what it will create before anything is created.
+6. **Emotion.** Fears: "did I just create a lead by dragging?", "did I lose why we excluded them?". A drop creates nothing; the panel says "Nobody is contacted"; an exclusion keeps its reason on the card; a refused move leaves the card where it was with the reason beside it.
+
+**2. Concepts weighed**
+
+- **A · Task-oriented:** keep the tabs and buttons only. Exact, but the user asked for a board, and the narrowing is easier to see as columns.
+- **B · Conventional:** free drag, Engaged set on drop. Familiar, but engaging needs an organisation and a lead that must exist first; a drop cannot make them silently.
+- **C · Immersive:** a funnel graphic with counts. Appealing, but moving one investor would have no place to land.
+
+**Chosen:** the Leads board's pattern with one column per state, the list one click away, and Start relationship opened, not done, by a drop on Engaged. Evidence: the investor list reducer refuses any change to an engaged row and an exclusion without a reason; engaging needs an organisation and a lead id; the list offers Start relationship from the shortlist only.
+
+**3. Implementation:** the Leads board's parts (`pb-board--drop`, `pb-board__hint`, `pb-ask` with its decision variant, now without the people mark since starting a relationship is not a person-only step, `MoveList`, `ErrorLine`); the Start relationship panel inside a `pb-ask` box in the Engaged column. The rules are pure, in `kit/overview-view/status-moves.ts` (`investorRowMove`, `investorRowTargets`); a test runs every state against the investor list reducer. `useBoardMove` takes a `send` so a row's move goes to its list document.
+
+**4. Mapping**
+
+- **Vision:** the narrowing as columns; the exclusion reason on the card.
+- **Wayfinding:** columns for tabs; a card opens its details or its lead.
+- **Memory:** the Leads board's drag; the list's own buttons and actions.
+- **Language:** state names; refusals say what to do first.
+- **Decision:** excluding asks why; engaging opens the panel that says what it creates.
+- **Emotion:** a drop creates nothing and contacts nobody; reasons are kept.

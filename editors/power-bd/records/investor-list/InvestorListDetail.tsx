@@ -31,6 +31,7 @@ import {
 } from "../../kit/investors/start-relationship.js";
 import { ImportPanel } from "../../views/investors/ImportPanel.js";
 import { InvestorRowDetail } from "../../views/investors/InvestorRowDetail.js";
+import { InvestorsBoard } from "../../views/investors/InvestorsBoard.js";
 import { StartRelationshipPanel } from "../../views/investors/StartRelationshipPanel.js";
 import "../../kit/design.js";
 import { useDriveWrite, type DriveWrite } from "../../components/data/driveData.js";
@@ -92,6 +93,8 @@ export function InvestorListDetail({
     "The investor lead could not be created.",
   );
   const open = useSetSelectedNode();
+  // A row asked for from search opens in the list, where its details are.
+  const [asBoard, setAsBoard] = useState(!openRow);
   const [tab, setTab] = useState<StateFilter>("ALL");
   const [list, setList] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
@@ -158,6 +161,12 @@ export function InvestorListDetail({
     if (res.ok) setPanel(undefined);
   };
 
+  /** The board's "Start relationship" for a row, in the Engaged column. */
+  const starting =
+    asBoard && panel?.kind === "start"
+      ? rows.find((r) => r.id === panel.rowId)
+      : undefined;
+
   const toggle = (rowId: string, kind: Panel["kind"]) => {
     setResult(undefined);
     setReason("");
@@ -195,21 +204,49 @@ export function InvestorListDetail({
           }
         />
       )}
-      <div className="pb-tabs" role="tablist">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            role="tab"
-            aria-selected={tab === t.id}
-            className={`pb-tab${tab === t.id ? " is-active" : ""}`}
-            onClick={() => setTab(t.id)}
-          >
-            {t.label}
-            <span className="pb-count">{counts[t.id]}</span>
-          </button>
-        ))}
-      </div>
+      {rows.length > 0 && (
+        <div className="pb-toolbar pb-mb-8">
+          <div className="pb-segmented">
+            <button
+              className={`pb-segmented__item${asBoard ? " is-active" : ""}`}
+              onClick={() => {
+                setAsBoard(true);
+                setPanel(undefined);
+              }}
+            >
+              <Icon name="board" />
+              Board
+            </button>
+            <button
+              className={`pb-segmented__item${asBoard ? "" : " is-active"}`}
+              onClick={() => {
+                setAsBoard(false);
+                setPanel(undefined);
+              }}
+            >
+              <Icon name="table" />
+              List
+            </button>
+          </div>
+        </div>
+      )}
+      {!asBoard && (
+        <div className="pb-tabs" role="tablist">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              role="tab"
+              aria-selected={tab === t.id}
+              className={`pb-tab${tab === t.id ? " is-active" : ""}`}
+              onClick={() => setTab(t.id)}
+            >
+              {t.label}
+              <span className="pb-count">{counts[t.id]}</span>
+            </button>
+          ))}
+        </div>
+      )}
       {lists.length > 1 && (
         <div className="pb-row pb-mt-10 pb-mb-6">
           <label className="pb-filter pb-filter--off">
@@ -253,6 +290,33 @@ export function InvestorListDetail({
               </button>
             )
           }
+        />
+      ) : asBoard ? (
+        <InvestorsBoard
+          rows={filterRows(rows, "ALL", list)}
+          listId={document.header.id}
+          startPanel={
+            starting ? (
+              <StartRelationshipPanel
+                name={starting.name}
+                running={running}
+                result={result}
+                onStart={() => void start(starting)}
+                onCancel={() => setPanel(undefined)}
+              />
+            ) : null
+          }
+          onStart={(rowId) => {
+            setResult(undefined);
+            setPanel({ rowId, kind: "start" });
+          }}
+          onDetails={(rowId) => {
+            setAsBoard(false);
+            setTab("ALL");
+            setResult(undefined);
+            setPanel({ rowId, kind: "details" });
+          }}
+          onOpen={(id) => open(id)}
         />
       ) : shown.length === 0 ? (
         <div className="pb-empty" role="status">
