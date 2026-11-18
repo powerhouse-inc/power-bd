@@ -5,10 +5,18 @@ import { Icon } from "../../components/Icon.js";
 import { ErrorLine } from "../../components/shared/ErrorLine.js";
 import { dispatchWith, useRun, type OnErrors } from "../../components/shared/relationship/common.js";
 import { useRenameRecord } from "../../components/shared/useRenameRecord.js";
+import {
+  useContactDocumentsInSelectedDrive,
+  useLeadDocumentsInSelectedDrive,
+  usePlaybookDocumentsInSelectedDrive,
+} from "../../components/useDriveDocuments.js";
 import { CURRENCY_FORMAT, currencyCode } from "../../kit/format/index.js";
+import { DotPeek } from "./DotPeek.js";
+import { MapSection } from "./MapSection.js";
+import type { Selected } from "./shared.js";
 import { SizeSection } from "./SizeSection.js";
 
-/** The market page: what the market is and its size. Shown in the Market place and in the thin editor. */
+/** The market page: what the market is, its size, and its map. Shown in the Market place and in the thin editor. */
 export function MarketDetail({
   document,
   dispatch,
@@ -19,7 +27,19 @@ export function MarketDetail({
   const s = document.state.global;
   const details = useRun();
   const renameEntry = useRenameRecord(document.header.id);
+  const [selected, setSelected] = useState<Selected>(null);
   const [currencyError, setCurrencyError] = useState<string | null>(null);
+  const contacts = (useContactDocumentsInSelectedDrive() ?? []).map((d) => ({
+    id: d.header.id,
+    name: d.state.global.name,
+    tags: d.state.global.tags,
+  }));
+  const leads = (useLeadDocumentsInSelectedDrive() ?? []).map((d) => ({
+    id: d.header.id,
+    name: d.state.global.name,
+    organisationId: d.state.global.organisationId,
+  }));
+  const playbook = usePlaybookDocumentsInSelectedDrive()?.[0]?.state.global;
   const send = (action: MarketAction, onErrors: OnErrors) => dispatchWith(dispatch, action, onErrors);
   const setDetails = (patch: Parameters<typeof actions.setMarketDetails>[0], rename?: string) =>
     details.run((e) => send(actions.setMarketDetails(patch), e), () => rename && renameEntry(rename));
@@ -112,7 +132,20 @@ export function MarketDetail({
           onBlur={(e) => e.target.value.trim() !== (s.description ?? "") && setDetails({ description: e.target.value.trim() || null })}
         />
         <SizeSection market={s} send={send} />
+        <MapSection market={s} contacts={contacts} selected={selected} send={send} onSelect={setSelected} />
       </div>
+      {selected ? (
+        <DotPeek
+          market={s}
+          selected={selected}
+          contacts={contacts}
+          leads={leads}
+          positioning={playbook?.positioning ?? []}
+          neverClaims={playbook?.neverClaims ?? []}
+          send={send}
+          onClose={() => setSelected(null)}
+        />
+      ) : null}
     </div>
   );
 }
