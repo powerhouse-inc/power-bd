@@ -9,6 +9,7 @@ import {
   DuplicateReferenceError,
   DuplicateReferenceIdError,
   InteractionNotFoundError,
+  InteractionNotHeldError,
   InvalidTimeZoneError,
   MeetingNeedsTimeError,
   NextStepAlreadyDoneError,
@@ -115,6 +116,7 @@ export const opportunityRelationshipOperations: OpportunityRelationshipOperation
         notesSource: notesSource
           ? { id: notesSource.id, title: notesSource.title }
           : null,
+        outcome: null,
       });
     },
     updateInteractionOperation(state, action) {
@@ -230,5 +232,19 @@ export const opportunityRelationshipOperations: OpportunityRelationshipOperation
       state.confidentialItems = state.confidentialItems.filter(
         (item) => item.id !== id,
       );
+    },
+    setInteractionOutcomeOperation(state, action) {
+      const interaction = state.interactions.find(
+        (i) => i.id === action.input.id,
+      );
+      if (!interaction)
+        throw new InteractionNotFoundError(
+          `Interaction ${action.input.id} not found`,
+        );
+      if (action.input.outcome != null && interaction.status !== "HELD")
+        throw new InteractionNotHeldError(
+          "Only a held interaction has an outcome",
+        );
+      interaction.outcome = action.input.outcome ?? null;
     },
   };

@@ -3,6 +3,10 @@ import {
   setLeadDetails,
   setOwner,
   utils,
+  setLeadSource,
+  setExpectedClose,
+  SetLeadSourceInputSchema,
+  SetExpectedCloseInputSchema,
 } from "document-models/lead/v1";
 import { describe, expect, it } from "vitest";
 
@@ -32,6 +36,9 @@ describe("a lead's details", () => {
       contactLinks: [],
       references: [],
       confidentialItems: [],
+      source: null,
+      sourceDetail: null,
+      expectedCloseDate: null,
     });
   });
 
@@ -121,5 +128,40 @@ describe("a lead's details", () => {
 
     expect(errors(document)).toStrictEqual([undefined, undefined]);
     expect(document.state.global.owner).toBeNull();
+  });
+});
+
+const lastError = (doc: ReturnType<typeof utils.createDocument>) => doc.operations.global.at(-1)?.error;
+
+describe("where a lead came from, and when it may close", () => {
+  it("sets the source and its detail, trimmed, keeps what is left out, and clears with null", () => {
+    let doc = reducer(utils.createDocument(), setLeadSource({ source: "EVENT", sourceDetail: "  AI WEEK 2026 " }));
+    expect(lastError(doc)).toBeUndefined();
+    expect(doc.state.global.source).toBe("EVENT");
+    expect(doc.state.global.sourceDetail).toBe("AI WEEK 2026");
+    doc = reducer(doc, setLeadSource({ sourceDetail: "AI Week" }));
+    expect(doc.state.global.source).toBe("EVENT");
+    expect(doc.state.global.sourceDetail).toBe("AI Week");
+    doc = reducer(doc, setLeadSource({ sourceDetail: null }));
+    expect(doc.state.global.sourceDetail).toBeNull();
+    doc = reducer(doc, setLeadSource({ source: null, sourceDetail: "   " }));
+    expect(doc.state.global.source).toBeNull();
+    expect(doc.state.global.sourceDetail).toBeNull();
+    doc = reducer(doc, setLeadSource({ source: "REFERRAL", sourceDetail: null }));
+    expect(doc.state.global.source).toBe("REFERRAL");
+    expect(doc.state.global.sourceDetail).toBeNull();
+  });
+
+  it("takes only the known sources", () => {
+    expect(SetLeadSourceInputSchema().safeParse({ source: "COLD_CALL" }).success).toBe(false);
+    expect(SetLeadSourceInputSchema().safeParse({ source: "PARTNER" }).success).toBe(true);
+  });
+
+  it("sets and clears the expected close date", () => {
+    let doc = reducer(utils.createDocument(), setExpectedClose({ expectedCloseDate: "2026-12-15T00:00:00.000Z" }));
+    expect(doc.state.global.expectedCloseDate).toBe("2026-12-15T00:00:00.000Z");
+    doc = reducer(doc, setExpectedClose({ expectedCloseDate: null }));
+    expect(doc.state.global.expectedCloseDate).toBeNull();
+    expect(SetExpectedCloseInputSchema().safeParse({ expectedCloseDate: "next week" }).success).toBe(false);
   });
 });

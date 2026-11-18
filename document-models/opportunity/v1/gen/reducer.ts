@@ -41,6 +41,7 @@ import type {
   RemoveNextStepAction,
   RemoveReferenceAction,
   ReopenNextStepAction,
+  SetInteractionOutcomeAction,
   UnlinkContactAction,
   UpdateInteractionAction,
   UpdateNextStepAction,
@@ -98,6 +99,7 @@ import {
   SetDecideByInputSchema,
   SetExpectedOpeningInputSchema,
   SetFitInputSchema,
+  SetInteractionOutcomeInputSchema,
   SetOpportunityDetailsInputSchema,
   SetOpportunityStatusInputSchema,
   SetOwnerInputSchema,
@@ -604,6 +606,18 @@ const stateReducer: StateReducer<OpportunityPHState> = (
       opportunityRelationshipOperations.removeConfidentialItemOperation(
         state.global,
         action as RemoveConfidentialItemAction,
+        dispatch,
+      );
+
+      break;
+    }
+
+    case "SET_INTERACTION_OUTCOME": {
+      memoizedSchema(SetInteractionOutcomeInputSchema).parse(action.input);
+
+      opportunityRelationshipOperations.setInteractionOutcomeOperation(
+        state.global,
+        action as SetInteractionOutcomeAction,
         dispatch,
       );
 

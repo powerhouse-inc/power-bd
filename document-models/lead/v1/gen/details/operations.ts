@@ -4,7 +4,12 @@
  */
 import { type SignalDispatch } from "document-model";
 import type { LeadGlobalState } from "../types.js";
-import type { SetLeadDetailsAction, SetOwnerAction } from "./actions.js";
+import type {
+  SetExpectedCloseAction,
+  SetLeadDetailsAction,
+  SetLeadSourceAction,
+  SetOwnerAction,
+} from "./actions.js";
 
 export interface LeadDetailsOperations {
   setLeadDetailsOperation: (
@@ -15,6 +20,16 @@ export interface LeadDetailsOperations {
   setOwnerOperation: (
     state: LeadGlobalState,
     action: SetOwnerAction,
+    dispatch?: SignalDispatch,
+  ) => void;
+  setLeadSourceOperation: (
+    state: LeadGlobalState,
+    action: SetLeadSourceAction,
+    dispatch?: SignalDispatch,
+  ) => void;
+  setExpectedCloseOperation: (
+    state: LeadGlobalState,
+    action: SetExpectedCloseAction,
     dispatch?: SignalDispatch,
   ) => void;
 }

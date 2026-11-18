@@ -245,6 +245,7 @@ export type Interaction = {
   id: Scalars["OID"]["output"];
   kind: InteractionKind;
   notesSource: Maybe<VaultRef>;
+  outcome: Maybe<InteractionOutcome>;
   people: Array<PersonRef>;
   status: InteractionStatus;
   summary: Maybe<Scalars["String"]["output"]>;
@@ -259,6 +260,8 @@ export type InteractionKind =
   | "MEETING"
   | "MESSAGE"
   | "OTHER";
+
+export type InteractionOutcome = "NEGATIVE" | "NEUTRAL" | "POSITIVE";
 
 export type InteractionStatus = "CANCELLED" | "HELD" | "SCHEDULED";
 
@@ -454,6 +457,11 @@ export type SetFitInput = {
 export type SetFitReasoningInput = {
   id: Scalars["PHID"]["input"];
   title: Scalars["String"]["input"];
+};
+
+export type SetInteractionOutcomeInput = {
+  id: Scalars["OID"]["input"];
+  outcome?: InputMaybe<InteractionOutcome>;
 };
 
 export type SetOpportunityDetailsInput = {

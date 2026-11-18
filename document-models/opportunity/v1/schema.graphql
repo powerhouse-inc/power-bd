@@ -245,6 +245,7 @@ type Interaction {
   people: [PersonRef!]!
   teamMembers: [EthereumAddress!]!
   notesSource: VaultRef
+  outcome: InteractionOutcome
 }
 
 type ContactLink {
@@ -278,6 +279,12 @@ type ConfidentialItem {
   text: String!
   addedBy: EthereumAddress!
   addedAt: DateTime!
+}
+
+enum InteractionOutcome {
+  POSITIVE
+  NEUTRAL
+  NEGATIVE
 }
 
 # details
@@ -600,4 +607,9 @@ input AddConfidentialItemInput {
 
 input RemoveConfidentialItemInput {
   id: OID!
+}
+
+input SetInteractionOutcomeInput {
+  id: OID!
+  outcome: InteractionOutcome
 }

@@ -9,6 +9,7 @@ import {
   DuplicateReferenceError,
   DuplicateReferenceIdError,
   InteractionNotFoundError,
+  InteractionNotHeldError,
   InvalidTimeZoneError,
   MeetingNeedsTimeError,
   NextStepAlreadyDoneError,
@@ -112,6 +113,7 @@ export const leadRelationshipOperations: LeadRelationshipOperations = {
       notesSource: notesSource
         ? { id: notesSource.id, title: notesSource.title }
         : null,
+      outcome: null,
     });
   },
   updateInteractionOperation(state, action) {
@@ -170,6 +172,7 @@ export const leadRelationshipOperations: LeadRelationshipOperations = {
       contactId,
       personId: personId ?? null,
       role: role ?? null,
+      dealRole: null,
     });
   },
   unlinkContactOperation(state, action) {
@@ -225,5 +228,27 @@ export const leadRelationshipOperations: LeadRelationshipOperations = {
     state.confidentialItems = state.confidentialItems.filter(
       (item) => item.id !== id,
     );
+  },
+  setContactLinkDealRoleOperation(state, action) {
+    const link = state.contactLinks.find((l) => l.id === action.input.id);
+    if (!link)
+      throw new ContactLinkNotFoundError(
+        `ContactLink ${action.input.id} not found`,
+      );
+    link.dealRole = action.input.dealRole ?? null;
+  },
+  setInteractionOutcomeOperation(state, action) {
+    const interaction = state.interactions.find(
+      (i) => i.id === action.input.id,
+    );
+    if (!interaction)
+      throw new InteractionNotFoundError(
+        `Interaction ${action.input.id} not found`,
+      );
+    if (action.input.outcome != null && interaction.status !== "HELD")
+      throw new InteractionNotHeldError(
+        "Only a held interaction has an outcome",
+      );
+    interaction.outcome = action.input.outcome ?? null;
   },
 };

@@ -25,9 +25,9 @@ const input = (over: Partial<BriefInput["lead"]> = {}, rest: Partial<BriefInput>
       { id: "a2", summary: "Signed records for their lab data", fit: "BEST", positioningId: "pos-1" },
     ],
     interactions: [
-      { id: "i1", kind: "CALL", status: "HELD", at: "2026-11-02T09:00:00.000Z", timeZone: "Europe/Ljubljana", summary: "Intro call", people: [], teamMembers: [MARA], notesSource: null },
-      { id: "i2", kind: "MEETING", status: "SCHEDULED", at: "2026-11-19T09:00:00.000Z", timeZone: "Europe/Ljubljana", summary: "Data workshop", people: [{ contactId: "org-1", personId: "p1" }], teamMembers: [MARA], notesSource: null },
-      { id: "i3", kind: "EMAIL", status: "HELD", at: "2026-11-10T09:00:00.000Z", timeZone: null, summary: null, people: [], teamMembers: [], notesSource: null },
+      { id: "i1", kind: "CALL", status: "HELD", at: "2026-11-02T09:00:00.000Z", timeZone: "Europe/Ljubljana", summary: "Intro call", people: [], teamMembers: [MARA], notesSource: null, outcome: null },
+      { id: "i2", kind: "MEETING", status: "SCHEDULED", at: "2026-11-19T09:00:00.000Z", timeZone: "Europe/Ljubljana", summary: "Data workshop", people: [{ contactId: "org-1", personId: "p1" }], teamMembers: [MARA], notesSource: null, outcome: null },
+      { id: "i3", kind: "EMAIL", status: "HELD", at: "2026-11-10T09:00:00.000Z", timeZone: null, summary: null, people: [], teamMembers: [], notesSource: null, outcome: null },
     ],
     nextSteps: [
       { id: "s1", text: "Send the outline", owner: MARA, dueDate: "2026-11-16T00:00:00.000Z", doneAt: null },
@@ -36,8 +36,8 @@ const input = (over: Partial<BriefInput["lead"]> = {}, rest: Partial<BriefInput>
       { id: "s4", text: "Book a room", owner: MARA, dueDate: "2026-11-20T00:00:00.000Z", doneAt: null },
     ],
     contactLinks: [
-      { id: "c1", contactId: "org-1", personId: "p1", role: "Champion" },
-      { id: "c2", contactId: "org-2", personId: "q1", role: null },
+      { id: "c1", contactId: "org-1", personId: "p1", role: "Champion", dealRole: null },
+      { id: "c2", contactId: "org-2", personId: "q1", role: null, dealRole: null },
     ],
     references: [
       { id: "r1", kind: "COMPARABLE", documentId: "n1", title: "Lexroom" },
@@ -134,7 +134,7 @@ describe("buildBrief", () => {
   it("cuts a long first paragraph and meets a meeting with no time or people", () => {
     const long = "x".repeat(500);
     const b = buildBrief(
-      input({ interactions: [{ id: "m", kind: "MEETING", status: "SCHEDULED", at: null, timeZone: null, summary: null, people: [], teamMembers: [], notesSource: null }] }, { organisations: [{ ...ORG, notes: long, website: null, country: null, tags: [] }, PARTNER] }),
+      input({ interactions: [{ id: "m", kind: "MEETING", status: "SCHEDULED", at: null, timeZone: null, summary: null, people: [], teamMembers: [], notesSource: null, outcome: null }] }, { organisations: [{ ...ORG, notes: long, website: null, country: null, tags: [] }, PARTNER] }),
       { meetingId: "m" },
     );
     expect(section(b, "organisation")?.lines[0]).toEqual({ text: "Kelvar Institute" });

@@ -16,6 +16,7 @@ import type {
   RemoveNextStepAction,
   RemoveReferenceAction,
   ReopenNextStepAction,
+  SetInteractionOutcomeAction,
   UnlinkContactAction,
   UpdateInteractionAction,
   UpdateNextStepAction,
@@ -90,6 +91,11 @@ export interface OpportunityRelationshipOperations {
   removeConfidentialItemOperation: (
     state: OpportunityGlobalState,
     action: RemoveConfidentialItemAction,
+    dispatch?: SignalDispatch,
+  ) => void;
+  setInteractionOutcomeOperation: (
+    state: OpportunityGlobalState,
+    action: SetInteractionOutcomeAction,
     dispatch?: SignalDispatch,
   ) => void;
 }

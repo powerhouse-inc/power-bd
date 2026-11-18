@@ -28,6 +28,9 @@ type LeadState {
   parkedFrom: LeadStatus
   statusReason: String
   closedAt: DateTime
+  source: LeadSource
+  sourceDetail: String
+  expectedCloseDate: Date
   angles: [Angle!]!
   messages: [Message!]!
   nextSteps: [NextStep!]!
@@ -141,6 +144,7 @@ type Interaction {
   people: [PersonRef!]!
   teamMembers: [EthereumAddress!]!
   notesSource: VaultRef
+  outcome: InteractionOutcome
 }
 
 type ContactLink {
@@ -148,6 +152,7 @@ type ContactLink {
   contactId: PHID!
   personId: OID
   role: String
+  dealRole: DealRole
 }
 
 enum ReferenceKind {
@@ -176,6 +181,29 @@ type ConfidentialItem {
   addedAt: DateTime!
 }
 
+enum LeadSource {
+  EVENT
+  REFERRAL
+  INBOUND
+  OUTBOUND
+  PARTNER
+  OTHER
+}
+
+enum DealRole {
+  CHAMPION
+  DECISION_MAKER
+  INFLUENCER
+  BLOCKER
+  USER
+}
+
+enum InteractionOutcome {
+  POSITIVE
+  NEUTRAL
+  NEGATIVE
+}
+
 # details
 
 input SetLeadDetailsInput {
@@ -186,6 +214,15 @@ input SetLeadDetailsInput {
 
 input SetOwnerInput {
   owner: EthereumAddress
+}
+
+input SetLeadSourceInput {
+  source: LeadSource
+  sourceDetail: String
+}
+
+input SetExpectedCloseInput {
+  expectedCloseDate: Date
 }
 
 # status
@@ -386,4 +423,14 @@ input AddConfidentialItemInput {
 
 input RemoveConfidentialItemInput {
   id: OID!
+}
+
+input SetContactLinkDealRoleInput {
+  id: OID!
+  dealRole: DealRole
+}
+
+input SetInteractionOutcomeInput {
+  id: OID!
+  outcome: InteractionOutcome
 }

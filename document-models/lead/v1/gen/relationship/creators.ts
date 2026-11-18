@@ -15,6 +15,8 @@ import {
   RemoveNextStepInputSchema,
   RemoveReferenceInputSchema,
   ReopenNextStepInputSchema,
+  SetContactLinkDealRoleInputSchema,
+  SetInteractionOutcomeInputSchema,
   UnlinkContactInputSchema,
   UpdateInteractionInputSchema,
   UpdateNextStepInputSchema,
@@ -31,6 +33,8 @@ import type {
   RemoveNextStepInput,
   RemoveReferenceInput,
   ReopenNextStepInput,
+  SetContactLinkDealRoleInput,
+  SetInteractionOutcomeInput,
   UnlinkContactInput,
   UpdateInteractionInput,
   UpdateNextStepInput,
@@ -47,6 +51,8 @@ import type {
   RemoveNextStepAction,
   RemoveReferenceAction,
   ReopenNextStepAction,
+  SetContactLinkDealRoleAction,
+  SetInteractionOutcomeAction,
   UnlinkContactAction,
   UpdateInteractionAction,
   UpdateNextStepAction,
@@ -175,5 +181,23 @@ export const removeConfidentialItem = (input: RemoveConfidentialItemInput) =>
     { ...input },
     undefined,
     RemoveConfidentialItemInputSchema,
+    "global",
+  );
+
+export const setContactLinkDealRole = (input: SetContactLinkDealRoleInput) =>
+  createAction<SetContactLinkDealRoleAction>(
+    "SET_CONTACT_LINK_DEAL_ROLE",
+    { ...input },
+    undefined,
+    SetContactLinkDealRoleInputSchema,
+    "global",
+  );
+
+export const setInteractionOutcome = (input: SetInteractionOutcomeInput) =>
+  createAction<SetInteractionOutcomeAction>(
+    "SET_INTERACTION_OUTCOME",
+    { ...input },
+    undefined,
+    SetInteractionOutcomeInputSchema,
     "global",
   );

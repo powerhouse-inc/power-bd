@@ -14,14 +14,17 @@ import type {
   CompleteNextStepInput,
   ConfidentialItem,
   ContactLink,
+  DealRole,
   DiscardMessageInput,
   DraftMessageInput,
   DraftMessageRecipientInput,
   Fit,
   Interaction,
   InteractionKind,
+  InteractionOutcome,
   InteractionStatus,
   LeadKind,
+  LeadSource,
   LeadState,
   LeadStatus,
   LinkContactInput,
@@ -41,7 +44,11 @@ import type {
   RemoveReferenceInput,
   ReopenMessageInput,
   ReopenNextStepInput,
+  SetContactLinkDealRoleInput,
+  SetExpectedCloseInput,
+  SetInteractionOutcomeInput,
   SetLeadDetailsInput,
+  SetLeadSourceInput,
   SetLeadStatusInput,
   SetOwnerInput,
   UnlinkContactInput,
@@ -69,6 +76,14 @@ export const definedNonNullAnySchema = z
   .any()
   .refine((v) => isDefinedNonNullAny(v));
 
+export const DealRoleSchema = z.enum([
+  "BLOCKER",
+  "CHAMPION",
+  "DECISION_MAKER",
+  "INFLUENCER",
+  "USER",
+]);
+
 export const FitSchema = z.enum(["BEST", "GOOD", "LATER", "UNLIKELY"]);
 
 export const InteractionKindSchema = z.enum([
@@ -78,6 +93,12 @@ export const InteractionKindSchema = z.enum([
   "MEETING",
   "MESSAGE",
   "OTHER",
+]);
+
+export const InteractionOutcomeSchema = z.enum([
+  "NEGATIVE",
+  "NEUTRAL",
+  "POSITIVE",
 ]);
 
 export const InteractionStatusSchema = z.enum([
@@ -91,6 +112,15 @@ export const LeadKindSchema = z.enum([
   "INVESTOR",
   "PARTNERSHIP",
   "SALES",
+]);
+
+export const LeadSourceSchema = z.enum([
+  "EVENT",
+  "INBOUND",
+  "OTHER",
+  "OUTBOUND",
+  "PARTNER",
+  "REFERRAL",
 ]);
 
 export const LeadStatusSchema = z.enum([
@@ -138,9 +168,11 @@ export function AddConfidentialItemInputSchema(): z.ZodObject<
 > {
   return z.object({
     addedAt: z.iso.datetime(),
-    addedBy: z.string().regex(/^0x[a-fA-F0-9]{40}$/, {
-      error: "Invalid Ethereum address format",
-    }),
+    addedBy: z
+      .string()
+      .regex(/^0x[a-fA-F0-9]{40}$/, {
+        error: "Invalid Ethereum address format",
+      }),
     id: z.string(),
     subjectContactId: z.string().nullish(),
     text: z.string(),
@@ -160,9 +192,11 @@ export function AddInteractionInputSchema(): z.ZodObject<
     summary: z.string().nullish(),
     teamMembers: z
       .array(
-        z.string().regex(/^0x[a-fA-F0-9]{40}$/, {
-          error: "Invalid Ethereum address format",
-        }),
+        z
+          .string()
+          .regex(/^0x[a-fA-F0-9]{40}$/, {
+            error: "Invalid Ethereum address format",
+          }),
       )
       .nullish(),
     timeZone: z.string().nullish(),
@@ -229,9 +263,11 @@ export function ApproveMessageInputSchema(): z.ZodObject<
 > {
   return z.object({
     approvedAt: z.iso.datetime(),
-    approvedBy: z.string().regex(/^0x[a-fA-F0-9]{40}$/, {
-      error: "Invalid Ethereum address format",
-    }),
+    approvedBy: z
+      .string()
+      .regex(/^0x[a-fA-F0-9]{40}$/, {
+        error: "Invalid Ethereum address format",
+      }),
     id: z.string(),
   });
 }
@@ -251,9 +287,11 @@ export function ConfidentialItemSchema(): z.ZodObject<
   return z.object({
     __typename: z.literal("ConfidentialItem").optional(),
     addedAt: z.iso.datetime(),
-    addedBy: z.string().regex(/^0x[a-fA-F0-9]{40}$/, {
-      error: "Invalid Ethereum address format",
-    }),
+    addedBy: z
+      .string()
+      .regex(/^0x[a-fA-F0-9]{40}$/, {
+        error: "Invalid Ethereum address format",
+      }),
     id: z.string(),
     subjectContactId: z.string().nullish(),
     text: z.string(),
@@ -264,6 +302,7 @@ export function ContactLinkSchema(): z.ZodObject<Properties<ContactLink>> {
   return z.object({
     __typename: z.literal("ContactLink").optional(),
     contactId: z.string(),
+    dealRole: DealRoleSchema.nullish(),
     id: z.string(),
     personId: z.string().nullish(),
     role: z.string().nullish(),
@@ -286,9 +325,11 @@ export function DraftMessageInputSchema(): z.ZodObject<
     body: z.string(),
     channel: MessageChannelSchema,
     draftedAt: z.iso.datetime(),
-    draftedBy: z.string().regex(/^0x[a-fA-F0-9]{40}$/, {
-      error: "Invalid Ethereum address format",
-    }),
+    draftedBy: z
+      .string()
+      .regex(/^0x[a-fA-F0-9]{40}$/, {
+        error: "Invalid Ethereum address format",
+      }),
     id: z.string(),
     recipient: z.lazy(() => DraftMessageRecipientInputSchema().nullish()),
     subject: z.string().nullish(),
@@ -311,13 +352,16 @@ export function InteractionSchema(): z.ZodObject<Properties<Interaction>> {
     id: z.string(),
     kind: InteractionKindSchema,
     notesSource: z.lazy(() => VaultRefSchema().nullish()),
+    outcome: InteractionOutcomeSchema.nullish(),
     people: z.array(z.lazy(() => PersonRefSchema())),
     status: InteractionStatusSchema,
     summary: z.string().nullish(),
     teamMembers: z.array(
-      z.string().regex(/^0x[a-fA-F0-9]{40}$/, {
-        error: "Invalid Ethereum address format",
-      }),
+      z
+        .string()
+        .regex(/^0x[a-fA-F0-9]{40}$/, {
+          error: "Invalid Ethereum address format",
+        }),
     ),
     timeZone: z.string().nullish(),
   });
@@ -330,6 +374,7 @@ export function LeadStateSchema(): z.ZodObject<Properties<LeadState>> {
     closedAt: z.iso.datetime().nullish(),
     confidentialItems: z.array(z.lazy(() => ConfidentialItemSchema())),
     contactLinks: z.array(z.lazy(() => ContactLinkSchema())),
+    expectedCloseDate: z.iso.datetime().nullish(),
     interactions: z.array(z.lazy(() => InteractionSchema())),
     kind: LeadKindSchema.nullish(),
     messages: z.array(z.lazy(() => MessageSchema())),
@@ -344,6 +389,8 @@ export function LeadStateSchema(): z.ZodObject<Properties<LeadState>> {
       .nullish(),
     parkedFrom: LeadStatusSchema.nullish(),
     references: z.array(z.lazy(() => ReferenceSchema())),
+    source: LeadSourceSchema.nullish(),
+    sourceDetail: z.string().nullish(),
     status: LeadStatusSchema,
     statusReason: z.string().nullish(),
   });
@@ -366,9 +413,11 @@ export function MarkMessageSentInputSchema(): z.ZodObject<
   return z.object({
     id: z.string(),
     sentAt: z.iso.datetime(),
-    sentBy: z.string().regex(/^0x[a-fA-F0-9]{40}$/, {
-      error: "Invalid Ethereum address format",
-    }),
+    sentBy: z
+      .string()
+      .regex(/^0x[a-fA-F0-9]{40}$/, {
+        error: "Invalid Ethereum address format",
+      }),
   });
 }
 
@@ -386,9 +435,11 @@ export function MessageSchema(): z.ZodObject<Properties<Message>> {
     body: z.string(),
     channel: MessageChannelSchema,
     draftedAt: z.iso.datetime(),
-    draftedBy: z.string().regex(/^0x[a-fA-F0-9]{40}$/, {
-      error: "Invalid Ethereum address format",
-    }),
+    draftedBy: z
+      .string()
+      .regex(/^0x[a-fA-F0-9]{40}$/, {
+        error: "Invalid Ethereum address format",
+      }),
     id: z.string(),
     recipient: z.lazy(() => PersonRefSchema().nullish()),
     sentAt: z.iso.datetime().nullish(),
@@ -500,6 +551,32 @@ export function ReopenNextStepInputSchema(): z.ZodObject<
   });
 }
 
+export function SetContactLinkDealRoleInputSchema(): z.ZodObject<
+  Properties<SetContactLinkDealRoleInput>
+> {
+  return z.object({
+    dealRole: DealRoleSchema.nullish(),
+    id: z.string(),
+  });
+}
+
+export function SetExpectedCloseInputSchema(): z.ZodObject<
+  Properties<SetExpectedCloseInput>
+> {
+  return z.object({
+    expectedCloseDate: z.iso.datetime().nullish(),
+  });
+}
+
+export function SetInteractionOutcomeInputSchema(): z.ZodObject<
+  Properties<SetInteractionOutcomeInput>
+> {
+  return z.object({
+    id: z.string(),
+    outcome: InteractionOutcomeSchema.nullish(),
+  });
+}
+
 export function SetLeadDetailsInputSchema(): z.ZodObject<
   Properties<SetLeadDetailsInput>
 > {
@@ -507,6 +584,15 @@ export function SetLeadDetailsInputSchema(): z.ZodObject<
     kind: LeadKindSchema.nullish(),
     name: z.string().nullish(),
     organisationId: z.string().nullish(),
+  });
+}
+
+export function SetLeadSourceInputSchema(): z.ZodObject<
+  Properties<SetLeadSourceInput>
+> {
+  return z.object({
+    source: LeadSourceSchema.nullish(),
+    sourceDetail: z.string().nullish(),
   });
 }
 
@@ -575,9 +661,11 @@ export function UpdateInteractionInputSchema(): z.ZodObject<
     summary: z.string().nullish(),
     teamMembers: z
       .array(
-        z.string().regex(/^0x[a-fA-F0-9]{40}$/, {
-          error: "Invalid Ethereum address format",
-        }),
+        z
+          .string()
+          .regex(/^0x[a-fA-F0-9]{40}$/, {
+            error: "Invalid Ethereum address format",
+          }),
       )
       .nullish(),
     timeZone: z.string().nullish(),

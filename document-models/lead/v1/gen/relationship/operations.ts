@@ -16,6 +16,8 @@ import type {
   RemoveNextStepAction,
   RemoveReferenceAction,
   ReopenNextStepAction,
+  SetContactLinkDealRoleAction,
+  SetInteractionOutcomeAction,
   UnlinkContactAction,
   UpdateInteractionAction,
   UpdateNextStepAction,
@@ -90,6 +92,16 @@ export interface LeadRelationshipOperations {
   removeConfidentialItemOperation: (
     state: LeadGlobalState,
     action: RemoveConfidentialItemAction,
+    dispatch?: SignalDispatch,
+  ) => void;
+  setContactLinkDealRoleOperation: (
+    state: LeadGlobalState,
+    action: SetContactLinkDealRoleAction,
+    dispatch?: SignalDispatch,
+  ) => void;
+  setInteractionOutcomeOperation: (
+    state: LeadGlobalState,
+    action: SetInteractionOutcomeAction,
     dispatch?: SignalDispatch,
   ) => void;
 }
