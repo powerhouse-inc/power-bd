@@ -790,6 +790,27 @@
                 </div>
               </div>
             </div>
+                      <h3 class="ds-sub">Quick capture</h3>
+            <p class="ds-section__lead">Logging what just happened, from anywhere: "Log" in the top bar, and on a phone a floating button in thumb reach (the sidebar is gone there). On a phone the form rises from the bottom, its inputs big enough that the phone does not zoom. It saves a held entry in the record's history and an optional next step; nothing is sent.</p>
+            <div class="ds-demo">
+              <div class="ds-pane pb-root">
+                <div class="pb-backdrop pb-backdrop--sheet" style="position: relative; inset: auto; z-index: auto; min-height: 660px; border-radius: var(--pb-r-lg)">
+                  <div class="pb-dialog" role="dialog" aria-label="Log what happened">
+                    <div class="pb-dialog__head"><i data-icon="history"></i>Log what happened</div>
+                    <div class="pb-dialog__body">
+                      <div class="pb-field"><span class="pb-field__label">On</span><input class="pb-input" placeholder="Find a lead or funding opportunity" value="kel" />
+                        <div class="pb-capture__picks"><button class="pb-capture__pick"><i data-icon="funding"></i>Kelvar grant<span class="pb-capture__pick-kind">Funding</span></button><button class="pb-capture__pick is-active"><i data-icon="leads"></i>Kelvar pilot<span class="pb-capture__pick-kind">Lead</span></button></div></div>
+                      <div class="pb-segmented"><button class="pb-segmented__item is-active"><i data-icon="meeting"></i>Meeting</button><button class="pb-segmented__item"><i data-icon="phone"></i>Call</button><button class="pb-segmented__item"><i data-icon="mail"></i>Email</button><button class="pb-segmented__item"><i data-icon="message"></i>Message</button></div>
+                      <div class="pb-capture__row"><label class="pb-field"><span class="pb-field__label">Day</span><input class="pb-input" type="date" value="2026-11-18" /></label><label class="pb-field"><span class="pb-field__label">Time, Europe/Ljubljana</span><input class="pb-input" type="time" value="14:30" /></label></div>
+                      <label class="pb-field"><span class="pb-field__label">What happened</span><input class="pb-input" value="They want a pilot in January" /></label>
+                      <div class="pb-capture__row"><label class="pb-field"><span class="pb-field__label">Next step, if any</span><input class="pb-input" value="Send the pilot outline" /></label><label class="pb-field"><span class="pb-field__label">By</span><input class="pb-input" type="date" value="2026-11-20" /></label></div>
+                    </div>
+                    <div class="pb-dialog__foot"><p class="pb-reassure"><i data-icon="shield"></i>Nothing is sent from Power BD: this only records it.</p><button class="pb-btn pb-btn--ghost pb-btn--sm">Cancel</button><button class="pb-btn pb-btn--primary pb-btn--sm">Save</button></div>
+                  </div>
+                  <button class="pb-fab" style="position: absolute; top: var(--pb-s-4); bottom: auto; display: inline-flex" aria-label="Log what happened"><i data-icon="plus"></i>Log</button>
+                </div>
+              </div>
+            </div>
           </section>
 
           <!-- ============================== FEEDBACK ============================== -->

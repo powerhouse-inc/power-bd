@@ -1234,3 +1234,35 @@ From a lead's page ("Prepare a brief") or a scheduled meeting on it ("Brief"): w
 - **Decision:** what a meeting needs on one page; the agent second and optional.
 - **Emotion:** confidential items never leave with a copy or the chat, and say so; nothing is sent.
 
+### Quick capture (built, `components/capture/CaptureDialog.tsx`, `kit/capture/`)
+
+Logging what just happened, from anywhere, and above all from a phone right after a meeting: on which lead or funding opportunity, what it was, when, one line of what happened, and the next step if there is one.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** On a phone a floating "Log" button in the primary colour, bottom right, is the one thing that stands out; on a wider screen a quiet "Log" beside the save state in the top bar. In the form, Save is the one primary button, disabled until the form can be saved, with the first thing it waits for written under the fields.
+2. **Wayfinding.** It opens over the page the person is on and closes back to it. After saving it says where the entry went and offers to open that record, log another, or be done. On a phone the form rises from the bottom, where the thumb is.
+3. **Memory and semantics.** A floating compose button and a bottom sheet, as mail and chat apps on a phone; a search that lists recent things first, as a phone's share sheet does.
+4. **Language.** "Log what happened", "On", "What happened", "Next step, if any", "By"; the kinds of contact as the history names them (Meeting, Call, Email, Message); the time with the team's time zone named.
+5. **Decision making.** Fewest choices first: the record (mine and recently changed first, a search for the rest), what it was (meeting preselected), when (now preselected), one line. The next step is optional, and a date without a step is caught before saving.
+6. **Emotion.** Fears: "did that email them?", "did it save?". The foot says nothing is sent from Power BD; after saving it says "Logged on Kelvar pilot, with its next step"; a refusal shows in the form, which keeps what was typed.
+
+**2. Concepts weighed**
+
+- **A · Task-oriented:** a "Log" button in the top bar only. Always in one place, but on a phone the top bar is full and far from the thumb.
+- **B · Conventional:** a floating button on a phone and a bottom sheet, a top-bar button on wider screens. Familiar from every mobile app.
+- **C · Immersive:** a full-screen capture page with voice notes. Fast to talk into, but a new page to find, and voice is not stored.
+
+**Chosen:** B. Evidence: on screens up to 760px the sidebar is hidden and the top bar holds the breadcrumb and search, so a top-bar-only entry would be the hardest thing to reach exactly where capture is needed; the records already take a held interaction and a next step, as the record pages add them.
+
+**3. Implementation:** `.pb-fab` (shown up to 760px), `.pb-topbar__log` (hidden up to 760px), `.pb-backdrop--sheet` (a bottom sheet up to 760px, inputs at 16px so the phone does not zoom, the kinds as four equal columns), `.pb-capture__picks`, `__pick` (`.is-active` in the accent tint), `__pick-kind`, `__row`, `__wait`. Shown on the showcase at 390px. The choices and the inputs are pure (`kit/capture/`: `captureRecords`, `captureCandidates`, `captureMissing`, `captureInputs`); the save goes through `useDriveWrite().dispatchTo` as one change of the record.
+
+**4. Mapping**
+
+- **Vision:** one floating button on a phone; Save the one primary button.
+- **Wayfinding:** over the current page; after saving, open the record or log another.
+- **Memory:** floating compose button and bottom sheet; recent first.
+- **Language:** the history's words; the time zone named.
+- **Decision:** record, kind, when and one line, with sensible defaults; the next step optional.
+- **Emotion:** nothing is sent; it says where the entry went.
+
