@@ -2116,3 +2116,46 @@ a.pb-ref__title:focus-visible { outline: 2px solid var(--pb-accent); outline-off
 .pb-gate__title { margin: 0; font-size: var(--pb-fs-lg); font-weight: 600; color: var(--pb-text); }
 .pb-gate__address { display: flex; align-items: center; gap: var(--pb-s-2); padding: var(--pb-s-2) var(--pb-s-3); border-radius: var(--pb-r-md); background: var(--pb-bg-subtle); }
 .pb-gate__address code { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: var(--pb-fs-sm); }
+
+/* =============================================================================
+   Calendar: a month of whole weeks or one week, Monday first. Each day lists
+   its items with the Coming up strip's marks; today is the one filled spot.
+   While an item is in the hand the days that take it tint like a board's
+   stages, and the day under the pointer says what a drop does.
+   ============================================================================= */
+.pb-cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border-top: 1px solid var(--pb-border); border-left: 1px solid var(--pb-border); border-radius: var(--pb-r-md); }
+.pb-cal__wd { padding: var(--pb-s-1-5) var(--pb-s-2); border-right: 1px solid var(--pb-border); border-bottom: 1px solid var(--pb-border); color: var(--pb-text-tertiary); font-size: var(--pb-fs-xs); font-weight: var(--pb-fw-medium); text-transform: uppercase; letter-spacing: 0.02em; }
+.pb-cal__day { position: relative; display: grid; grid-auto-rows: max-content; gap: var(--pb-s-0-5); min-width: 0; min-height: 116px; padding: var(--pb-s-1) var(--pb-s-1) var(--pb-s-1-5); border-right: 1px solid var(--pb-border); border-bottom: 1px solid var(--pb-border); transition: background var(--pb-dur) var(--pb-ease); }
+.pb-cal--week .pb-cal__day { min-height: 420px; }
+.pb-cal__day.is-outside { background: var(--pb-bg-hover); }
+.pb-cal__head { display: flex; align-items: center; gap: var(--pb-s-1); min-height: 24px; }
+.pb-cal__num { display: grid; place-items: center; min-width: 22px; height: 22px; padding: 0 var(--pb-s-1); border-radius: var(--pb-r-full); color: var(--pb-text-secondary); font-size: var(--pb-fs-sm); font-weight: var(--pb-fw-medium); line-height: 1; font-variant-numeric: tabular-nums; }
+.pb-cal__day.is-outside .pb-cal__num,
+.pb-cal__day.is-past .pb-cal__num { color: var(--pb-text-disabled); }
+.pb-cal__day.is-today .pb-cal__num { background: var(--pb-primary); color: var(--pb-on-primary); font-weight: var(--pb-fw-semibold); }
+/* Add something on a day: quiet until the day is pointed at or focused. */
+.pb-cal__add { margin-left: auto; opacity: 0; transition: opacity var(--pb-dur) var(--pb-ease); }
+.pb-cal__day:hover .pb-cal__add,
+.pb-cal__day:focus-within .pb-cal__add { opacity: 1; }
+@media (hover: none) { .pb-cal__add { opacity: 1; } }
+.pb-cal__item { display: flex; align-items: center; gap: var(--pb-s-1-5); min-width: 0; padding: var(--pb-s-0-5) var(--pb-s-1-5); border: 0; border-radius: var(--pb-r-sm); background: none; color: var(--pb-text); font: inherit; font-size: var(--pb-fs-xs); text-align: left; cursor: pointer; }
+.pb-cal__item:hover,
+.pb-cal__item:focus-visible { background: var(--pb-bg-hover); }
+.pb-cal__item[draggable="true"] { cursor: grab; }
+.pb-cal__item.is-away { opacity: 0.35; }
+.pb-cal__time { flex: none; color: var(--pb-text-secondary); font-variant-numeric: tabular-nums; }
+.pb-cal__text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pb-cal__item.is-late .pb-cal__text { color: var(--pb-red-text); }
+.pb-cal__more { justify-self: start; padding: var(--pb-s-0-5) var(--pb-s-1-5); border: 0; border-radius: var(--pb-r-sm); background: none; color: var(--pb-text-secondary); font: inherit; font-size: var(--pb-fs-xs); cursor: pointer; }
+.pb-cal__more:hover { background: var(--pb-bg-hover); color: var(--pb-text); }
+.pb-cal__day.is-target { background: var(--pb-accent-soft); }
+.pb-cal__day.is-target.is-over { background: color-mix(in srgb, var(--pb-accent) 22%, transparent); }
+.pb-cal__day.is-refused.is-over > :not(.pb-board__hint) { opacity: 0.4; }
+/* The day's line sits at its foot, like the stage's under its head. */
+.pb-cal__day > .pb-board__hint { top: auto; right: var(--pb-s-1); bottom: var(--pb-s-1); left: var(--pb-s-1); }
+.pb-cal__day.is-over > .pb-board__hint { display: flex; }
+/* A question or the add panel opens over the day, above its neighbours. */
+.pb-cal__day > .pb-ask { position: absolute; top: var(--pb-s-6); left: var(--pb-s-1); z-index: var(--pb-z-popover); width: min(300px, 80vw); }
+.pb-cal__day:nth-child(7n) > .pb-ask,
+.pb-cal__day:nth-child(7n - 1) > .pb-ask { right: var(--pb-s-1); left: auto; }
+.pb-cal__title { margin: 0; font-size: var(--pb-fs-lg); font-weight: var(--pb-fw-semibold); }

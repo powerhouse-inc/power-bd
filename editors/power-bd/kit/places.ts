@@ -3,6 +3,7 @@ import type { PlaceCounts } from "./drive-plan.js";
 
 export type PlaceId =
   | "overview"
+  | "calendar"
   | "leads"
   | "proposals"
   | "funding"
@@ -21,13 +22,19 @@ export interface Place {
   empty: string;
 }
 
-/** The ten places, in sidebar order. The Agent and Settings sit at the sidebar's foot. */
+/** The eleven places, in sidebar order. The Agent and Settings sit at the sidebar's foot. */
 export const PLACES: readonly Place[] = [
   {
     id: "overview",
     label: "Overview",
     icon: "overview",
     empty: "What needs attention, and what is coming up, will appear here.",
+  },
+  {
+    id: "calendar",
+    label: "Calendar",
+    icon: "calendar",
+    empty: "Next steps, meetings and deadlines will appear here, on their days.",
   },
   {
     id: "leads",

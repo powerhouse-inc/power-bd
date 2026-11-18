@@ -50,9 +50,24 @@ export function itemsByDay(
 }
 
 /** The change that moves an item to another day, as the record page makes it. */
+/** The kind of record a next step or meeting sits in: both have them. */
+export type Relationship = "lead" | "opportunity";
+
 export type Reschedule =
-  | { act: "NEXT_STEP"; documentId: string; stepId: string; dueDate: string }
-  | { act: "MEETING"; documentId: string; interactionId: string; at: string }
+  | {
+      act: "NEXT_STEP";
+      documentId: string;
+      record: Relationship;
+      stepId: string;
+      dueDate: string;
+    }
+  | {
+      act: "MEETING";
+      documentId: string;
+      record: Relationship;
+      interactionId: string;
+      at: string;
+    }
   | {
       act: "DECIDE_BY";
       documentId: string;
@@ -91,6 +106,8 @@ export function dayMove(item: DatedItem, to: string, today: string): DayMove {
   if (to === item.day) return { kind: "stay" };
   if (to < today) return refused("Pick today or a later day");
   const documentId = item.source.id;
+  const record: Relationship =
+    item.source.kind === "opportunity" ? "opportunity" : "lead";
   switch (item.due) {
     case "NEXT_STEP":
       return item.itemId
@@ -99,6 +116,7 @@ export function dayMove(item: DatedItem, to: string, today: string): DayMove {
             reschedule: {
               act: "NEXT_STEP",
               documentId,
+              record,
               stepId: item.itemId,
               dueDate: wholeDay(to),
             },
@@ -114,7 +132,13 @@ export function dayMove(item: DatedItem, to: string, today: string): DayMove {
       );
       return {
         kind: "confirm",
-        reschedule: { act: "MEETING", documentId, interactionId: item.itemId, at },
+        reschedule: {
+          act: "MEETING",
+          documentId,
+          record,
+          interactionId: item.itemId,
+          at,
+        },
         reassurance: MEETING_REASSURANCE,
       };
     }
@@ -159,4 +183,69 @@ export function dayHint(move: DayMove): string {
     case "refused":
       return move.why;
   }
+}
+
+/** An item's line on a day: the step or meeting itself, or what the date is for and whose it is. */
+export function itemLine(item: DatedItem): string {
+  const name = item.source.name || "Untitled";
+  switch (item.due) {
+    case "NEXT_STEP":
+    case "MEETING":
+      return item.label;
+    case "OPPORTUNITY_STEP":
+      return `${item.label}: ${name}`;
+    case "DECIDE_BY":
+      return `Decide: ${name}`;
+    case "EXPECTED_OPENING":
+      return `Opens: ${name}`;
+    case "PROPOSAL_VALID_UNTIL":
+      return `Valid until: ${name}`;
+  }
+}
+
+/** True for a next step whose day has passed: it is late, not just due. */
+export const isLate = (item: DatedItem, today: string): boolean =>
+  item.due === "NEXT_STEP" && item.day < today;
+
+const utc = (day: string) => new Date(`${day}T00:00:00Z`);
+
+/** "November 2026". */
+export const monthTitle = (month: string): string =>
+  new Intl.DateTimeFormat("en-GB", { month: "long", year: "numeric", timeZone: "UTC" }).format(utc(`${month}-01`));
+
+/** "16 – 22 Nov 2026", or "30 Nov – 6 Dec 2026" across months. */
+export function weekTitle(days: readonly string[]): string {
+  const first = days[0], last = days[days.length - 1];
+  const fmt = (day: string, o: Intl.DateTimeFormatOptions) =>
+    new Intl.DateTimeFormat("en-GB", { ...o, timeZone: "UTC" }).format(utc(day));
+  const end = fmt(last, { day: "numeric", month: "short", year: "numeric" });
+  const start = first.slice(0, 7) === last.slice(0, 7)
+    ? fmt(first, { day: "numeric" })
+    : first.slice(0, 4) === last.slice(0, 4)
+      ? fmt(first, { day: "numeric", month: "short" })
+      : fmt(first, { day: "numeric", month: "short", year: "numeric" });
+  return `${start} – ${end}`;
+}
+
+/** A record something can be added to from the calendar. */
+export type Addable = { id: string; name: string; kind: Relationship };
+
+/** The open leads and funding opportunities, by name: where a next step or meeting can be added. */
+export function addableRecords(input: {
+  leads: readonly { id: string; state: { name?: string | null; status: string } }[];
+  opportunities: readonly { id: string; state: { name?: string | null; status: string } }[];
+}): Addable[] {
+  const closedLead = new Set(["WON", "LOST"]);
+  const closedOpp = new Set(["AWARDED", "REJECTED", "WITHDRAWN", "NO_GO"]);
+  const byName = (a: Addable, b: Addable) => a.name.localeCompare(b.name);
+  return [
+    ...input.leads
+      .filter((l) => !closedLead.has(l.state.status))
+      .map((l) => ({ id: l.id, name: l.state.name || "Untitled lead", kind: "lead" as const }))
+      .sort(byName),
+    ...input.opportunities
+      .filter((o) => !closedOpp.has(o.state.status))
+      .map((o) => ({ id: o.id, name: o.state.name || "Untitled opportunity", kind: "opportunity" as const }))
+      .sort(byName),
+  ];
 }

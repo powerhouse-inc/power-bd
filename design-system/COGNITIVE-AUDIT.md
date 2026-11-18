@@ -1096,3 +1096,35 @@ The board entries stand. This covers one change: the List view of Leads, Funding
 - **Decision:** what a drop does shows before it; the board's questions; the investor's start where the list starts it.
 - **Emotion:** nothing final in one drop; a refusal leaves the row in place with the reason under it; "Move to…" for those who do not drag.
 
+### Calendar (built, `views/calendar/`, `kit/calendar/`)
+
+A new place, after Overview: every dated item of the open records on its day, a month or a week at a time. The team's own dates move by dragging; next steps and meetings are added on a day.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** Today's date in the filled circle is the anchor: the one solid spot, as in the Coming up strip. Items carry the strip's marks (diamond for a deadline, dot for a meeting, square for a next step), so the eye sorts them without reading. A late next step is red, the only red on the page. While an item is in the hand, the days that take it tint in the accent blue and the ones that refuse it say why when the pointer is over them; no day or item has a coloured edge.
+2. **Wayfinding.** Today, earlier, later and the month or week title sit together at the top; Month and Week switch in place. "n more" on a crowded day opens its week, where every item shows. Clicking an item opens its record. A question opens over the day the item was put on; Escape or Cancel gives the focus back to the item, which never left its day.
+3. **Memory and semantics.** A month grid with weeks starting Monday, a week of seven columns, dragging an event to another day, a plus to add on a day: the conventions of Google Calendar and Outlook. The marks and words are the Coming up strip's, so the Calendar reads as that strip, opened out.
+4. **Language.** "Next step", "Meeting", "Deadline", "Decide: …", "Opens: …", "Valid until: …". A day says "Moves here", "Moves here · asks to confirm", or what to do instead: "Pick today or a later day", "The funder sets this date. If it changed, change it on the opportunity's page", "The client has this date in the proposal they received".
+5. **Decision making.** Only dates the team owns move: next steps, decide-by dates and the expected opening at once; a meeting after one confirmation, keeping its clock time in its own time zone. Dates others set are not draggable at all, and say why. Nothing moves into the past, so rescheduling a late step means picking today or later. Adding asks three things in order: what (next step or meeting), for which open lead or funding opportunity, and the words (and a time for a meeting).
+6. **Emotion.** Fears: "did I just move the client's deadline?", "did that send a new invitation?". A funder's or client's date can't be dragged. Moving or adding a meeting says that nothing is sent from Power BD. A refused change leaves the item on its day with the reason above the grid.
+
+**2. Concepts weighed**
+
+- **A · Task-oriented:** an agenda list by day with a date picker on each row. Fast and exact, but it hides how full a week is and what sits next to what.
+- **B · Conventional:** a Google-style month and week grid with drag and a plus on each day. Familiar, but a plain copy would let the funder's and the client's dates be dragged like any event.
+- **C · Immersive:** an hourly week timeline with resizable meetings. Rich, but most items here are whole days, and meeting length is not stored.
+
+**Chosen:** B's grid and drag, with A's restraint (only the team's own dates move, everything else opens its record) and the strip's marks. Evidence: next steps, decide-by dates and the expected opening are the team's to set (`UPDATE_NEXT_STEP`, `SET_DECIDE_BY`, `SET_EXPECTED_OPENING`); funding steps record what a funder published, with a source and a checked date; a sent proposal's valid-until is what the client holds; a meeting has a time and a time zone but no length.
+
+**3. Implementation:** `.pb-cal` with `__wd`, `__day` (`.is-outside`, `.is-past`, `.is-today`, `.is-target`, `.is-over`, `.is-refused`), `__head`, `__num`, `__add`, `__item` (`.is-late`, `.is-away`), `__time`, `__text`, `__more`, `__title`, `.pb-cal--week`; the strip's marks and legend; `pb-board__hint` at the day's foot; `pb-ask` for the meeting question and the add panel; `pb-reassure`. Shown on the showcase. The rules are pure, in `kit/calendar/` (`dayMove`, `canReschedule`, `monthGrid`, `weekDays`, `itemLine`, `addableRecords`), on `datedItems` from `kit/overview/due.ts`. A test applies every move the calendar offers to the lead, opportunity and decision reducers and checks the item lands on the day it was put on.
+
+**4. Mapping**
+
+- **Vision:** today is the one filled spot; marks sort items at a glance; red only for a late step.
+- **Wayfinding:** today, earlier and later beside the title; "n more" opens the week; an item opens its record.
+- **Memory:** a month grid and a week of columns, drag to move, plus to add; the Coming up strip's marks and words.
+- **Language:** what the item is and whose; each day says what a drop does or what to do instead.
+- **Decision:** only the team's dates move; one confirmation for a meeting; add asks what, for whom, then the words.
+- **Emotion:** others' dates can't be dragged; nothing is sent from Power BD; a refused change leaves the item where it was.
+

@@ -30,6 +30,11 @@ import {
 import {
   MEETING_REASSURANCE,
   addMonths,
+  addableRecords,
+  isLate,
+  itemLine,
+  monthTitle,
+  weekTitle,
   canReschedule,
   dayDistance,
   dayHint,
@@ -120,6 +125,7 @@ describe("dayMove", () => {
       reschedule: {
         act: "NEXT_STEP",
         documentId: "lead-1",
+        record: "lead",
         stepId: "step-1",
         dueDate: "2026-11-24T00:00:00.000Z",
       },
@@ -160,6 +166,7 @@ describe("dayMove", () => {
     expect(m.reschedule).toEqual({
       act: "MEETING",
       documentId: "lead-1",
+      record: "lead",
       interactionId: "m-1",
       at: "2026-10-27T09:00:00.000Z",
     });
@@ -316,5 +323,48 @@ describe("agrees with the reducers", () => {
     }
     // Lead: step and meeting; each opportunity: its date and its step; the decision: its date.
     expect(moved).toBe(7);
+  });
+});
+
+describe("words", () => {
+  it("names each item on its day", () => {
+    const g = (over: Partial<DatedItem>) => itemLine(item({ source: { kind: "opportunity", id: "o", name: "Clean ports grant" }, ...over }));
+    expect(g({ label: "Send the outline" })).toBe("Send the outline");
+    expect(g({ due: "MEETING", label: "Kick-off" })).toBe("Kick-off");
+    expect(g({ due: "OPPORTUNITY_STEP", label: "Cut-off" })).toBe("Cut-off: Clean ports grant");
+    expect(g({ due: "DECIDE_BY" })).toBe("Decide: Clean ports grant");
+    expect(g({ due: "EXPECTED_OPENING" })).toBe("Opens: Clean ports grant");
+    expect(g({ due: "PROPOSAL_VALID_UNTIL", source: { kind: "lead", id: "l", name: "" } })).toBe("Valid until: Untitled");
+  });
+
+  it("calls only a next step whose day has passed late", () => {
+    expect(isLate(item({ day: "2026-11-17" }), TODAY)).toBe(true);
+    expect(isLate(item({ day: TODAY }), TODAY)).toBe(false);
+    expect(isLate(item({ day: "2026-11-17", due: "MEETING" }), TODAY)).toBe(false);
+  });
+
+  it("titles a month and a week", () => {
+    expect(monthTitle("2026-11")).toBe("November 2026");
+    expect(weekTitle(weekDays("2026-11-18"))).toBe("16 – 22 Nov 2026");
+    expect(weekTitle(weekDays("2026-12-01"))).toBe("30 Nov – 6 Dec 2026");
+    expect(weekTitle(weekDays("2026-12-31"))).toBe("28 Dec 2026 – 3 Jan 2027");
+  });
+
+  it("offers the open leads and funding opportunities to add to, by name", () => {
+    const records = addableRecords({
+      leads: [
+        { id: "l2", state: { name: "Pilot", status: "IN_TOUCH" } },
+        { id: "l1", state: { name: "Audit", status: "TO_CONTACT" } },
+        { id: "l3", state: { name: "Won one", status: "WON" } },
+        { id: "l4", state: { name: null, status: "PARKED" } },
+      ],
+      opportunities: [
+        { id: "o1", state: { name: "Grant", status: "PREPARING" } },
+        { id: "o2", state: { name: "Old", status: "NO_GO" } },
+      ],
+    });
+    expect(records.map((r) => `${r.kind}:${r.name}`)).toEqual([
+      "lead:Audit", "lead:Pilot", "lead:Untitled lead", "opportunity:Grant",
+    ]);
   });
 });

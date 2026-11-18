@@ -1,5 +1,10 @@
 export {
   MEETING_REASSURANCE,
+  addableRecords,
+  isLate,
+  itemLine,
+  monthTitle,
+  weekTitle,
   addMonths,
   canReschedule,
   dayDistance,
@@ -10,6 +15,8 @@ export {
   monthOf,
   weekDays,
   weekStart,
+  type Addable,
   type DayMove,
+  type Relationship,
   type Reschedule,
 } from "./calendar.js";

@@ -1,5 +1,6 @@
 import type { ComponentType } from "react";
 import type { PlaceId } from "../kit/places.js";
+import { CalendarView } from "../views/calendar/CalendarView.js";
 import { DecisionsView } from "../views/decisions/DecisionsView.js";
 import { FundingView } from "../views/funding/FundingView.js";
 import { InvestorsView } from "../views/investors/InvestorsView.js";
@@ -19,6 +20,7 @@ export const PLACE_VIEWS: Record<
   ComponentType<{ driveId: string }>
 > = {
   overview: OverviewView,
+  calendar: CalendarView,
   leads: LeadsView,
   proposals: ProposalsView,
   funding: FundingView,
