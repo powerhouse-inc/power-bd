@@ -1,5 +1,7 @@
+import type { InvestorListState } from "document-models/investor-list";
 import type { LeadState } from "document-models/lead";
 import type { OpportunityState } from "document-models/opportunity";
+import type { ProposalState } from "document-models/proposal";
 import { VOCABULARY } from "../../../../design-system/vocabulary.js";
 import { OPPORTUNITY_STATUSES, allowedMoves } from "../funding/index.js";
 import { leadStage, opportunityStage } from "../overview/board.js";
@@ -8,6 +10,8 @@ import { cardKey } from "./cards.js";
 
 type LeadStatus = LeadState["status"];
 type OpportunityStatus = OpportunityState["status"];
+type ProposalStatus = ProposalState["status"];
+type InvestorRowState = InvestorListState["rows"][number]["state"];
 
 /** What the rules of a move read from a card's record. */
 export type MoveCard =
@@ -38,6 +42,8 @@ type OptionBase = {
   final: boolean;
   /** The question that asks for the reason. */
   ask?: string;
+  /** The confirm button's words, when "Mark <status>" would not say it. */
+  verb?: string;
 };
 
 /** One status a move can end in, and the action that reaches it. */
@@ -47,6 +53,18 @@ export type MoveOption = OptionBase &
     | { act: "PARK_LEAD"; status: "PARKED" }
     | { act: "UNPARK_LEAD"; status: LeadStatus }
     | { act: "OPPORTUNITY_STATUS"; status: OpportunityStatus }
+    | { act: "SHORTLIST_ROW"; status: Extract<InvestorRowState, "SHORTLISTED"> }
+    | { act: "RELIST_ROW"; status: Extract<InvestorRowState, "LISTED"> }
+    | { act: "EXCLUDE_ROW"; status: Extract<InvestorRowState, "EXCLUDED"> }
+    | { act: "REOPEN_PROPOSAL"; status: Extract<ProposalStatus, "DRAFT"> }
+    | {
+        act: "ACCEPT_PROPOSAL";
+        status: Extract<ProposalStatus, "ACCEPTED">;
+        /** The proposal option the client chose. */
+        optionId: string;
+      }
+    | { act: "DECLINE_PROPOSAL"; status: Extract<ProposalStatus, "DECLINED"> }
+    | { act: "WITHDRAW_PROPOSAL"; status: Extract<ProposalStatus, "WITHDRAWN"> }
   );
 
 /**
@@ -62,7 +80,16 @@ export type MoveOutcome =
   | { kind: "choose"; options: MoveOption[]; note?: string }
   | { kind: "reason"; option: MoveOption; note?: string }
   | { kind: "confirm"; option: MoveOption }
-  | { kind: "decision"; why: string }
+  | {
+      kind: "decision";
+      why: string;
+      /** The column's one line while the card is over it. */
+      hint: string;
+      /** The button that opens where the step is taken. */
+      open: string;
+      /** True when only a person takes the step (the people mark). */
+      people: boolean;
+    }
   | { kind: "refused"; why: string };
 
 /** A column a card can be put on (a stage on the Overview, a status on the Leads board) and what a drop there does. */
@@ -93,20 +120,39 @@ const LEAD_ACTIVE: LeadStatus[] = [
   "MET",
   "PROPOSAL",
 ];
-const ASK: Partial<Record<string, string>> = {
+export const ASK: Partial<Record<string, string>> = {
   PARKED: "Why is it parked?",
   LOST: "Why was it lost?",
   REJECTED: "Why was it rejected?",
   WITHDRAWN: "Why was it withdrawn?",
+  DECLINED: "Why did they decline?",
+  EXCLUDED: "Why exclude it?",
 };
 const INVESTOR_LIMIT = "An investor lead goes no further than met";
 
-const label = (list: readonly { value: string; label: string }[], v: string) =>
-  list.find((t) => t.value === v)?.label ?? "";
+export const label = (
+  list: readonly { value: string; label: string }[],
+  v: string,
+) => list.find((t) => t.value === v)?.label ?? "";
 const stageLabel = (stage: CommonStage) => label(VOCABULARY.commonStage, stage);
-const refused = (why: string): MoveOutcome => ({ kind: "refused", why });
+export const refused = (why: string): MoveOutcome => ({ kind: "refused", why });
 
-function base(
+/** Each column with what a drop there does: anything but "stay" and "refused" takes the card. */
+export function columnTargets<K extends string>(
+  columns: readonly K[],
+  outcomeOf: (column: K) => MoveOutcome,
+): ColumnTarget<K>[] {
+  return columns.map((stage) => {
+    const outcome = outcomeOf(stage);
+    return {
+      stage,
+      outcome,
+      accepts: outcome.kind !== "stay" && outcome.kind !== "refused",
+    };
+  });
+}
+
+export function base(
   list: readonly { value: string; label: string }[],
   status: string,
   final: boolean,
@@ -236,16 +282,17 @@ export function leadStatusMove(card: LeadCard, to: LeadStatus): MoveOutcome {
 }
 
 /** The Leads board's columns with what each does to the lead. */
-export function leadStatusTargets(card: LeadCard): ColumnTarget<LeadStatus>[] {
-  return LEAD_STATUSES.map((stage) => {
-    const outcome = leadStatusMove(card, stage);
-    return {
-      stage,
-      outcome,
-      accepts: outcome.kind !== "stay" && outcome.kind !== "refused",
-    };
-  });
-}
+export const leadStatusTargets = (card: LeadCard): ColumnTarget<LeadStatus>[] =>
+  columnTargets(LEAD_STATUSES, (to) => leadStatusMove(card, to));
+
+/** Go or no-go is never decided by a drop: it opens the opportunity's page. */
+export const GO_NO_GO: MoveOutcome = {
+  kind: "decision",
+  why: "Go or no-go is the team lead's decision, taken by a person on the opportunity's page",
+  hint: "Go or no-go is decided on its page",
+  open: "Open to decide",
+  people: true,
+};
 
 const DECIDED = new Set<OpportunityStatus>([
   "PREPARING",
@@ -277,10 +324,7 @@ function opportunityMove(
           : "After the go decision a funding opportunity moves on or closes; it is not parked",
       );
     // To evaluate or deciding, put on Active or Closed: only the decision goes there.
-    return {
-      kind: "decision",
-      why: "Go or no-go is the team lead's decision, taken by a person on the opportunity's page",
-    };
+    return GO_NO_GO;
   }
   const blocker = (s: OpportunityStatus) =>
     s !== "WATCHING" && s !== "TO_EVALUATE" && !card.owner
@@ -344,13 +388,15 @@ export function moveHint(outcome: MoveOutcome): string {
         ? `Comes off hold · returns to ${outcome.option.label}`
         : `Becomes ${outcome.option.label}`;
     case "choose":
-      return `Pick: ${orList(outcome.options.map((o) => o.label))}`;
+      return outcome.options.every((o) => o.act === "ACCEPT_PROPOSAL")
+        ? "Becomes Accepted · asks which option"
+        : `Pick: ${orList(outcome.options.map((o) => o.label))}`;
     case "reason":
       return `Becomes ${outcome.option.label} · asks why`;
     case "confirm":
       return `Becomes ${outcome.option.label} · asks to confirm`;
     case "decision":
-      return "Go or no-go is decided on its page";
+      return outcome.hint;
     case "refused":
       return outcome.why;
   }
@@ -365,10 +411,18 @@ export function moveReassurance(outcome: MoveOutcome): string | null {
         ? [outcome.option]
         : [];
   const final = options.find((o) => o.final);
+  if (final?.act === "ACCEPT_PROPOSAL" || final?.act === "DECLINE_PROPOSAL")
+    return "Recording the answer changes this proposal only; nothing is sent to the client. The answer is final.";
+  if (final?.act === "WITHDRAW_PROPOSAL")
+    return "Nothing is deleted: a withdrawn proposal keeps its history. Withdrawing is final.";
   if (final)
     return `Nothing is deleted: a closed ${final.act === "LEAD_STATUS" ? "lead" : "funding opportunity"} keeps its history. Closing is final.`;
-  return options.some((o) => o.act === "PARK_LEAD")
-    ? "Nothing is lost: taken off hold, it returns to where it was."
+  if (options.some((o) => o.act === "PARK_LEAD"))
+    return "Nothing is lost: taken off hold, it returns to where it was.";
+  if (options.some((o) => o.act === "EXCLUDE_ROW"))
+    return "You can put it back on the list later.";
+  return options.some((o) => o.act === "REOPEN_PROPOSAL")
+    ? "Reopening clears the approval; it stays in the history."
     : null;
 }
 
@@ -382,6 +436,16 @@ export const leadMoveCard = (s: LeadState): LeadCard => ({
   parkedFrom: s.parkedFrom ?? null,
 });
 
+type OppCard = Extract<MoveCard, { kind: "opportunity" }>;
+
+/** What the rules of a move read from a funding opportunity. */
+export const opportunityMoveCard = (s: OpportunityState): OppCard => ({
+  kind: "opportunity",
+  status: s.status,
+  owner: s.owner || null,
+  openSubmission: s.submissions.some((x) => !x.outcome),
+});
+
 /** The move facts of every card on the board, by `cardKey`. */
 export function moveCards(
   input: Pick<OverviewInput, "leads" | "opportunities" | "investorLists">,
@@ -390,12 +454,7 @@ export function moveCards(
   for (const { id, state: s } of input.leads)
     cards.set(cardKey({ kind: "lead", id }), leadMoveCard(s));
   for (const { id, state: s } of input.opportunities)
-    cards.set(cardKey({ kind: "opportunity", id }), {
-      kind: "opportunity",
-      status: s.status,
-      owner: s.owner || null,
-      openSubmission: s.submissions.some((x) => !x.outcome),
-    });
+    cards.set(cardKey({ kind: "opportunity", id }), opportunityMoveCard(s));
   for (const { id, state } of input.investorLists)
     for (const row of state.rows)
       if (row.state === "SHORTLISTED")

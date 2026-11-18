@@ -120,6 +120,7 @@ export {
   leadStatusMove,
   leadStatusTargets,
   moveCards,
+  opportunityMoveCard,
   moveHint,
   moveReassurance,
   moveTargets,
@@ -129,3 +130,20 @@ export {
   type MoveOutcome,
   type MoveTarget,
 } from "./move.js";
+export {
+  APPROVE_ON_PAGE,
+  FUNDING_STATUSES,
+  INVESTOR_ROW_STATES,
+  MARK_SENT_ON_PAGE,
+  PROPOSAL_STATUSES,
+  START_RELATIONSHIP,
+  investorRowMove,
+  investorRowTargets,
+  opportunityStatusMove,
+  opportunityStatusTargets,
+  proposalMoveCard,
+  proposalStatusMove,
+  proposalStatusTargets,
+  type InvestorRowCard,
+  type ProposalCard,
+} from "./status-moves.js";

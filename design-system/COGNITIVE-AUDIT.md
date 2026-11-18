@@ -961,3 +961,35 @@ The Leads audit and *Moving a card on the board* stand. This covers one change: 
 - **Decision:** what a drop does shows before it; reasons are asked for when needed; Won is confirmed.
 - **Emotion:** no final status in one careless drop; a refused move leaves the card in place with the reason.
 
+
+### Moving a funding opportunity on the Funding board (built, `views/funding/FundingBoard.tsx`)
+
+The Funding audit and *Moving a lead on the Leads board* stand. This covers one change: Funding gets a board, one column per status in deadline order, beside today's list (Board and List, as on Leads), and its cards move the way the Leads board's do.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** While a card is in the hand the columns are the only thing to look at: those that take it tint, the one under the card deeper, those that refuse it fade, each with its one line. A card shows the funder, the name, the next deadline and its day, the owner and the amount; the deadline stays the line people scan for.
+2. **Wayfinding.** Ten columns in the order an opportunity lives: Watching, To evaluate, Deciding, Preparing, Submitted, Next stage, then the four closed ones. The board scrolls sideways and keeps the order of the status path on the opportunity's page. Inside a column the cards keep the list's deadline order.
+3. **Memory and semantics.** The Leads board's drag and "Move to…" list; the opportunity page's own moves (`allowedMoves`) and actions, so the board offers only what the page offers by hand.
+4. **Language.** Status names from the vocabulary. One line per column: "Becomes To evaluate", "Becomes Rejected · asks why", "Becomes Awarded · asks to confirm", "Go or no-go is decided on its page". Refusals say what to do first: "Give it an owner first", "Mark a submission on its page first", "Move it to To evaluate first: a watched opportunity is evaluated before anything else", "Go or no-go comes first: it is decided on the opportunity's page", "After the go decision a funding opportunity moves on or closes".
+5. **Decision making.** Go or no-go is the team lead's decision (FR-13.6): a drop on Preparing or No-go from To evaluate or Deciding changes nothing and offers "Open to decide", with the people mark. Rejected and Withdrawn ask why; Awarded, final without a reason, asks once, with the focus on Cancel. What the opportunity lacks (an owner, a submission with no outcome) is said on the column before the drop.
+6. **Emotion.** Fears: "did I close it by accident?", "did I decide go for the team lead?". Closing always passes a reason or a confirmation with "Nothing is deleted: a closed funding opportunity keeps its history. Closing is final."; a drop never decides go or no-go; a refused move leaves the card where it was with the reason beside it.
+
+**2. Concepts weighed**
+
+- **A · Task-oriented:** keep the deadline list only and add a status menu per row. Exact, but the user asked for a board, and a list hides where the work piles up.
+- **B · Conventional:** a board of the Overview's four stages. Familiar, but Funding's statuses matter on their own (Submitted is not Preparing), and a stage would ask which status after every drop.
+- **C · Immersive:** a timeline of deadlines with cards on it. Strong for dates, but status moves would have no place to land.
+
+**Chosen:** the Leads board's pattern with one column per status, the list kept one click away. Evidence: the opportunity reducer's moves by hand (`MOVES`), its refusal of preparing for the first time and no-go outside the decision, its owner and submission rules, and the reasons it requires for Rejected and Withdrawn.
+
+**3. Implementation:** the Leads board's parts (`pb-board--drop`, `pb-board__hint`, `pb-ask` with its confirm and decision variants, `pb-card__move`, `MoveList`, `ErrorLine`). The rules are pure, in `kit/overview-view/status-moves.ts` (`opportunityStatusMove`, `opportunityStatusTargets`); a test runs every status, owner and submission against the opportunity reducer. The decision question now carries its own line and button (`hint`, `open`, `people`), so the same box opens go or no-go here, approval on the Proposals board and "Start relationship" on the Investors board.
+
+**4. Mapping**
+
+- **Vision:** tinted columns take the card; the deadline stays on every card.
+- **Wayfinding:** columns in the order of the status path; the list one click away.
+- **Memory:** the Leads board's drag and list; the page's moves by hand.
+- **Language:** status names; refusals say what to do first.
+- **Decision:** go or no-go stays a person's decision; reasons and confirmation where the reducer and the stakes need them.
+- **Emotion:** no close in one careless drop; a refused move leaves the card in place with the reason.

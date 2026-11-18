@@ -13,11 +13,29 @@ type Asking = Extract<
   { kind: "choose" | "reason" | "confirm" | "decision" }
 >;
 
+/** The status vocabulary a move's status belongs to. */
+const termsOf = (o: MoveOption) => {
+  switch (o.act) {
+    case "OPPORTUNITY_STATUS":
+      return VOCABULARY.opportunityStatus;
+    case "SHORTLIST_ROW":
+    case "RELIST_ROW":
+    case "EXCLUDE_ROW":
+      return VOCABULARY.investorRow;
+    case "REOPEN_PROPOSAL":
+    case "ACCEPT_PROPOSAL":
+    case "DECLINE_PROPOSAL":
+    case "WITHDRAW_PROPOSAL":
+      return VOCABULARY.proposalStatus;
+    default:
+      return VOCABULARY.leadStatus;
+  }
+};
 const tone = (o: MoveOption) =>
-  (o.act === "OPPORTUNITY_STATUS"
-    ? VOCABULARY.opportunityStatus
-    : VOCABULARY.leadStatus
-  ).find((t) => t.value === o.status)?.tone ?? "default";
+  termsOf(o).find((t) => t.value === o.status)?.tone ?? "default";
+/** Options of one status (an acceptance per proposal option) need their own key. */
+const optionKey = (o: MoveOption) =>
+  o.act === "ACCEPT_PROPOSAL" ? o.optionId : o.status;
 
 /** Moves the focus to the next or previous option with the arrow keys. */
 function arrows(e: React.KeyboardEvent<HTMLElement>) {
@@ -87,8 +105,8 @@ export function MoveAsk({
               autoFocus
               onClick={onOpenRecord}
             >
-              <PeopleMark />
-              Open to decide
+              {outcome.people ? <PeopleMark /> : null}
+              {outcome.open}
             </button>
           </div>
         </>
@@ -110,7 +128,8 @@ export function MoveAsk({
               disabled={busy}
               onClick={() => onApply(outcome.option)}
             >
-              Mark {outcome.option.label.toLowerCase()}
+              {outcome.option.verb ??
+                `Mark ${outcome.option.label.toLowerCase()}`}
             </button>
           </div>
         </>
@@ -166,7 +185,7 @@ export function MoveAsk({
           <div className="pb-ask__options" role="group" aria-label="Status">
             {outcome.options.map((o, i) => (
               <button
-                key={o.status}
+                key={optionKey(o)}
                 type="button"
                 className="pb-menu__item pb-ask__option"
                 autoFocus={i === 0}

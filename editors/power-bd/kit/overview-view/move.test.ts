@@ -318,6 +318,9 @@ describe("moving a funding opportunity", () => {
         expect(cardMove(anOpp({ status }), stage)).toEqual({
           kind: "decision",
           why: "Go or no-go is the team lead's decision, taken by a person on the opportunity's page",
+          hint: "Go or no-go is decided on its page",
+          open: "Open to decide",
+          people: true,
         });
   });
 

@@ -5,7 +5,7 @@ import {
   type MoveOption,
   type MoveOutcome,
 } from "../../../kit/overview-view/index.js";
-import { useDriveWrite } from "../../data/driveData.js";
+import { useDriveWrite, type DriveWrite } from "../../data/driveData.js";
 import { Icon } from "../../Icon.js";
 import { moveAction } from "./moveAction.js";
 
@@ -25,21 +25,37 @@ type Drag<K extends string> = {
   away: boolean;
 };
 
+/** Where a move goes and what it says: a document and one action for it. */
+export type BoardSend = (
+  key: string,
+  option: MoveOption,
+  reason?: string,
+) => { documentId: string; action: Parameters<DriveWrite["dispatchTo"]>[0] };
+
+/** A card's key is its document's id: the move goes to that document. */
+const sendToCard: BoardSend = (key, option, reason) => ({
+  documentId: key,
+  action: moveAction(option, reason),
+});
+
 /**
  * Picking a card up, putting it on a column, and answering what the move asks,
  * on a board whose cards are records. What each column does comes from the
  * kit's rules; the action sent is the one the record page sends; a refusal
  * shows beside the card, which stays where its record says. A card's key is
- * its document's id.
+ * its document's id unless the board says where its moves go (`send`), as the
+ * investor list does for its rows.
  */
 export function useBoardMove<K extends string>({
   root,
   targetsOf,
+  send = sendToCard,
 }: {
   /** The board, to give the focus back to a card. */
   root: RefObject<HTMLElement | null>;
   /** What each column would do to the card with this key. */
   targetsOf: (key: string) => ColumnTarget<K>[];
+  send?: BoardSend;
 }) {
   const { dispatchTo } = useDriveWrite();
   const [drag, setDrag] = useState<Drag<K> | null>(null);
@@ -60,7 +76,8 @@ export function useBoardMove<K extends string>({
         key,
         message: errors.at(0)?.message ?? "That was not accepted.",
       });
-    dispatchTo(moveAction(option, reason), key, refuse)
+    const { documentId, action } = send(key, option, reason);
+    dispatchTo(action, documentId, refuse)
       .catch((e: unknown) => refuse(e instanceof Error ? [e] : []))
       .finally(() => {
         setBusy(false);

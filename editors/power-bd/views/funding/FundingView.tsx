@@ -1,4 +1,6 @@
 import { useSetSelectedNode } from "@powerhousedao/reactor-browser";
+import { useState } from "react";
+import { FundingBoard } from "./FundingBoard.js";
 import { ErrorLine } from "../../components/shared/ErrorLine.js";
 import { settingsOrDefaults } from "../../kit/settings/index.js";
 import { VOCABULARY } from "../../../../design-system/vocabulary.js";
@@ -12,7 +14,7 @@ import { attemptsLeft } from "../../kit/overview/index.js";
 import { useNow } from "../../components/shared/useNow.js";
 import { useBdSettingsDocumentsInSelectedDrive, useContactDocumentsInSelectedDrive, useOpportunityDocumentsInSelectedDrive } from "../../components/useDriveDocuments.js";
 
-/** The Funding place: opportunities in deadline order, and a way to start one. */
+/** The Funding place: opportunities by status on a board, or in deadline order in a list, and a way to start one. */
 export function FundingView({ driveId }: { driveId: string }) {
   const docs = useOpportunityDocumentsInSelectedDrive() ?? [];
   const contacts = useContactDocumentsInSelectedDrive() ?? [];
@@ -22,6 +24,7 @@ export function FundingView({ driveId }: { driveId: string }) {
   const select = useSetSelectedNode();
   const team = useTeam();
   const now = useNow();
+  const [asBoard, setAsBoard] = useState(true);
 
   const {
     create: createRecord,
@@ -83,95 +86,126 @@ export function FundingView({ driveId }: { driveId: string }) {
           }
         />
       ) : (
-        <div className="pb-table-wrap">
-          <table className="pb-table">
-            <thead>
-              <tr>
-                <th>Deadline</th>
-                <th>Opportunity</th>
-                <th>Funder</th>
-                <th>Status</th>
-                <th>Owner</th>
-                <th>Amount</th>
-                <th>Attempts left</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map(({ id, state: s }) => {
-                const d = deadline(s, now);
-                const st = VOCABULARY.opportunityStatus.find(
-                  (t) => t.value === s.status,
-                );
-                const left = attemptsLeft({ id, state: s }, all);
-                return (
-                  <tr
-                    key={id}
-                    className="pb-clickable"
-                    onClick={() => select(id)}
-                  >
-                    <td className="pb-num pb-nowrap">
-                      {d ? (
-                        <>
-                          {fmtInstant(d.step.at, ourZone)}
-                          <span className="pb-table__sub">
-                            {d.step.label}
-                            {d.targeted ? " · we aim for this" : ""}
-                          </span>
-                        </>
-                      ) : (
-                        <span className="pb-faint">No date</span>
-                      )}
-                    </td>
-                    <td className="pb-table__title">
-                      {s.name || "Untitled opportunity"}
-                    </td>
-                    <td>
-                      {funderName(s.funderId) ?? (
-                        <span className="pb-faint">Not set</span>
-                      )}
-                    </td>
-                    <td>
-                      <span className={`pb-tag pb-tag--${st?.tone}`}>
-                        {st?.label}
-                      </span>
-                    </td>
-                    <td>
-                      {s.owner ? (
-                        team.ownerName(s.owner)
-                      ) : (
-                        <span className="pb-faint">No owner</span>
-                      )}
-                    </td>
-                    <td>
-                      {s.amount != null && s.currency ? (
-                        <span className="pb-amount">
-                          {s.amount.toLocaleString("en-GB")}
-                          <span className="pb-amount__ccy">{s.currency}</span>
-                        </span>
-                      ) : (
-                        <span className="pb-faint">Not set</span>
-                      )}
-                    </td>
-                    <td>
-                      {left === null ? (
-                        <span className="pb-faint">No limit</span>
-                      ) : (
-                        <span
-                          className={
-                            left <= 1 ? "pb-tag pb-tag--orange" : undefined
-                          }
-                        >
-                          {left}
-                          {s.attemptLimit ? ` of ${s.attemptLimit.max}` : ""}
-                        </span>
-                      )}
-                    </td>
+        <>
+          <div className="pb-toolbar pb-mb-8">
+            <div className="pb-segmented">
+              <button
+                className={`pb-segmented__item${asBoard ? " is-active" : ""}`}
+                onClick={() => setAsBoard(true)}
+              >
+                <Icon name="board" />
+                Board
+              </button>
+              <button
+                className={`pb-segmented__item${asBoard ? "" : " is-active"}`}
+                onClick={() => setAsBoard(false)}
+              >
+                <Icon name="table" />
+                List
+              </button>
+            </div>
+          </div>
+          {asBoard ? (
+            <FundingBoard
+              rows={rows}
+              now={now}
+              ourZone={ourZone}
+              funderName={funderName}
+              ownerName={team.ownerName}
+              onOpen={select}
+            />
+          ) : (
+            <div className="pb-table-wrap">
+              <table className="pb-table">
+                <thead>
+                  <tr>
+                    <th>Deadline</th>
+                    <th>Opportunity</th>
+                    <th>Funder</th>
+                    <th>Status</th>
+                    <th>Owner</th>
+                    <th>Amount</th>
+                    <th>Attempts left</th>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                </thead>
+                <tbody>
+                  {rows.map(({ id, state: s }) => {
+                    const d = deadline(s, now);
+                    const st = VOCABULARY.opportunityStatus.find(
+                      (t) => t.value === s.status,
+                    );
+                    const left = attemptsLeft({ id, state: s }, all);
+                    return (
+                      <tr
+                        key={id}
+                        className="pb-clickable"
+                        onClick={() => select(id)}
+                      >
+                        <td className="pb-num pb-nowrap">
+                          {d ? (
+                            <>
+                              {fmtInstant(d.step.at, ourZone)}
+                              <span className="pb-table__sub">
+                                {d.step.label}
+                                {d.targeted ? " · we aim for this" : ""}
+                              </span>
+                            </>
+                          ) : (
+                            <span className="pb-faint">No date</span>
+                          )}
+                        </td>
+                        <td className="pb-table__title">
+                          {s.name || "Untitled opportunity"}
+                        </td>
+                        <td>
+                          {funderName(s.funderId) ?? (
+                            <span className="pb-faint">Not set</span>
+                          )}
+                        </td>
+                        <td>
+                          <span className={`pb-tag pb-tag--${st?.tone}`}>
+                            {st?.label}
+                          </span>
+                        </td>
+                        <td>
+                          {s.owner ? (
+                            team.ownerName(s.owner)
+                          ) : (
+                            <span className="pb-faint">No owner</span>
+                          )}
+                        </td>
+                        <td>
+                          {s.amount != null && s.currency ? (
+                            <span className="pb-amount">
+                              {s.amount.toLocaleString("en-GB")}
+                              <span className="pb-amount__ccy">{s.currency}</span>
+                            </span>
+                          ) : (
+                            <span className="pb-faint">Not set</span>
+                          )}
+                        </td>
+                        <td>
+                          {left === null ? (
+                            <span className="pb-faint">No limit</span>
+                          ) : (
+                            <span
+                              className={
+                                left <= 1 ? "pb-tag pb-tag--orange" : undefined
+                              }
+                            >
+                              {left}
+                              {s.attemptLimit ? ` of ${s.attemptLimit.max}` : ""}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
