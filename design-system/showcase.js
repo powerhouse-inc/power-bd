@@ -50,6 +50,8 @@
     hourglass: '<path d="M6.5 3.5h11M6.5 20.5h11"/><path d="M7.5 3.5c0 4 4.5 5 4.5 8.5s-4.5 4.5-4.5 8.5M16.5 3.5c0 4-4.5 5-4.5 8.5s4.5 4.5 4.5 8.5"/>',
     globe: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><path d="M12 3.5c2.3 2.4 3.5 5.2 3.5 8.5s-1.2 6.1-3.5 8.5c-2.3-2.4-3.5-5.2-3.5-8.5s1.2-6.1 3.5-8.5z"/>',
     pin: '<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/>',
+    scatter: '<path d="M3.5 3.5v17h17"/><circle cx="8" cy="15" r="1.8"/><circle cx="12.5" cy="9" r="1.8"/><circle cx="17" cy="13" r="1.8"/>',
+    chart: '<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>',
     percent: '<path d="M19 5 5 19"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/>',
     hash: '<path d="M9.5 3.5 8 20.5M16 3.5l-1.5 17M4.5 9h16M3.5 15h16"/>',
     compass: '<circle cx="12" cy="12" r="8.5"/><path d="m15.5 8.5-2 5-5 2 2-5z"/>',
@@ -82,7 +84,7 @@
   };
   var ICON_NAMES = Object.keys(ICONS);
   var ICON_GROUPS = {
-    Navigation: ["overview", "leads", "funding", "investors", "organisations", "decisions", "playbook", "settings"],
+    Navigation: ["overview", "leads", "funding", "investors", "organisations", "decisions", "chart", "playbook", "settings"],
     "Kinds of relationship": ["sales", "partnership", "exchange", "investors", "funding", "funder"],
     Actions: [
       "plus",
@@ -132,7 +134,7 @@
     ],
     "Status and signals": ["lock", "people-only", "flag", "slipping", "alert", "alert-circle", "info", "check-circle", "eye"],
     "Reassurance, saving and panels": ["shield", "cloud", "cloud-off", "undo", "peek", "expand"],
-    "Views and theme": ["board", "table", "sidebar", "sun", "moon", "monitor"]
+    "Views and theme": ["board", "table", "scatter", "sidebar", "sun", "moon", "monitor"]
   };
   function spriteMarkup() {
     const symbols = ICON_NAMES.map((name) => `<symbol id="pb-i-${name}" viewBox="0 0 24 24">${ICONS[name]}</symbol>`).join("");

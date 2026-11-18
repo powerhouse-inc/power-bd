@@ -9,6 +9,7 @@ import { MarketsView } from "../views/market/MarketsView.js";
 import { OrganisationsView } from "../views/organisations/OrganisationsView.js";
 import { OverviewView } from "../views/overview/OverviewView.js";
 import { ProposalsView } from "../views/proposals/ProposalsView.js";
+import { ReportsView } from "../views/reports/ReportsView.js";
 import { PlaybookView } from "../views/playbook/PlaybookView.js";
 import { SettingsView } from "../views/settings/SettingsView.js";
 
@@ -29,6 +30,7 @@ export const PLACE_VIEWS: Record<
   organisations: OrganisationsView,
   market: MarketsView,
   decisions: DecisionsView,
+  reports: ReportsView,
   playbook: PlaybookView,
   settings: SettingsView,
 };

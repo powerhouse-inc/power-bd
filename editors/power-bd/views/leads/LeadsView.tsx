@@ -5,7 +5,10 @@ import {
   leadStatusTargets,
 } from "../../kit/overview-view/index.js";
 import { LeadsBoard } from "./LeadsBoard.js";
+import { LeadsMap } from "./LeadsMap.js";
+import { buildProposals } from "../../kit/overview/proposals.js";
 import { NextStep } from "./NextStep.js";
+import { useUser } from "@powerhousedao/reactor-browser";
 import { ErrorLine } from "../../components/shared/ErrorLine.js";
 import { useState } from "react";
 import { VOCABULARY } from "../../../../design-system/vocabulary.js";
@@ -24,15 +27,15 @@ import { useSetSelectedNode } from "../../components/shared/useOpenRecord.js";
 export function LeadsView({ driveId }: { driveId: string }) {
   const leads = useLeadDocumentsInSelectedDrive() ?? [];
   const contacts = useContactDocumentsInSelectedDrive() ?? [];
-  const badges = proposalBadges(
-    (useProposalDocumentsInSelectedDrive() ?? []).map((d) => ({
-      id: d.header.id,
-      state: d.state.global,
-    })),
-  );
+  const proposals = (useProposalDocumentsInSelectedDrive() ?? []).map((d) => ({
+    id: d.header.id,
+    state: d.state.global,
+  }));
+  const badges = proposalBadges(proposals);
+  const me = useUser()?.address ?? null;
   const select = useSetSelectedNode();
   const team = useTeam();
-  const [asBoard, setAsBoard] = useState(true);
+  const [view, setView] = useState<"board" | "list" | "map">("board");
 
   const organisationName = (id: string | null | undefined) =>
     id
@@ -95,23 +98,34 @@ export function LeadsView({ driveId }: { driveId: string }) {
         <>
           <div className="pb-toolbar pb-mb-8">
             <div className="pb-segmented">
-              <button
-                className={`pb-segmented__item${asBoard ? " is-active" : ""}`}
-                onClick={() => setAsBoard(true)}
-              >
-                <Icon name="board" />
-                Board
-              </button>
-              <button
-                className={`pb-segmented__item${asBoard ? "" : " is-active"}`}
-                onClick={() => setAsBoard(false)}
-              >
-                <Icon name="table" />
-                List
-              </button>
+              {(
+                [
+                  ["board", "Board", "board"],
+                  ["list", "List", "table"],
+                  ["map", "Map", "scatter"],
+                ] as const
+              ).map(([value, text, icon]) => (
+                <button
+                  key={value}
+                  className={`pb-segmented__item${view === value ? " is-active" : ""}`}
+                  aria-pressed={view === value}
+                  onClick={() => setView(value)}
+                >
+                  <Icon name={icon} />
+                  {text}
+                </button>
+              ))}
             </div>
           </div>
-          {asBoard ? (
+          {view === "map" ? (
+            <LeadsMap
+              leads={leads}
+              values={buildProposals(proposals).leadValues}
+              today={today}
+              me={me}
+              onOpen={select}
+            />
+          ) : view === "board" ? (
             <LeadsBoard
               leads={leads}
               badges={badges}

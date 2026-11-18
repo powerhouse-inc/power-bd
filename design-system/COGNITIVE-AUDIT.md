@@ -1238,3 +1238,69 @@ Asked on 2026-11-18: the chat should "cite the sources it found just like the or
 - **Language:** the vault's words, and the document's title.
 - **Decision:** check by number, open by click; nothing offered that cannot open.
 - **Emotion:** every claim from the vault shows its source.
+
+### Reports (built, `views/reports/`, `kit/reports/`)
+
+A new place, after Decisions: what converts, where leads go quiet and why they are lost, for a period.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** The win rate is the first tile and the page's anchor; the funnel below it is the one picture. Bars are the accent tint, won is green, and nothing is red: a report is read, not acted on in a hurry. A share with too few leads behind it says "Too few" in plain text instead of a number that looks precise.
+2. **Wayfinding.** Reports is a place of its own, not part of the Overview: the Overview answers "what do I do now", daily; reports answer "what is working", weekly or monthly, and mixing them would dilute the Overview's one anchor. The period choice sits at the top right, as filters do elsewhere, and changes every section at once. Every lead named in a report opens its lead.
+3. **Memory and semantics.** A funnel of bars, win rate, a reasons list with counts, tables per owner and kind: what every CRM's reports show. Named "Reports", the word those tools use, rather than "Insights", which says less.
+4. **Language.** Status names from the vocabulary; "went on" for a stage's conversion; "Gone quiet: open, no change in 30 days"; "Parked now". Reasons stay in the team's own words; a theme ("Budget or price", "Timing", "Chose someone else", "No response", "Not a fit") is a label over them, and what was said is one click away.
+5. **Decision making.** Each number says what it counts: a period counts leads added, won or lost in it; "open now" is always now. What the app does not record is said, not guessed: a lost lead's stage is unknown, so lost leads count as added but stay out of the steps, with a line saying so; investor leads stop at met, so the later steps count the other kinds. A reason joins a theme only when its words name that theme alone.
+6. **Emotion.** Fear: "is this number fooling me?". Small samples show "Too few", the rules behind each figure are written under it, and the raw reasons are always reachable, so the page earns trust instead of asking for it.
+
+**What is not here, and why:** time in each stage. A lead keeps only when it closed, not when its status changed; that history lives in each record's operations, which the app's drive data does not load. "Gone quiet" uses the last change of any kind instead, and says so.
+
+**2. Concepts weighed**
+
+- **A · Task-oriented:** a few sentences ("You win 60% of what you propose; most losses are about budget"). Fast, but hides the numbers behind them.
+- **B · Conventional:** a CRM report page with tiles, a funnel, reasons and tables. Familiar to BD experts.
+- **C · Immersive:** interactive charts with drill-down and trend lines. Rich, but the team's numbers are small, and trends over few leads mislead.
+
+**Chosen:** B, with A's honesty (each figure explained in a line) and none of C's trends. Evidence: the drive holds tens of leads, not thousands, so rates need a floor (three) and trend lines would mislead.
+
+**3. Implementation:** `.pb-tiles` with `.pb-tile--static`; `.pb-funnel` (`__row`, `__label`, `__track`, `__fill`, `__fill--won`, `__count`, `__step`); `.pb-reasons` and `.pb-reason` (`__count`, `__said`) with `.pb-disclosure`; `.pb-list` for quiet leads; `.pb-table` for the splits; the `chart` icon. Pure computations in `kit/reports/` (`funnel`, `outcomes`, `groupReasons`, `quietLeads`, `splitBy`, `periodStart`), tested.
+
+**4. Mapping**
+
+- **Vision:** the win rate first, one funnel picture, no red.
+- **Wayfinding:** a place for reflection apart from the daily Overview; one period for the whole page; names open their leads.
+- **Memory:** the reports every CRM has, by their usual names.
+- **Language:** status names, "went on", the team's own reasons under a theme.
+- **Decision:** every figure says what it counts; what is unknown is said; small samples say "Too few".
+- **Emotion:** trust earned by showing the rules and the raw reasons.
+
+### Leads map (built, `views/leads/LeadsMap.tsx`, `kit/lead-map/`)
+
+A third view on Leads beside Board and List: every open lead placed by the fit of its best angle and how far along it is.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** The four corner names ("Close these", "Start these", "Check these", "Park or drop") are what the eye reads first; dots are named, and a bigger dot is a bigger proposal. A late next step carries the slipping mark in red, the only colour signal on the map. The "not assessed" column is grey, set apart from the four fits.
+2. **Wayfinding.** The same Leads place and its view switch; rows are the statuses in the board's order, columns the fits in the vocabulary's order, with their names at the edges. A dot opens its lead. A line under the map says what is not on it (won, lost, parked) and how many leads have no angle yet.
+3. **Memory and semantics.** A prioritisation matrix, the 2×2 every sales team draws; the market map's look, so the two maps read alike.
+4. **Language.** Status and fit names from the vocabulary; corners in verbs; "Not assessed" for a lead with no angle, and what to do about it.
+5. **Decision making.** Positions are worked out, not dragged: a dot moves when the lead's status or angles change, so the map never needs upkeep and never goes stale. Moving a lead is the board's job. Filters Mine and kind narrow it. Dots sharing a cell spread in a fixed order, so the map looks the same each visit.
+6. **Emotion.** Fear: "did I place that right?". Nobody places anything; the map shows what the records say, and how (a caption names both axes and what size means).
+
+**2. Concepts weighed**
+
+- **A · Task-oriented:** a ranked list by a score. Exact, but a score hides why.
+- **B · Conventional:** a 2×2 with named corners, positions from the lead's own fields. Familiar and explainable.
+- **C · Immersive:** draggable dots with free axes, like the market map. Rich, but positions would be opinions to maintain on every lead.
+
+**Chosen:** B. Evidence: every lead already has a status, and angles carry a fit (Unlikely, Later, Good, Best); live proposals carry a value. Nothing new needs entering.
+
+**3. Implementation:** `.pb-map--grid` on the market map's `.pb-map`, with `__line`, `__row-label`, `__col-label`, `__unassessed`, `__quadrant`, `.pb-map__dot--lead` (its size from `--pb-dot`) and `__slip`; the `scatter` icon on the view switch. Pure placement in `kit/lead-map/` (`priorityMap`, `quadrantOf`, `leftOutLine`), tested.
+
+**4. Mapping**
+
+- **Vision:** corner names first, size for money, red only for late.
+- **Wayfinding:** a view of Leads; rows and columns named at the edges; dots open leads.
+- **Memory:** the sales 2×2, in the market map's look.
+- **Language:** vocabulary names, corners as verbs.
+- **Decision:** worked-out positions, no upkeep; filters; a fixed layout.
+- **Emotion:** nothing to place wrongly; the caption says how it is drawn.

@@ -688,6 +688,44 @@
             </div>
           </section>
 
+          <!-- ============================== REPORTS ============================== -->
+          <section class="ds-section" id="reports">
+            <h2 class="ds-section__title">Reports</h2>
+            <p class="ds-section__lead">The Reports place and the Leads map. The funnel shows how far the leads added in a period got, with the share that went on from each stage under the bars; won is green. Reasons are grouped by theme only when their words are clear, and what was said stays one click away. The priority map places each open lead by the fit of its best angle and how far along it is; the corners say what to do, a dot's size is its proposal's value, and a late next step shows the slipping mark.</p>
+            <div class="ds-demo">
+              <div class="ds-pane pb-root">
+                <div class="pb-tiles" style="max-width: 900px"><div class="pb-tile pb-tile--static"><span class="pb-tile__label">Win rate</span><span class="pb-tile__value">60%</span><span class="pb-tile__sub">3 won, 2 lost</span></div><div class="pb-tile pb-tile--static"><span class="pb-tile__label">Days to win</span><span class="pb-tile__value">34</span><span class="pb-tile__sub">Median, from being added</span></div><div class="pb-tile pb-tile--static"><span class="pb-tile__label">Added</span><span class="pb-tile__value">12</span><span class="pb-tile__sub">Leads this quarter</span></div><div class="pb-tile pb-tile--static"><span class="pb-tile__label">Gone quiet</span><span class="pb-tile__value">4</span><span class="pb-tile__sub">Open, no change in 30 days</span></div></div>
+                <div class="pb-funnel" style="max-width: 640px; margin-top: 20px">
+                  <div class="pb-funnel__row"><span class="pb-funnel__label">To contact</span><span class="pb-funnel__track"><span class="pb-funnel__fill" style="width: 100%"></span></span><span class="pb-funnel__count">12</span></div>
+                  <div class="pb-funnel__step">75% went on</div>
+                  <div class="pb-funnel__row"><span class="pb-funnel__label">In touch</span><span class="pb-funnel__track"><span class="pb-funnel__fill" style="width: 75%"></span></span><span class="pb-funnel__count">9</span></div>
+                  <div class="pb-funnel__step">67% went on</div>
+                  <div class="pb-funnel__row"><span class="pb-funnel__label">Meeting set</span><span class="pb-funnel__track"><span class="pb-funnel__fill" style="width: 50%"></span></span><span class="pb-funnel__count">6</span></div>
+                  <div class="pb-funnel__step">Too few to say</div>
+                  <div class="pb-funnel__row"><span class="pb-funnel__label">Won</span><span class="pb-funnel__track"><span class="pb-funnel__fill pb-funnel__fill--won" style="width: 25%"></span></span><span class="pb-funnel__count">3</span></div>
+                </div>
+                <div class="pb-reasons" style="max-width: 640px; margin-top: 20px">
+                  <div class="pb-reason"><button class="pb-disclosure" aria-expanded="true"><i data-icon="chevron-right"></i>Budget or price</button><span class="pb-reason__count">2</span><ul class="pb-reason__said"><li>“Too expensive for them” · Brightwater renewal</li><li>“No budget this year” · Harbour analytics pilot</li></ul></div>
+                  <div class="pb-reason"><button class="pb-disclosure" aria-expanded="false"><i data-icon="chevron-right"></i>Waiting for their budget round</button><span class="pb-reason__count">1</span></div>
+                </div>
+                <div class="pb-map pb-map--grid" style="max-width: 720px">
+                  <span class="pb-map__unassessed"></span>
+                  <span class="pb-map__line pb-map__line--y" style="left: 60%"></span>
+                  <span class="pb-map__line pb-map__line--x" style="bottom: 40%"></span>
+                  <span class="pb-map__quadrant" style="top: 0; right: 0">Close these</span>
+                  <span class="pb-map__quadrant" style="bottom: 0; right: 0">Start these</span>
+                  <span class="pb-map__quadrant" style="top: 0; left: 20%">Check these</span>
+                  <span class="pb-map__quadrant" style="bottom: 0; left: 20%">Park or drop</span>
+                  <span class="pb-map__row-label" style="bottom: 90%">Proposal</span><span class="pb-map__row-label" style="bottom: 50%">Meeting set</span><span class="pb-map__row-label" style="bottom: 10%">To contact</span>
+                  <span class="pb-map__col-label" style="left: 0">Not assessed</span><span class="pb-map__col-label" style="left: 40%">Later</span><span class="pb-map__col-label" style="left: 80%">Best</span>
+                  <button class="pb-map__dot pb-map__dot--lead" style="left: 90%; bottom: 90%; --pb-dot: 20px"><span>Brightwater renewal</span></button>
+                  <button class="pb-map__dot pb-map__dot--lead" style="left: 70%; bottom: 10%"><span>Pilot with Kelvar</span><i data-icon="slipping" class="pb-map__slip"></i></button>
+                  <button class="pb-map__dot pb-map__dot--lead" style="left: 10%; bottom: 30%"><span>Inbound enquiry</span></button>
+                </div>
+              </div>
+            </div>
+          </section>
+
           <!-- ============================== NAVIGATION ============================== -->
           <section class="ds-section" id="navigation">
             <h2 class="ds-section__title">Navigation</h2>
