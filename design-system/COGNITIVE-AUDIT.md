@@ -1202,3 +1202,18 @@ Where Powerhouse and the others stand in this market, on two axes the team names
 
 One line under the organisation's head: the markets whose map it is on, each a link. It appears only when there is one, so most organisations show nothing new. Words: "On the maps of: Finance operations, Law firms". `mapsOf` in `kit/market/`.
 
+### A reminder when a lead is parked (built, `views/overview/MoveAsk.tsx`, `records/lead/LeadDetail.tsx`, `kit/reminder/`)
+
+The board, list and lead audits stand. This covers one addition: parking a lead can set the day it comes back.
+
+1. **Vision and attention.** One quiet choice under the reason, "Remind me", defaulting to no reminder; nothing new competes with the reason field or the Move button.
+2. **Wayfinding.** The reminder becomes an ordinary next step, "Check back: <reason>", on the lead, so it appears where next steps always appear: the lead page, the Calendar, Coming up, and as slipping when it passes.
+3. **Memory and semantics.** Snooze-style quick picks (in 1, 3 or 6 months, with the date), as mail and task apps offer.
+4. **Language.** "Remind me", "No reminder", "In 3 months · Thu 18 Feb", "Check back: Waiting for their budget round". On a lost lead: "A lost lead leaves the calendar. To check back later, park it with a reminder instead."
+5. **Decision making.** The reason is asked first, then whether to come back to it. Only a park offers a reminder: a lost lead is closed, and the Calendar, Coming up and the slipping checks leave closed leads out, so a reminder on it would never show; the Lost question says so instead of pretending.
+6. **Emotion.** Fear: "parking means forgetting". The reminder answers it, and it is added only once the park is accepted, so a refused park never leaves a stray step.
+
+**Concepts weighed:** a separate "snooze" date on the lead (needs a model change, and a second place for dates), a reminder on the organisation (organisations have no next steps), and a next step on the lead (chosen: no model change, and it surfaces everywhere next steps do).
+
+**Implementation:** `.pb-field` with `.pb-select` inside `.pb-ask`, `.pb-ask__note` for the lost line; the step from `reminderStep`, the days from `reminderChoices` (month ends clamped); sent after the park with `dispatchTo` (boards and lists through `useBoardMove`'s `remind`), or `useRun`'s done callback on the lead page. Tests run the park and the step through the lead reducer and check the Calendar shows it, and that a lost lead's step would not show.
+

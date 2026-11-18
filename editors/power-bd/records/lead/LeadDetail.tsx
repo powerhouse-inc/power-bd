@@ -28,6 +28,8 @@ import {
   type OnErrors,
 } from "../../components/shared/relationship/common.js";
 import { useProposalRows } from "../../components/shared/useProposalRows.js";
+import { fmtDay } from "../../components/shared/relationship/common.js";
+import { LOST_REMINDER_NOTE, reminderChoices, reminderStep } from "../../kit/reminder/index.js";
 import { nextAction, statusPath } from "../../kit/lead-view/index.js";
 import { leadProposalNext } from "../../kit/proposal-list/index.js";
 import { LeadNextBar } from "./LeadNextBar.js";
@@ -88,6 +90,7 @@ export function LeadDetail({
   const send = (action: LeadAction, onErrors: OnErrors) =>
     dispatchWith(dispatch, action, onErrors);
 
+  const [remindOn, setRemindOn] = useState("");
   const parked = s.status === "PARKED";
   const closed = s.status === "WON" || s.status === "LOST";
   const path = statusPath(s.status, s.kind, s.parkedFrom);
@@ -167,17 +170,34 @@ export function LeadDetail({
           ) : (
             <button
               className="pb-btn pb-btn--ghost pb-btn--sm"
-              onClick={() =>
-                status.run((e) =>
-                  send(
-                    actions.parkLead({
-                      reason: reason.trim(),
-                      parkedAt: new Date().toISOString(),
-                    }),
-                    e,
-                  ),
-                )
-              }
+              onClick={() => {
+                const why = reason.trim();
+                const day = remindOn;
+                // The reminder is added only once the park is accepted.
+                status.run(
+                  (e) =>
+                    send(
+                      actions.parkLead({
+                        reason: why,
+                        parkedAt: new Date().toISOString(),
+                      }),
+                      e,
+                    ),
+                  day
+                    ? () => {
+                        setRemindOn("");
+                        status.run((e) =>
+                          send(
+                            actions.addNextStep(
+                              reminderStep({ id: generateId(), reason: why, day, owner: s.owner ?? null }),
+                            ),
+                            e,
+                          ),
+                        );
+                      }
+                    : undefined,
+                );
+              }}
             >
               Put on hold
             </button>
@@ -190,6 +210,24 @@ export function LeadDetail({
               value={reason}
               onChange={(e) => setReason(e.target.value)}
             />
+          ) : null}
+          {!parked ? (
+            <select
+              className="pb-select pb-select--inline"
+              aria-label="Remind me when on hold"
+              value={remindOn}
+              onChange={(e) => setRemindOn(e.target.value)}
+            >
+              <option value="">On hold: no reminder</option>
+              {reminderChoices(today).map((c) => (
+                <option key={c.day} value={c.day}>
+                  On hold: remind me {c.label.toLowerCase()} · {fmtDay(`${c.day}T00:00:00.000Z`)}
+                </option>
+              ))}
+            </select>
+          ) : null}
+          {!parked && remindOn ? (
+            <span className="pb-faint pb-small">{LOST_REMINDER_NOTE}</span>
           ) : null}
           <ErrorLine message={status.error} />
         </div>

@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { fmtDay } from "../../components/shared/relationship/common.js";
+import { useToday } from "../../components/shared/useToday.js";
+import { LOST_REMINDER_NOTE, reminderChoices } from "../../kit/reminder/index.js";
 import { VOCABULARY } from "../../../../design-system/vocabulary.js";
 import { Icon } from "../../components/Icon.js";
 import { PeopleMark } from "../../components/shared/PeopleMark.js";
@@ -69,7 +72,8 @@ export function MoveAsk({
   stage: string;
   outcome: Asking;
   busy: boolean;
-  onApply: (option: MoveOption, reason?: string) => void;
+  /** The move, its reason, and for a park the day to be reminded on, if asked. */
+  onApply: (option: MoveOption, reason?: string, remindOn?: string) => void;
   onOpenRecord: () => void;
   onCancel: () => void;
 }) {
@@ -77,6 +81,8 @@ export function MoveAsk({
     outcome.kind === "reason" ? outcome.option : null,
   );
   const [reason, setReason] = useState("");
+  const [remindOn, setRemindOn] = useState("");
+  const today = useToday();
   const reassurance = moveReassurance(outcome);
   const title = `Move “${name || "Untitled"}” to ${stage}`;
   const text = reason.trim();
@@ -138,7 +144,8 @@ export function MoveAsk({
           className="pb-stack"
           onSubmit={(e) => {
             e.preventDefault();
-            if (text && !busy) onApply(picked, text);
+            if (text && !busy)
+              onApply(picked, text, picked.act === "PARK_LEAD" && remindOn ? remindOn : undefined);
           }}
         >
           <label className="pb-field">
@@ -157,6 +164,22 @@ export function MoveAsk({
               onChange={(e) => setReason(e.target.value)}
             />
           </label>
+          {picked.act === "PARK_LEAD" ? (
+            <label className="pb-field">
+              <span className="pb-field__label">Remind me</span>
+              <select className="pb-select" value={remindOn} onChange={(e) => setRemindOn(e.target.value)}>
+                <option value="">No reminder</option>
+                {reminderChoices(today).map((c) => (
+                  <option key={c.day} value={c.day}>
+                    {c.label} · {fmtDay(`${c.day}T00:00:00.000Z`)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+          {picked.act === "LEAD_STATUS" && picked.status === "LOST" ? (
+            <p className="pb-ask__note">{LOST_REMINDER_NOTE}</p>
+          ) : null}
           {reassurance ? (
             <p className="pb-reassure">
               <Icon name="shield" />

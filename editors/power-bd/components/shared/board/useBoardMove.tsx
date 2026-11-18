@@ -32,6 +32,16 @@ export type BoardSend = (
   reason?: string,
 ) => { documentId: string; action: Parameters<DriveWrite["dispatchTo"]>[0] };
 
+/**
+ * The follow-up of an accepted park, when the person asked to be reminded:
+ * a document and the action that adds the reminder, or null for none.
+ */
+export type BoardRemind = (
+  key: string,
+  reason: string,
+  day: string,
+) => { documentId: string; action: Parameters<DriveWrite["dispatchTo"]>[0] } | null;
+
 /** A card's key is its document's id: the move goes to that document. */
 const sendToCard: BoardSend = (key, option, reason) => ({
   documentId: key,
@@ -50,12 +60,15 @@ export function useBoardMove<K extends string>({
   root,
   targetsOf,
   send = sendToCard,
+  remind,
 }: {
   /** The board, to give the focus back to a card. */
   root: RefObject<HTMLElement | null>;
   /** What each column would do to the card with this key. */
   targetsOf: (key: string) => ColumnTarget<K>[];
   send?: BoardSend;
+  /** Adds the reminder a park asked for, once the park is accepted. */
+  remind?: BoardRemind;
 }) {
   const { dispatchTo } = useDriveWrite();
   const [drag, setDrag] = useState<Drag<K> | null>(null);
@@ -67,17 +80,23 @@ export function useBoardMove<K extends string>({
     null,
   );
 
-  /** Sends the move to the card's record. */
-  const apply = (key: string, option: MoveOption, reason?: string) => {
+  /** Sends the move to the card's record, then the reminder a park asked for, only if the park was accepted. */
+  const apply = (key: string, option: MoveOption, reason?: string, remindOn?: string) => {
     setBusy(true);
     setError(null);
-    const refuse = (errors: Error[]) =>
+    let refused = false;
+    const refuse = (errors: Error[]) => {
+      refused = true;
       setError({
         key,
         message: errors.at(0)?.message ?? "That was not accepted.",
       });
+    };
     const { documentId, action } = send(key, option, reason);
+    const follow =
+      remindOn && option.act === "PARK_LEAD" ? remind?.(key, reason ?? "", remindOn) : null;
     dispatchTo(action, documentId, refuse)
+      .then(() => (!refused && follow ? dispatchTo(follow.action, follow.documentId, refuse) : undefined))
       .catch((e: unknown) => refuse(e instanceof Error ? [e] : []))
       .finally(() => {
         setBusy(false);

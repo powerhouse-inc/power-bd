@@ -1,4 +1,5 @@
 import { GroupedTable } from "../../components/shared/board/GroupedTable.js";
+import { reminderAction } from "../../components/shared/board/moveAction.js";
 import {
   LEAD_STATUSES,
   leadMoveCard,
@@ -145,6 +146,14 @@ export function LeadsView({ driveId }: { driveId: string }) {
                 const s = leads.find((d) => d.header.id === id)?.state.global;
                 return s ? leadStatusTargets(leadMoveCard(s)) : [];
               }}
+              remind={(id, reason, day) => ({
+                documentId: id,
+                action: reminderAction(
+                  reason,
+                  day,
+                  leads.find((d) => d.header.id === id)?.state.global.owner ?? null,
+                ),
+              })}
               onRow={(r) => select(r.key)}
               onOpenRecord={select}
               cells={({ key, state: s }) => {
