@@ -137,3 +137,91 @@ export function leftOutLine(left: PriorityMap["left"]): string | null {
   const list = parts.length > 1 ? `${parts.slice(0, -1).join(", ")} and ${parts.at(-1)}` : parts[0];
   return `Not on the map: ${list}`;
 }
+
+/** What the mood map reads from a lead: its status and its interactions. */
+export type MoodLead = {
+  id: string;
+  name: string;
+  status: Status;
+  interactions: readonly { status: string; at?: string | null; outcome?: string | null }[];
+};
+
+export type MoodQuadrant = "PROPOSE" | "REENGAGE" | "CONCERN" | "PARK";
+
+export type MoodDot = {
+  id: string;
+  name: string;
+  /** 0 to 100 from the left: cool to warm. */
+  x: number;
+  /** 0 to 100 from the bottom: quiet to active. */
+  y: number;
+  quadrant: MoodQuadrant;
+};
+
+export type MoodMap = {
+  dots: MoodDot[];
+  /** Open leads with no "how did it go" yet: not placed. */
+  unplaced: { id: string; name: string }[];
+  left: { won: number; lost: number; parked: number };
+};
+
+const OUTCOME_SCORE: Partial<Record<string, number>> = { POSITIVE: 1, NEUTRAL: 0, NEGATIVE: -1 };
+/** The window engagement is counted over, in days. */
+export const ENGAGEMENT_DAYS = 60;
+const DAY_MS = 86_400_000;
+const clamp = (n: number) => Math.min(95, Math.max(5, Math.round(n)));
+
+/**
+ * The relationship's mood and how engaged it is, for each open lead. Mood is
+ * the last three outcomes, the latest counting most (3, 2, 1); a neutral
+ * average sits on the line and counts as not yet warm. Engagement is half how
+ * many held interactions the last 60 days had (four or more fill it) and half
+ * how recent the last one was (fading to nothing over 60 days). A lead with no
+ * outcome yet is listed, not placed. It rates the relationship, never people.
+ */
+export function moodMap(leads: readonly MoodLead[], now: string): MoodMap {
+  const nowMs = Date.parse(now);
+  const out: MoodMap = { dots: [], unplaced: [], left: { won: 0, lost: 0, parked: 0 } };
+  for (const l of leads) {
+    if (l.status === "WON") { out.left.won++; continue; }
+    if (l.status === "LOST") { out.left.lost++; continue; }
+    if (l.status === "PARKED") { out.left.parked++; continue; }
+    const held = l.interactions
+      .filter((i) => i.status === "HELD" && i.at && Date.parse(i.at) <= nowMs)
+      .sort((a, b) => Date.parse(b.at ?? "") - Date.parse(a.at ?? ""));
+    const scored = held.flatMap((i) => (i.outcome && OUTCOME_SCORE[i.outcome] !== undefined ? [OUTCOME_SCORE[i.outcome] as number] : [])).slice(0, 3);
+    if (scored.length === 0) { out.unplaced.push({ id: l.id, name: l.name }); continue; }
+    const weights = [3, 2, 1].slice(0, scored.length);
+    const mood = scored.reduce((sum, s, i) => sum + s * weights[i], 0) / weights.reduce((a, b) => a + b, 0);
+    const recent = held.filter((i) => nowMs - Date.parse(i.at ?? "") <= ENGAGEMENT_DAYS * DAY_MS).length;
+    const days = (nowMs - Date.parse(held[0].at ?? "")) / DAY_MS;
+    const engagement = 0.5 * Math.min(recent, 4) / 4 + 0.5 * Math.max(0, 1 - days / ENGAGEMENT_DAYS);
+    const x = 50 + 50 * mood;
+    const y = 100 * engagement;
+    const warm = x > 50, active = y >= 50;
+    out.dots.push({
+      id: l.id,
+      name: l.name,
+      x: clamp(x),
+      y: clamp(y),
+      quadrant: warm ? (active ? "PROPOSE" : "REENGAGE") : active ? "CONCERN" : "PARK",
+    });
+  }
+  // Dots that land on the same spot are spread a little, in a fixed order, so each stays readable.
+  const seen = new Map<string, number>();
+  for (const d of out.dots.sort((a, b) => a.name.localeCompare(b.name))) {
+    const key = `${Math.round(d.x / 6)}:${Math.round(d.y / 6)}`;
+    const n = seen.get(key) ?? 0;
+    seen.set(key, n + 1);
+    if (n > 0) d.y = clamp(d.y + (n % 2 ? 6 : -6) * Math.ceil(n / 2));
+  }
+  return out;
+}
+
+/** The mood map's corners, in the team's words. */
+export const MOOD_QUADRANT_LABEL: Record<MoodQuadrant, string> = {
+  PROPOSE: "Move to a proposal",
+  REENGAGE: "Re-engage",
+  CONCERN: "Address the concern",
+  PARK: "Park",
+};

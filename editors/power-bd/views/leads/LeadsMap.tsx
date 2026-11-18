@@ -5,11 +5,16 @@ import { Icon } from "../../components/Icon.js";
 import { nextAction } from "../../kit/lead-view/index.js";
 import {
   COLUMNS,
+  ENGAGEMENT_DAYS,
   FIT_ORDER,
   MAP_STAGES,
+  MOOD_QUADRANT_LABEL,
   leftOutLine,
+  moodMap,
   priorityMap,
+  type MoodQuadrant,
 } from "../../kit/lead-map/index.js";
+import { useNow } from "../../components/shared/useNow.js";
 import type { LeadValue } from "../../kit/overview/index.js";
 import { MineButton } from "../overview/MineButton.js";
 
@@ -45,6 +50,8 @@ export function LeadsMap({
 }) {
   const [mine, setMine] = useState(false);
   const [kind, setKind] = useState("");
+  const [layout, setLayout] = useState<"priority" | "mood">("priority");
+  const now = useNow();
   const shown = leads.filter((d) => {
     const s = d.state.global;
     return (!mine || (me !== null && s.owner?.toLowerCase() === me.toLowerCase())) && (!kind || s.kind === kind);
@@ -68,6 +75,19 @@ export function LeadsMap({
   return (
     <>
       <div className="pb-toolbar pb-mb-8">
+        <div className="pb-segmented" role="group" aria-label="Map">
+          {(["priority", "mood"] as const).map((l) => (
+            <button
+              key={l}
+              type="button"
+              className={`pb-segmented__item${layout === l ? " is-active" : ""}`}
+              aria-pressed={layout === l}
+              onClick={() => setLayout(l)}
+            >
+              {l === "priority" ? "Priority" : "Mood"}
+            </button>
+          ))}
+        </div>
         <MineButton on={mine} disabled={!me} onClick={() => setMine(!mine)} />
         <select className="pb-select pb-input--auto" aria-label="Kind" value={kind} onChange={(e) => setKind(e.target.value)}>
           <option value="">All kinds</option>
@@ -78,6 +98,10 @@ export function LeadsMap({
           ))}
         </select>
       </div>
+      {layout === "mood" ? (
+        <MoodLayout leads={shown} now={now} onOpen={onOpen} />
+      ) : (
+      <>
       <div className="pb-map pb-map--grid" role="group" aria-label="Leads map">
         <span className="pb-map__unassessed" />
         {[2, 4].map((c) => (
@@ -134,6 +158,98 @@ export function LeadsMap({
             leftOut,
             map.unassessed > 0
               ? `${map.unassessed === 1 ? "One lead has" : `${map.unassessed} leads have`} no angle yet, so ${map.unassessed === 1 ? "it sits" : "they sit"} under Not assessed: give each an angle with its fit`
+              : null,
+          ]
+            .filter(Boolean)
+            .join(". ")}
+          .
+        </p>
+      ) : null}
+      </>
+      )}
+    </>
+  );
+}
+
+const MOOD_CORNERS: { quadrant: MoodQuadrant; style: CSSProperties }[] = [
+  { quadrant: "PROPOSE", style: { top: 0, right: 0 } },
+  { quadrant: "REENGAGE", style: { bottom: 0, right: 0 } },
+  { quadrant: "CONCERN", style: { top: 0, left: 0 } },
+  { quadrant: "PARK", style: { bottom: 0, left: 0 } },
+];
+
+/**
+ * The Mood layout: each open lead by how its recent interactions went (left
+ * to right, from the "How did it go?" answers) and how engaged it is (bottom
+ * to top, from how many held interactions there were lately and how recent the
+ * last one was). It rates the relationship, never a person, and stays inside
+ * the team. Leads with no answer yet are listed under the map.
+ */
+function MoodLayout({
+  leads,
+  now,
+  onOpen,
+}: {
+  leads: readonly Pick<LeadDocument, "header" | "state">[];
+  now: string;
+  onOpen: (id: string) => void;
+}) {
+  const map = moodMap(
+    leads.map((d) => ({
+      id: d.header.id,
+      name: d.state.global.name || "Untitled lead",
+      status: d.state.global.status,
+      interactions: d.state.global.interactions,
+    })),
+    now,
+  );
+  const leftOut = leftOutLine(map.left);
+  return (
+    <>
+      <div className="pb-map" role="group" aria-label="Mood map">
+        <span className="pb-map__axis pb-map__axis--x" />
+        <span className="pb-map__axis pb-map__axis--y" />
+        <span className="pb-map__end pb-map__end--left">Went badly</span>
+        <span className="pb-map__end pb-map__end--right">Went well</span>
+        <span className="pb-map__end pb-map__end--bottom">Quiet</span>
+        <span className="pb-map__end pb-map__end--top">Active</span>
+        {MOOD_CORNERS.map((c) => (
+          <span key={c.quadrant} className="pb-map__quadrant" style={c.style}>
+            {MOOD_QUADRANT_LABEL[c.quadrant]}
+          </span>
+        ))}
+        {map.dots.length === 0 ? (
+          <div className="pb-map__empty">
+            {map.unplaced.length > 0
+              ? "No lead has a \"How did it go?\" yet. Answer it on a held meeting or call, and the lead appears here."
+              : "No open lead to place."}
+          </div>
+        ) : null}
+        {map.dots.map((d) => (
+          <button
+            key={d.id}
+            type="button"
+            className="pb-map__dot pb-map__dot--lead"
+            style={{ left: `${d.x}%`, bottom: `${d.y}%` }}
+            title={d.name}
+            aria-label={`${d.name}: ${MOOD_QUADRANT_LABEL[d.quadrant]}. Opens the lead.`}
+            onClick={() => onOpen(d.id)}
+          >
+            <span>{d.name}</span>
+          </button>
+        ))}
+      </div>
+      <div className="pb-map__caption">
+        <span>Left to right: how the last three held interactions went, the latest counting most</span>
+        <span>Bottom to top: how many there were in the last {ENGAGEMENT_DAYS} days, and how recent the last one was</span>
+        <span>It rates the relationship, never a person, and stays inside the team</span>
+      </div>
+      {map.unplaced.length > 0 || leftOut ? (
+        <p className="pb-small pb-faint pb-mt-8">
+          {[
+            leftOut,
+            map.unplaced.length > 0
+              ? `Not placed yet, with no "How did it go?": ${map.unplaced.map((u) => u.name).join(", ")}`
               : null,
           ]
             .filter(Boolean)
