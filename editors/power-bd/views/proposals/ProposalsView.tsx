@@ -1,30 +1,27 @@
 import { useSetSelectedNode } from "@powerhousedao/reactor-browser";
 import { useState } from "react";
-import { EmptyPlace } from "../../components/EmptyPlace.js";
 import { EmptyStart } from "../../components/EmptyStart.js";
 import { Icon } from "../../components/Icon.js";
 import { useGoToPlace } from "../../components/PlaceContext.js";
-import { Menu } from "../../components/shared/Menu.js";
 import { DraftValue } from "../../components/shared/ProposalBadge.js";
 import { useProposalRows } from "../../components/shared/useProposalRows.js";
 import { WaitsOn } from "../../components/shared/WaitsOn.js";
 import { useProposalDocumentsInSelectedDrive } from "../../components/useDriveDocuments.js";
-import { proposalMoveCard } from "../../kit/overview-view/index.js";
-import { ProposalsBoard } from "./ProposalsBoard.js";
+import { VOCABULARY } from "../../../../design-system/vocabulary.js";
+import { GroupedTable } from "../../components/shared/board/GroupedTable.js";
 import {
-  filterRows,
-  statusOptions,
-  waitSummary,
-} from "../../kit/proposal-list/index.js";
+  PROPOSAL_STATUSES,
+  proposalMoveCard,
+  proposalStatusTargets,
+} from "../../kit/overview-view/index.js";
+import { ProposalsBoard } from "./ProposalsBoard.js";
+import { waitSummary } from "../../kit/proposal-list/index.js";
 
-const STATUSES = statusOptions();
-
-/** The Proposals place: every proposal with its lead, status, value, valid-until day and what it waits on, on a board by status or in a list. */
+/** The Proposals place: every proposal with its lead, status, value, valid-until day and what it waits on, on a board by status or in a list grouped by status. Both take drops. */
 export function ProposalsView(_: { driveId: string }) {
   const select = useSetSelectedNode();
   const goTo = useGoToPlace();
   const all = useProposalRows();
-  const [status, setStatus] = useState("");
   const [asBoard, setAsBoard] = useState(true);
   const cards = new Map(
     (useProposalDocumentsInSelectedDrive() ?? []).map((d) => [
@@ -32,7 +29,6 @@ export function ProposalsView(_: { driveId: string }) {
       proposalMoveCard(d.state.global),
     ]),
   );
-  const rows = filterRows(all, status);
   const { us, client } = waitSummary(all);
 
   const toLeads = (
@@ -89,15 +85,6 @@ export function ProposalsView(_: { driveId: string }) {
                 List
               </button>
             </div>
-            {/* On the board the columns are the statuses, so the filter is the list's. */}
-            {asBoard ? null : (
-              <Menu
-                label="Status"
-                value={status}
-                options={STATUSES}
-                onChange={setStatus}
-              />
-            )}
             <span className="pb-toolbar__spacer" />
             <div className="pb-pulse">
               <span>
@@ -111,81 +98,82 @@ export function ProposalsView(_: { driveId: string }) {
           </div>
           {asBoard ? (
             <ProposalsBoard rows={all} cards={cards} onOpen={select} />
-          ) : rows.length === 0 ? (
-            <EmptyPlace
-              icon="proposal"
-              title="No proposals with this status"
-              text="Choose All to see every proposal."
-            />
           ) : (
-            <div className="pb-table-wrap">
-              <table className="pb-table">
-                <thead>
-                  <tr>
-                    <th>Proposal</th>
-                    <th>Lead</th>
-                    <th>Organisation</th>
-                    <th>Status</th>
-                    <th className="pb-table__num">Value</th>
-                    <th>Valid until</th>
-                    <th>Waits on</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((r) => (
-                    <tr
-                      key={r.id}
-                      className="pb-clickable"
-                      onClick={() => select(r.id)}
-                    >
-                      <td className="pb-table__title">{r.title}</td>
-                      <td>
-                        {r.leadId && r.leadName ? (
-                          <a
-                            className="pb-link"
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              select(r.leadId ?? undefined);
-                            }}
-                          >
-                            {r.leadName}
-                          </a>
-                        ) : (
-                          <span className="pb-faint">No lead</span>
-                        )}
-                      </td>
-                      <td>
-                        {r.organisation ?? <span className="pb-faint">—</span>}
-                      </td>
-                      <td>
-                        <span className={`pb-tag pb-tag--${r.tone}`}>
-                          {r.statusLabel}
-                        </span>
-                      </td>
-                      <td className="pb-table__num">
-                        {r.valueNote ? (
-                          <DraftValue value={r.value} />
-                        ) : r.priced ? (
-                          r.value
-                        ) : (
-                          <span className="pb-faint">{r.value}</span>
-                        )}
-                      </td>
-                      <td>
-                        {r.validUntilLabel ?? (
-                          <span className="pb-faint">No day set</span>
-                        )}
-                      </td>
-                      <td>
-                        <WaitsOn wait={r.wait} label={r.waitLabel} />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <GroupedTable
+              head={
+                <>
+                  <th>Proposal</th>
+                  <th>Lead</th>
+                  <th>Organisation</th>
+                  <th>Status</th>
+                  <th className="pb-table__num">Value</th>
+                  <th>Valid until</th>
+                  <th>Waits on</th>
+                </>
+              }
+              columns={7}
+              statuses={PROPOSAL_STATUSES}
+              terms={VOCABULARY.proposalStatus}
+              rows={all.map((r) => ({
+                key: r.id,
+                status: r.status,
+                name: r.title,
+                row: r,
+              }))}
+              targetsOf={(id) => {
+                const card = cards.get(id);
+                return card ? proposalStatusTargets(card) : [];
+              }}
+              onRow={(r) => select(r.key)}
+              onOpenRecord={select}
+              cells={({ row: r }) => (
+                <>
+                  <td className="pb-table__title">{r.title}</td>
+                  <td>
+                    {r.leadId && r.leadName ? (
+                      <a
+                        className="pb-link"
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          select(r.leadId ?? undefined);
+                        }}
+                      >
+                        {r.leadName}
+                      </a>
+                    ) : (
+                      <span className="pb-faint">No lead</span>
+                    )}
+                  </td>
+                  <td>
+                    {r.organisation ?? <span className="pb-faint">—</span>}
+                  </td>
+                  <td>
+                    <span className={`pb-tag pb-tag--${r.tone}`}>
+                      {r.statusLabel}
+                    </span>
+                  </td>
+                  <td className="pb-table__num">
+                    {r.valueNote ? (
+                      <DraftValue value={r.value} />
+                    ) : r.priced ? (
+                      r.value
+                    ) : (
+                      <span className="pb-faint">{r.value}</span>
+                    )}
+                  </td>
+                  <td>
+                    {r.validUntilLabel ?? (
+                      <span className="pb-faint">No day set</span>
+                    )}
+                  </td>
+                  <td>
+                    <WaitsOn wait={r.wait} label={r.waitLabel} />
+                  </td>
+                </>
+              )}
+            />
           )}
         </>
       )}
