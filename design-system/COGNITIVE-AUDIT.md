@@ -122,6 +122,7 @@ Record pages blend the same way:
 | Owner (a name) | assignee, user, 0x… address | Names come from the team list |
 | View, Edit, Manage | READ, WRITE, ADMIN, permission level | The levels said by what they let someone do |
 | Access, give access, remove | grant, revoke, permission, ACL | The team's words for who can open the space |
+| Delete (a record, for everyone) | destroy, purge, remove the document | Taking a record out of the space for good; "Remove" stays for taking something off a list |
 | Wallet address (in Access and the gate only) | user id, DID, Renown account | Access is given to the address someone signs in with; a team name shows beside it when known |
 | Next step | task, to-do item | The team's own phrase |
 | History | interactions, operations, events | What a person calls the past of a relationship |
@@ -1490,3 +1491,79 @@ Asked on 2026-11-18: "what about if the user doesn't have access to the knowledg
 - **Language:** "access", "an admin of the vault".
 - **Decision:** research questions are known to need access before they are asked.
 - **Emotion:** no errors to decode, and nothing read that should not be.
+
+### Deleting a record (built, `components/shared/DeleteRecord.tsx`, `kit/record-delete/`, `kit/chat/tools.ts`)
+
+Asked on 2026-11-18: "can I delete a proposal? add that to the app", then "see what other docs can be deleted in the app and add the delete buttons where relevant". Until then nothing in the app deleted a record (the spec prefers closing, archiving and deactivating), while the agent's generic tool could delete anything, the space's own records included.
+
+**1. Checkpoints.** *Vision:* the delete sits at the very end of the page below a neutral rule, a quiet ghost button in the danger colour, never the anchor; the question and the refusals are reassurance lines, so nothing on the page competes with the record's own next action. *Wayfinding:* the same place on every record that can go (lead, funding opportunity, organisation, decision, proposal, market), and after deleting the person lands on that record's list. *Memory:* the record's own noun ("Delete this lead"), and the alternative named in the record's own steps (close as lost or park, withdraw, archive). *Language:* "Delete", "Yes, delete", "Keep it", "can't be undone"; the records that link are named by kind and name, as the lists show them. *Decision:* the prerequisite comes before the decision: when another record links to this one, or a proposal reached the client, the page says why it stays and offers no button, instead of a refusal after the click. *Emotion:* the fear is losing history or breaking a link by accident; the question says what is lost and how to keep it, and links can't be broken from here.
+
+**2. Concepts weighed:** a delete item in Connect's toolbar or a menu (conventional, but out of sight and outside the design system); deleting from lists and boards (fast, but too easy to hit beside "Move to…"); archiving everywhere instead (the spec's habit, but a draft made by mistake or a duplicate lead should go). Chosen: the end of the record page, as the investor list already removes a row, with the rule decided before anything is offered.
+
+**3. Implementation:** `deleteVerdict` (kit) decides: the space's own records are never deleted; a proposal stays once it reached the client (`sentAt`, or Sent, Accepted, Declined); any record whose content names this one blocks it, whatever field holds the link, so new links in the models are covered without a list to keep. `useDriveWrite().remove` deletes on the drive's server (which takes the record out of the drive) and syncs the live copy, or through Connect for a drive kept in the browser. The page closes the record before deleting it, so nothing goes on reading it; a refusal reopens it with the reason. The agent's delete tool checks the same rule first and refuses with the same words, and deletes nothing outside the BD space.
+
+**4. Mapping**
+
+- **Vision:** quiet at the end of the page; never the visual anchor.
+- **Wayfinding:** one place on every record that can go; back to its list after.
+- **Memory:** the record's noun and its own way to keep history.
+- **Language:** "Delete this …", "Yes, delete", "Keep it", "can't be undone".
+- **Decision:** links and sent proposals are said before any button.
+- **Emotion:** nothing is lost by surprise, and no link breaks.
+
+### The attention count says what kind of number it is (built, `views/overview/AttentionPanel.tsx`, `kit/overview-view/attention.ts`)
+
+Asked on 2026-11-18, with a screenshot of a red "0 need attention": "change the color to green or grey if there's 0 items. make that smart". The count was red whatever it said, so the Overview's one anchor raised an alarm over nothing.
+
+**1. Checkpoints.** *Vision:* the anchor keeps its place but its colour now carries the meaning: red to act, orange for a second look, the design system's drawn green check when all is clear, grey when there is nothing to say; an empty card no longer pulls the eye like a problem. *Wayfinding:* with "Mine" on and nothing of one's own, the card says how many of the team's wait and offers "Show the team's", instead of a zero that hides them. *Memory:* the tones are the slipping vocabulary's own: a count is orange only when every reason is one the signal lines already show in orange. *Language:* "All caught up", "Nothing is slipping right now.", "Nothing of yours", "Nothing open to watch yet", "Show the team's". *Decision:* a zero is only called all caught up when it is true for everyone; a new space with nothing open says so instead. *Emotion:* green is earned, and a personal zero never reassures someone while the team's work slips.
+
+**2. Concepts weighed:** grey for every zero (honest, but never rewarding a clear board); green for every zero (rewarding, but false under "Mine" and in an empty space); hiding the card when empty (calm, but the anchor and the "Mine" switch would jump). Chosen: the tone follows what the zero means, using the clear state the showcase already had.
+
+**3. Implementation:** `attentionState` decides tone and words from the items shown, the team's count and the open relationships watched (`openToWatch`, the slipping check's own filter); the panel applies `pb-attention--warn`, `--clear` or `--quiet`.
+
+**4. Mapping**
+
+- **Vision:** colour carries the meaning; an empty card stops looking like a problem.
+- **Wayfinding:** the team's waiting items are one button away when "Mine" hides them.
+- **Memory:** the slipping vocabulary's red and orange, reused.
+- **Language:** "All caught up", "Nothing of yours", "Nothing open to watch yet".
+- **Decision:** all caught up only when it is true for everyone.
+- **Emotion:** green is earned; a personal zero never hides the team's slips.
+
+### The Overview's quarter and forecast, made quieter and actionable (built, `views/overview/QuarterPanel.tsx`, `components/shared/Explain.tsx`)
+
+Asked on 2026-11-18, with a screenshot: "improve this too". The two headings sat at different heights (the shorter section was stretched, and its head row grew), the info icon broke onto its own line, two long method notes had the same weight as the figures, "Set them in Settings" was a faint link inside a sentence, four zeros read like results, and "1 open lead has no proposal value yet: not counted" named no lead.
+
+**1. Checkpoints.** *Vision:* the figures are the target; counts with nothing behind them and no target are faint, so only real numbers and bars draw the eye; both headings sit level. *Wayfinding:* "Set targets" or "Edit targets" sits where a section's action always does, at the end of its head, and goes to Settings. *Memory:* figures with a disclosure for the method, as analytics tools do. *Language:* "no targets yet", "weighted by stage", "Nothing to forecast yet. These open leads have no priced proposal:", "How it's counted", "How it's worked out". *Decision:* what is missing names the fix: each lead that needs a price is a link to its page. *Emotion:* an early quarter no longer looks like failing figures; nothing is hidden, only folded.
+
+**2. Concepts weighed:** A, minimal (only the figures, the method gone; but the team needs to trust how they are counted); B, conventional (keep the paragraphs; the clutter remains); C, immersive (gauges and rings; loud for a quiet secondary panel beside the attention anchor). Chosen: B's structure with A's restraint: figures first, method in a disclosure, missing data as links.
+
+**3. Implementation:** `.pb-section` packs its content to the top (`align-content: start`), which levels headings in any stretched row. `Explain` is the shared "How it's counted" disclosure (`.pb-explain`). Faint goals use `.pb-goal__value--none`; notes are reassurance lines with the icon inline.
+
+**4. Mapping**
+
+- **Vision:** real figures stand out; zeros and method recede; headings level.
+- **Wayfinding:** the targets action sits at the end of the section head.
+- **Memory:** figures with a disclosure for the method.
+- **Language:** "no targets yet", "weighted by stage", "no priced proposal".
+- **Decision:** the leads to price are links.
+- **Emotion:** an early quarter looks early, not failing.
+
+### Reports, calmer and in the order questions come (built, `views/reports/ReportsView.tsx`, `kit/reports/display.ts`)
+
+Asked on 2026-11-18, with a screenshot: "also the reports section, improve the display with the six minds design skill". The loudest text on the page was "Too few", twice; "Too few to say" sat between every stage of a full-width funnel; method sentences opened the page; empty sections took as much room as full ones; three identical tables of one row each closed it.
+
+**1. Checkpoints.** *Vision:* the tiles stay the summary, but a figure that can't be worked out yet is a quiet dash, and "Gone quiet" turns orange and becomes a button when leads need reviving, the one thing to act on. The funnel is short enough to compare (760px, as the showcase drew it), stages nobody reached are faint, and a share shows only where it can be worked out. *Wayfinding:* sections follow the questions: how far leads get, where they stall now, why they were lost, then a breakdown; the breakdown's switch ends where its table does. *Memory:* KPI tiles, a funnel and a table, as in the CRMs the team knows. *Language:* "Shows once 3 have closed · 1 so far" instead of "Too few"; "How these are counted", "About these steps", "How reasons are grouped". *Decision:* just-in-time: the note on missing shares stays visible where the blank is; caveats are one click away. *Emotion:* a young pipeline reads as early, with a clear point when each figure will appear.
+
+**2. Concepts weighed:** A, task-oriented (only quiet leads and loss themes; the team also wants the conversion picture); B, conventional (tiles, funnel, tables, the old frame); C, immersive (a hero win rate and animated funnel; empty most of the year). Chosen: B's familiar frame with A's restraint (dashes, one-line empties, one breakdown) and one signal from C (the quiet-leads tile).
+
+**3. Implementation:** `reportTiles`, `funnelNote` and `reasonsNote` (kit) hold the words and tones. New parts: `.pb-tile__value--none`, `.pb-tile--signal`, `.pb-funnel__row--none`, `.pb-table-wrap--narrow`, `.pb-section--narrow`; `.pb-reasons` and `.pb-funnel` are capped at 760px.
+
+**4. Mapping**
+
+- **Vision:** unknown figures recede; the quiet-leads tile is the one signal.
+- **Wayfinding:** sections in the order the questions come; one breakdown.
+- **Memory:** tiles, funnel and table, as CRMs show them.
+- **Language:** "Shows once 3 have closed" instead of "Too few".
+- **Decision:** the explanation sits where the blank is; caveats fold away.
+- **Emotion:** an early pipeline looks early, with a clear point when figures appear.

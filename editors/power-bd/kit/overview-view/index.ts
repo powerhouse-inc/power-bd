@@ -9,6 +9,8 @@ import {
   type ViewItem,
 } from "../overview/index.js";
 
+export { attentionState, openToWatch, type AttentionState, type AttentionTone } from "./attention.js";
+
 const key = (r: Pick<ItemRef, "kind" | "id">) => `${r.kind}:${r.id}`;
 const lower = (s: string) => s.toLowerCase();
 

@@ -43,6 +43,14 @@ export function serverClient(base: string): GraphQLReactorClient {
   return client;
 }
 
+/**
+ * Deletes a record on its drive's server, which takes it out of the drive and
+ * deletes it. A member who may write the drive may delete its records.
+ */
+export async function deleteOnServer(base: string, documentId: string): Promise<void> {
+  await serverClient(base).deleteDocument(documentId);
+}
+
 /** Creates a document in the drive on its server, in `folderId` (top level when absent); returns its id. */
 export async function createOnServer(
   base: string,

@@ -76,6 +76,11 @@
 .pb-nowrap { white-space: nowrap; }
 .pb-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .pb-link {
+  /* A link may be a button: no box of its own. */
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
   color: inherit;
   text-decoration: underline;
   text-decoration-color: var(--pb-border-strong);
@@ -407,6 +412,10 @@
 
 /* ---- Tables (Notion database look) ---------------------------------------- */
 .pb-table-wrap { overflow-x: auto; }
+/* A table of a few columns, not stretched across a wide page. */
+.pb-table-wrap--narrow { max-width: 760px; }
+/* A section of narrow parts, so its head's controls end where its table does. */
+.pb-section--narrow { max-width: 760px; }
 .pb-table { width: 100%; border-collapse: collapse; font-size: var(--pb-fs-md); }
 .pb-table th {
   height: 33px;
@@ -654,16 +663,24 @@
 .pb-page__icon--yellow { background: var(--pb-yellow-bg); color: var(--pb-yellow-text); }
 .pb-page__icon--orange { background: var(--pb-orange-bg); color: var(--pb-orange-text); }
 .pb-page__head { display: grid; gap: 10px; margin-bottom: 14px; }
+/* The end of a record page: deleting the record, below everything else and quiet until asked. A neutral rule, no coloured edge. */
+.pb-record-end { margin-top: var(--pb-s-10); padding-top: var(--pb-s-4); border-top: 1px solid var(--pb-border); display: grid; gap: var(--pb-s-2); justify-items: start; }
+.pb-record-end > .pb-row { width: 100%; }
 .pb-page__title { font-size: var(--pb-fs-3xl); font-weight: var(--pb-fw-bold); line-height: 1.2; letter-spacing: -0.01em; }
 .pb-page__sub { color: var(--pb-text-secondary); }
 
 /* ---- Sections, lists and stats -------------------------------------------- */
-.pb-section { display: grid; gap: 8px; margin-top: 30px; }
+/* A section stretched by its row keeps its content at the top, so headings side by side line up. */
+.pb-section { display: grid; gap: 8px; margin-top: 30px; align-content: start; }
 .pb-section__head { display: flex; align-items: center; gap: 8px; min-height: 28px; }
 .pb-section__title { display: flex; align-items: center; gap: 8px; font-size: var(--pb-fs-lg); font-weight: var(--pb-fw-semibold); }
 .pb-section__head .pb-btn-group,
 .pb-section__head > .pb-btn,
-.pb-section__head > .pb-filter { margin-left: auto; }
+.pb-section__head > .pb-filter,
+.pb-section__head > .pb-segmented { margin-left: auto; }
+/* "How it's counted": the method behind a figure, closed until asked. */
+.pb-explain { display: grid; gap: var(--pb-s-1); justify-items: start; }
+.pb-explain__text { max-width: 68ch; margin: 0; padding-left: 26px; color: var(--pb-text-secondary); font-size: var(--pb-fs-xs); line-height: 1.5; }
 .pb-divider { height: 1px; margin: 16px 0; border: 0; background: var(--pb-border); }
 .pb-list { display: grid; }
 .pb-list__item { display: flex; align-items: center; gap: 10px; min-height: 38px; padding: 6px 8px; border-radius: var(--pb-r-md); cursor: pointer; }
@@ -869,6 +886,9 @@
 .pb-attention__head > .pb-btn { margin-left: auto; }
 .pb-attention__count { color: var(--pb-red-text); font-size: var(--pb-fs-3xl); font-weight: var(--pb-fw-bold); line-height: 1; font-variant-numeric: tabular-nums; }
 .pb-attention--clear .pb-attention__count { color: var(--pb-green-text); }
+/* Only second looks wait: orange. Nothing to say (nothing of yours while the team's wait, or nothing open yet): grey. */
+.pb-attention--warn .pb-attention__count { color: var(--pb-orange-text); }
+.pb-attention--quiet .pb-attention__count { color: var(--pb-text-tertiary); }
 .pb-attention__title { font-size: var(--pb-fs-lg); font-weight: var(--pb-fw-semibold); line-height: 1.3; }
 .pb-attention__sub { color: var(--pb-text-secondary); font-size: var(--pb-fs-sm); }
 .pb-attention__list { display: grid; margin: 0; padding: 0 8px 8px; list-style: none; }
@@ -1199,6 +1219,10 @@
 .pb-tile[aria-pressed="true"] .pb-tile__label .pb-icon { color: var(--pb-accent-text); }
 .pb-tile__value { overflow-wrap: anywhere; font-size: var(--pb-fs-xl); font-weight: var(--pb-fw-semibold); line-height: 1.3; font-variant-numeric: tabular-nums; }
 .pb-tile__sub { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--pb-text-secondary); font-size: var(--pb-fs-xs); }
+/* A figure that can't be worked out yet: a quiet dash; the sub says when it will show. */
+.pb-tile__value--none { color: var(--pb-text-tertiary); }
+/* A tile that points at something to do now. */
+.pb-tile--signal .pb-tile__value { color: var(--pb-orange-text); }
 
 /* ---- Menu: a button that drops a list of choices -------------------------- */
 /* The trigger is a filter pill (`.pb-filter`), off until a choice narrows. */
@@ -2233,7 +2257,10 @@ a.pb-ref__title:focus-visible { outline: 2px solid var(--pb-accent); outline-off
    a group of reasons with what was said, and the priority map's grid. Bars use
    the accent tint and won the green tone; nothing is red but a late signal.
    ============================================================================= */
-.pb-funnel { display: grid; gap: var(--pb-s-0-5); }
+/* Bars short enough to compare at a glance; a stage nobody reached stays quiet. */
+.pb-funnel { display: grid; gap: var(--pb-s-0-5); max-width: 760px; }
+.pb-funnel__row--none .pb-funnel__label,
+.pb-funnel__row--none .pb-funnel__count { color: var(--pb-text-tertiary); }
 .pb-funnel__row { display: grid; grid-template-columns: 112px minmax(0, 1fr) 48px; align-items: center; gap: var(--pb-s-3); min-height: 26px; }
 .pb-funnel__label { color: var(--pb-text); font-size: var(--pb-fs-sm); }
 .pb-funnel__track { height: 16px; overflow: hidden; border-radius: var(--pb-r-sm); background: var(--pb-bg-hover); }
@@ -2242,7 +2269,7 @@ a.pb-ref__title:focus-visible { outline: 2px solid var(--pb-accent); outline-off
 .pb-funnel__count { color: var(--pb-text); font-size: var(--pb-fs-sm); font-variant-numeric: tabular-nums; text-align: right; }
 /* The share that went on, between two rows, under the bars. */
 .pb-funnel__step { padding-left: calc(112px + var(--pb-s-3)); color: var(--pb-text-tertiary); font-size: var(--pb-fs-xs); line-height: 1.2; }
-.pb-reasons { display: grid; gap: var(--pb-s-0-5); }
+.pb-reasons { display: grid; gap: var(--pb-s-0-5); max-width: 760px; }
 .pb-reason { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--pb-s-3); min-height: 30px; padding: var(--pb-s-1) var(--pb-s-2); border-radius: var(--pb-r-md); }
 .pb-reason:hover { background: var(--pb-bg-hover); }
 .pb-reason__count { color: var(--pb-text-secondary); font-size: var(--pb-fs-sm); font-variant-numeric: tabular-nums; }
@@ -2345,6 +2372,8 @@ a.pb-ref__title:focus-visible { outline: 2px solid var(--pb-accent); outline-off
 .pb-goal { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: var(--pb-s-1) var(--pb-s-3); }
 .pb-goal__label { color: var(--pb-text-secondary); font-size: var(--pb-fs-sm); }
 .pb-goal__value { color: var(--pb-text); font-size: var(--pb-fs-sm); font-weight: var(--pb-fw-semibold); font-variant-numeric: tabular-nums; }
+/* Nothing counted yet, and no target to measure it against: quiet. */
+.pb-goal__value--none { color: var(--pb-text-tertiary); font-weight: var(--pb-fw-regular); }
 .pb-goal__bar { grid-column: 1 / -1; display: block; height: 6px; overflow: hidden; border-radius: var(--pb-r-full); background: var(--pb-bg-pressed); }
 .pb-goal__fill { display: block; height: 100%; border-radius: inherit; background: var(--pb-accent); }
 .pb-goal__bar.is-met .pb-goal__fill { background: var(--pb-green-text); }

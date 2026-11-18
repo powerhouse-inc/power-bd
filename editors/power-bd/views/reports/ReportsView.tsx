@@ -2,6 +2,7 @@ import { useSetSelectedNode } from "../../components/shared/useOpenRecord.js";
 import { useState } from "react";
 import { VOCABULARY } from "../../../../design-system/vocabulary.js";
 import { EmptyPlace } from "../../components/EmptyPlace.js";
+import { Explain } from "../../components/shared/Explain.js";
 import { Icon } from "../../components/Icon.js";
 import { useTeam } from "../../components/shared/useTeam.js";
 import { useToday } from "../../components/shared/useToday.js";
@@ -10,8 +11,12 @@ import {
   useLeadDocumentsInSelectedDrive,
 } from "../../components/useDriveDocuments.js";
 import {
+  MIN_SAMPLE,
   PERIODS,
   funnel,
+  funnelNote,
+  reasonsNote,
+  reportTiles,
   lostReasons,
   outcomes,
   parkedReasons,
@@ -26,6 +31,14 @@ import {
   type SplitRow,
 } from "../../kit/reports/index.js";
 import { settingsOrDefaults } from "../../kit/settings/index.js";
+
+/** What the breakdown can split the leads by. */
+const SPLITS = [
+  { value: "owner", label: "Owner" },
+  { value: "kind", label: "Kind" },
+  { value: "source", label: "Where they came from" },
+] as const;
+type Split = (typeof SPLITS)[number]["value"];
 
 const statusLabel = (status: string) =>
   VOCABULARY.leadStatus.find((t) => t.value === status)?.label ?? status;
@@ -73,8 +86,8 @@ function Reasons({ groups, onOpen }: { groups: ReasonGroup[]; onOpen: (id: strin
 /** The same counts per owner or per kind. */
 function SplitTable({ title, rows, name }: { title: string; rows: SplitRow[]; name: (key: string) => string }) {
   return (
-    <div className="pb-table-wrap">
-      <table className="pb-table">
+    <div className="pb-table-wrap pb-table-wrap--narrow">
+      <table className="pb-table pb-table--compact">
         <thead>
           <tr>
             <th>{title}</th>
@@ -93,7 +106,13 @@ function SplitTable({ title, rows, name }: { title: string; rows: SplitRow[]; na
               <td className="pb-num">{r.open}</td>
               <td className="pb-num">{r.won}</td>
               <td className="pb-num">{r.lost}</td>
-              <td className="pb-num">{r.winRate === null ? <span className="pb-faint">Too few</span> : percent(r.winRate)}</td>
+              <td className="pb-num">
+                {r.winRate === null ? (
+                  <span className="pb-faint" title={`Shows once ${MIN_SAMPLE} have closed`}>—</span>
+                ) : (
+                  percent(r.winRate)
+                )}
+              </td>
             </tr>
           ))}
         </tbody>
@@ -114,6 +133,7 @@ export function ReportsView(_props: { driveId: string }) {
   const team = useTeam();
   const select = useSetSelectedNode();
   const [period, setPeriod] = useState<Period>("quarter");
+  const [split, setSplit] = useState<Split>("owner");
 
   if (docs.length === 0)
     return (
@@ -153,6 +173,10 @@ export function ReportsView(_props: { driveId: string }) {
   const parked = parkedReasons(leads);
   const quiet = quietLeads(leads, today, zone);
   const quietCount = quiet.reduce((n, s) => n + s.leads.length, 0);
+  const allTime = period === "all" || start === null;
+  const tiles = reportTiles(o, f.entered, quietCount, periodLabel);
+  const stepsNote = funnelNote(f);
+  const nothingLost = reasonsNote(lost.length, parked.length, allTime);
   const investorsAdded = leads.some((l) => l.kind === "INVESTOR" && (start === null || l.createdAt.slice(0, 10) >= start));
 
   return (
@@ -174,32 +198,38 @@ export function ReportsView(_props: { driveId: string }) {
           ))}
         </div>
       </div>
-      <p className="pb-small pb-faint pb-mb-8">
-        A period counts the leads added, won or lost in it. A share needs at least three leads behind it.
-      </p>
-
       <div className="pb-tiles">
-        <div className="pb-tile pb-tile--static">
-          <span className="pb-tile__label">Win rate</span>
-          <span className="pb-tile__value">{o.winRate === null ? "Too few" : percent(o.winRate)}</span>
-          <span className="pb-tile__sub">{o.won} won, {o.lost} lost</span>
-        </div>
-        <div className="pb-tile pb-tile--static">
-          <span className="pb-tile__label">Days to win</span>
-          <span className="pb-tile__value">{o.medianDaysToWin === null ? "Too few" : Math.round(o.medianDaysToWin)}</span>
-          <span className="pb-tile__sub">Median, from being added</span>
-        </div>
-        <div className="pb-tile pb-tile--static">
-          <span className="pb-tile__label">Added</span>
-          <span className="pb-tile__value">{f.entered}</span>
-          <span className="pb-tile__sub">Leads, {periodLabel}</span>
-        </div>
-        <div className="pb-tile pb-tile--static">
-          <span className="pb-tile__label">Gone quiet</span>
-          <span className="pb-tile__value">{quietCount}</span>
-          <span className="pb-tile__sub">Open, no change in 30 days</span>
-        </div>
+        {tiles.map((tile) =>
+          tile.tone === "signal" ? (
+            <button
+              type="button"
+              key={tile.label}
+              className="pb-tile pb-tile--signal"
+              onClick={() => document.getElementById("reports-quiet")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+            >
+              <span className="pb-tile__label">{tile.label}</span>
+              <span className="pb-tile__value">{tile.value}</span>
+              <span className="pb-tile__sub">{tile.sub}</span>
+            </button>
+          ) : (
+            <div className="pb-tile pb-tile--static" key={tile.label}>
+              <span className="pb-tile__label">{tile.label}</span>
+              {tile.value === null ? (
+                <span className="pb-tile__value pb-tile__value--none" aria-label="Not enough leads yet">
+                  —
+                </span>
+              ) : (
+                <span className="pb-tile__value">{tile.value}</span>
+              )}
+              <span className="pb-tile__sub">{tile.sub}</span>
+            </div>
+          ),
+        )}
       </div>
+      <Explain label="How these are counted">
+        A period counts the leads added, won or lost in it. A share needs at least {MIN_SAMPLE} leads behind it, so a rate shows only
+        once {MIN_SAMPLE} leads have closed in the period.
+      </Explain>
 
       <section className="pb-section">
         <div className="pb-section__head">
@@ -211,12 +241,10 @@ export function ReportsView(_props: { driveId: string }) {
           <div className="pb-funnel">
             {f.steps.map((s, i) => (
               <div key={s.status}>
-                {i > 0 ? (
-                  <div className="pb-funnel__step">
-                    {s.fromPrevious === null ? "Too few to say" : `${percent(s.fromPrevious)} went on`}
-                  </div>
+                {i > 0 && s.fromPrevious !== null ? (
+                  <div className="pb-funnel__step">{percent(s.fromPrevious)} went on</div>
                 ) : null}
-                <div className="pb-funnel__row">
+                <div className={`pb-funnel__row${s.reached === 0 ? " pb-funnel__row--none" : ""}`}>
                   <span className="pb-funnel__label">{statusLabel(s.status)}</span>
                   <span className="pb-funnel__track">
                     <span
@@ -230,33 +258,18 @@ export function ReportsView(_props: { driveId: string }) {
             ))}
           </div>
         )}
-        {f.unknown > 0 ? (
-          <p className="pb-small pb-faint">
-            {f.unknown === 1 ? "One lead is" : `${f.unknown} leads are`} counted as added but not in the steps: a lost lead, or a parked one without a stage, has no record of how far it got.
-          </p>
-        ) : null}
-        {investorsAdded ? (
-          <p className="pb-small pb-faint">Investor leads stop at met, so the steps into proposal and won count the other kinds.</p>
+        {f.entered > 0 && stepsNote ? <p className="pb-small pb-faint">{stepsNote}</p> : null}
+        {f.unknown > 0 || investorsAdded ? (
+          <Explain label="About these steps">
+            {f.unknown > 0
+              ? `${f.unknown === 1 ? "One lead is" : `${f.unknown} leads are`} counted as added but not in the steps: a lost lead, or a parked one without a stage, has no record of how far it got. `
+              : ""}
+            {investorsAdded ? "Investor leads stop at met, so the steps into proposal and won count the other kinds." : ""}
+          </Explain>
         ) : null}
       </section>
 
-      <section className="pb-section">
-        <div className="pb-section__head">
-          <h2 className="pb-section__title">Why leads are lost</h2>
-        </div>
-        {lost.length === 0 ? (
-          <p className="pb-muted">No lead was lost {periodLabel === "all time" ? "yet" : "in the period"}.</p>
-        ) : (
-          <Reasons groups={lost} onOpen={select} />
-        )}
-        <h3 className="pb-overline">Parked now</h3>
-        {parked.length === 0 ? <p className="pb-muted">No lead is parked.</p> : <Reasons groups={parked} onOpen={select} />}
-        <p className="pb-small pb-faint">
-          A reason joins a theme only when its words name that theme alone; otherwise it stays as written.
-        </p>
-      </section>
-
-      <section className="pb-section">
+      <section className="pb-section" id="reports-quiet">
         <div className="pb-section__head">
           <h2 className="pb-section__title">Where leads go quiet</h2>
         </div>
@@ -292,25 +305,55 @@ export function ReportsView(_props: { driveId: string }) {
 
       <section className="pb-section">
         <div className="pb-section__head">
-          <h2 className="pb-section__title">By owner</h2>
+          <h2 className="pb-section__title">Why leads are lost</h2>
         </div>
-        <SplitTable title="Owner" rows={splitBy(leads, (l) => l.owner ?? "", start, zone)} name={(k) => (k ? team.ownerName(k) : "No owner")} />
+        {nothingLost ? (
+          <p className="pb-muted">{nothingLost}</p>
+        ) : (
+          <>
+            {lost.length === 0 ? (
+              <p className="pb-muted">No lead was lost {allTime ? "yet" : "in the period"}.</p>
+            ) : (
+              <Reasons groups={lost} onOpen={select} />
+            )}
+            <h3 className="pb-overline">Parked now</h3>
+            {parked.length === 0 ? <p className="pb-muted">No lead is parked.</p> : <Reasons groups={parked} onOpen={select} />}
+            <Explain label="How reasons are grouped">
+              A reason joins a theme only when its words name that theme alone; otherwise it stays as written.
+            </Explain>
+          </>
+        )}
       </section>
-      <section className="pb-section">
+
+
+      <section className="pb-section pb-section--narrow">
         <div className="pb-section__head">
-          <h2 className="pb-section__title">By kind</h2>
+          <h2 className="pb-section__title">Breakdown</h2>
+          <div className="pb-segmented" role="group" aria-label="Break the leads down by">
+            {SPLITS.map((s) => (
+              <button
+                key={s.value}
+                type="button"
+                className={`pb-segmented__item${split === s.value ? " is-active" : ""}`}
+                aria-pressed={split === s.value}
+                onClick={() => setSplit(s.value)}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
         </div>
-        <SplitTable title="Kind" rows={splitBy(leads, (l) => l.kind ?? "", start, zone)} name={kindLabel} />
-      </section>
-      <section className="pb-section">
-        <div className="pb-section__head">
-          <h2 className="pb-section__title">By where they came from</h2>
-        </div>
-        <SplitTable
-          title="Came from"
-          rows={bySource(leads, start, zone)}
-          name={(k) => VOCABULARY.leadSource.find((t) => t.value === k)?.label ?? "Not recorded"}
-        />
+        {split === "owner" ? (
+          <SplitTable title="Owner" rows={splitBy(leads, (l) => l.owner ?? "", start, zone)} name={(k) => (k ? team.ownerName(k) : "No owner")} />
+        ) : split === "kind" ? (
+          <SplitTable title="Kind" rows={splitBy(leads, (l) => l.kind ?? "", start, zone)} name={kindLabel} />
+        ) : (
+          <SplitTable
+            title="Came from"
+            rows={bySource(leads, start, zone)}
+            name={(k) => VOCABULARY.leadSource.find((t) => t.value === k)?.label ?? "Not recorded"}
+          />
+        )}
       </section>
     </div>
   );

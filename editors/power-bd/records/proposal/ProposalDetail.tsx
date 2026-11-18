@@ -45,6 +45,7 @@ import { stepAction, useStartProposal } from "./useStartProposal.js";
 import { useWithPictures } from "./useWithPictures.js";
 import { useContactDocumentsInSelectedDrive, useDecisionDocumentsInSelectedDrive, useLeadDocumentsInSelectedDrive, usePlaybookDocumentsInSelectedDrive } from "../../components/useDriveDocuments.js";
 import { useSetSelectedNode } from "../../components/shared/useOpenRecord.js";
+import { DeleteRecord } from "../../components/shared/DeleteRecord.js";
 
 type Dispatch = DocumentDispatch<ProposalAction>;
 
@@ -329,6 +330,7 @@ export function ProposalDetail({
             fileName={fileName}
           />
         )}
+        <DeleteRecord document={document} />
       </div>
     </FindingsContext.Provider>
   );

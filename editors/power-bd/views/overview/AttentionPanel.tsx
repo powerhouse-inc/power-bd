@@ -6,6 +6,7 @@ import type {
   SlippingItem,
   ViewItem,
 } from "../../kit/overview/index.js";
+import { attentionState } from "../../kit/overview-view/index.js";
 import { KIND_ICON, key, sinceFor } from "./display.js";
 import { MineButton } from "./MineButton.js";
 import { OwnerAvatar } from "./OwnerAvatar.js";
@@ -13,9 +14,16 @@ import { SlipSignal } from "./SlipSignal.js";
 
 const SHOWN = 5;
 
-/** What needs attention, most urgent first, each with its fix as the button. */
+/**
+ * What needs attention, most urgent first, each with its fix as the button.
+ * The count's colour says what kind of number it is: red to act, orange for a
+ * second look, a green check when nothing of anyone's slips, grey when nothing
+ * of yours does while the team's wait, or nothing is open yet.
+ */
 export function AttentionPanel({
   slipping,
+  team,
+  watching,
   byKey,
   mine,
   canFilter,
@@ -23,6 +31,10 @@ export function AttentionPanel({
   onOpen,
 }: {
   slipping: SlippingItem[];
+  /** Everything slipping, whoever owns it: what "Mine" may be hiding. */
+  team: number;
+  /** The open leads and funding opportunities the list watches. */
+  watching: number;
   byKey: Map<string, ViewItem>;
   mine: boolean;
   /** False when nobody is signed in, so "Mine" has no meaning. */
@@ -32,27 +44,30 @@ export function AttentionPanel({
 }) {
   const [showAll, setShowAll] = useState(false);
   const shown = showAll ? slipping : slipping.slice(0, SHOWN);
+  const state = attentionState(slipping, { team, watching, mine });
   return (
-    <div className="pb-attention">
+    <div className={state.tone === "alert" ? "pb-attention" : `pb-attention pb-attention--${state.tone}`}>
       <div className="pb-attention__head">
-        <span className="pb-attention__count">{slipping.length}</span>
+        <span className="pb-attention__count">
+          {state.tone === "clear" ? <Icon name="check-circle" className="pb-icon pb-icon--xl pb-icon--draw" /> : slipping.length}
+        </span>
         <div>
-          <div className="pb-attention__title">
-            {slipping.length === 1 ? "needs attention" : "need attention"}
-          </div>
-          <div className="pb-attention__sub">Most urgent first</div>
+          <div className="pb-attention__title">{state.title}</div>
+          <div className="pb-attention__sub">{state.sub}</div>
         </div>
         <MineButton on={mine} disabled={!canFilter} onClick={onMine} />
       </div>
       {slipping.length === 0 ? (
-        <div className="pb-attention__empty">
-          <strong>All caught up</strong>
-          <div className="pb-faint pb-small">
-            {mine
-              ? "Nothing of yours is slipping."
-              : "Nothing is slipping right now."}
+        state.note ? (
+          <div className="pb-attention__empty pb-row">
+            <span className="pb-faint pb-small">{state.note}</span>
+            {state.teamWaiting > 0 ? (
+              <button type="button" className="pb-btn pb-btn--sm" onClick={onMine}>
+                Show the team's
+              </button>
+            ) : null}
           </div>
-        </div>
+        ) : null
       ) : (
         <ol className="pb-attention__list">
           {shown.map((s) => {
@@ -101,7 +116,7 @@ export function AttentionPanel({
             aria-expanded={showAll}
             onClick={() => setShowAll(!showAll)}
           >
-            <Icon name={showAll ? "chevron-down" : "chevron-right"} />
+            <Icon name="chevron-right" />
             {showAll ? "Show fewer" : `${slipping.length - SHOWN} more`}
           </button>
         </div>

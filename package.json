@@ -1,6 +1,6 @@
 {
   "name": "@powerhousedao/power-bd",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "Business development for Powerhouse teams: leads, funding opportunities, investors, proposals, decisions and the playbook in one drive app, linked to the Knowledge Vault.",
   "license": "AGPL-3.0-only",
   "files": [

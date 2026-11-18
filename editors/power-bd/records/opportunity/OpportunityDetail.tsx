@@ -47,6 +47,7 @@ import { StepsSection } from "./StepsSection.js";
 import { SubmissionsSection } from "./SubmissionsSection.js";
 import { useBdSettingsDocumentsInSelectedDrive, useContactDocumentsInSelectedDrive, useDecisionDocumentsInSelectedDrive, useOpportunityDocumentsInSelectedDrive } from "../../components/useDriveDocuments.js";
 import { useSetSelectedNode } from "../../components/shared/useOpenRecord.js";
+import { DeleteRecord } from "../../components/shared/DeleteRecord.js";
 
 /** The funding opportunity page: shown in the Funding place and in the thin editor. */
 export function OpportunityDetail({
@@ -549,6 +550,7 @@ export function OpportunityDetail({
         }
         onRemove={(id, e) => send(actions.removeConfidentialItem({ id }), e)}
       />
+      <DeleteRecord document={document} />
     </div>
   );
 }

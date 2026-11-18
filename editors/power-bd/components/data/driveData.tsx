@@ -1,4 +1,5 @@
 import {
+  deleteNode,
   dispatchActions,
   renameDriveNode,
   useDocumentCache,
@@ -15,6 +16,7 @@ import type { Action, PHDocument } from "document-model";
 import {
   createContext,
   use,
+  useCallback,
   useContext,
   useDeferredValue,
   useEffect,
@@ -28,7 +30,7 @@ import { createLoadableChecks } from "../../kit/drive/loadable.js";
 import { createLiveDrive, type LiveDrive } from "../../kit/live-drive/live-drive.js";
 import { askMayChange } from "../access/accessApi.js";
 import { placeDrive, type DriveHome } from "../access/useDriveSwitchboard.js";
-import { renameOnServer, serverDriveSource, startLiveFeed } from "../serverWrites.js";
+import { deleteOnServer, renameOnServer, serverDriveSource, startLiveFeed } from "../serverWrites.js";
 
 /**
  * Where the open drive's data comes from, for every view and record.
@@ -231,6 +233,27 @@ export function useDriveDocuments(): readonly PHDocument[] | undefined {
   return snapshot?.documents;
 }
 
+/**
+ * The open drive's records, read when asked rather than while rendering: for
+ * the chat's agent, which checks a delete against them and must not hold the
+ * conversation up while they load. Undefined when they can't be read.
+ */
+export function useDriveRecordsReader(): () => Promise<readonly PHDocument[] | undefined> {
+  const backend = useDriveBackend();
+  const nodes = useNodesInSelectedDrive();
+  const cache = useDocumentCache();
+  return useCallback(async () => {
+    if (backend?.kind === "server") {
+      await backend.ready;
+      return backend.live.getSnapshot().documents;
+    }
+    const ids = nodes?.filter((node) => node.kind === "file").map((node) => node.id);
+    if (!ids || !cache) return undefined;
+    const { ok } = await check(cache, ids);
+    return ok.length > 0 ? await cache.getBatch([...ok]) : [];
+  }, [backend, nodes, cache]);
+}
+
 /** Whether the server drive's last read failed, and why; nothing for a drive kept here. */
 export function useDriveProblem(): string | undefined {
   const snapshot = useLiveSnapshot(useDriveBackend());
@@ -265,6 +288,8 @@ export interface DriveWrite {
   dispatcher: <A extends Action>(documentId: string) => DocumentDispatch<A>;
   /** Renames a record and its entry in the drive. */
   rename: (documentId: string, name: string) => Promise<void>;
+  /** Deletes a record for everyone in the space; throws with the reason when it is refused. */
+  remove: (documentId: string) => Promise<void>;
 }
 
 function writesFor(
@@ -313,6 +338,17 @@ function writesFor(
       }
       const driveId = backend?.driveId ?? selectedDriveId;
       if (driveId) await renameDriveNode(driveId, documentId, name);
+    },
+    remove: async (documentId) => {
+      if (!writable) throw new Error(VIEW_ONLY);
+      if (backend?.kind === "server") {
+        await deleteOnServer(backend.base, documentId);
+        await backend.live.syncTree();
+        return;
+      }
+      const driveId = backend?.driveId ?? selectedDriveId;
+      if (!driveId) throw new Error("This space has not loaded yet.");
+      await deleteNode(driveId, documentId);
     },
   };
 }

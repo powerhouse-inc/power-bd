@@ -16,6 +16,7 @@ import { DotPeek } from "./DotPeek.js";
 import { MapSection } from "./MapSection.js";
 import type { Selected } from "./shared.js";
 import { SizeSection } from "./SizeSection.js";
+import { DeleteRecord } from "../../components/shared/DeleteRecord.js";
 
 /** The market page: what the market is, its size, and its map. Shown in the Market place and in the thin editor. */
 export function MarketDetail({
@@ -137,6 +138,7 @@ export function MarketDetail({
         />
         <SizeSection market={s} send={send} />
         <MapSection market={s} contacts={contacts} selected={selected} send={send} onSelect={setSelected} />
+        <DeleteRecord document={document} />
       </div>
       {selected ? (
         <DotPeek

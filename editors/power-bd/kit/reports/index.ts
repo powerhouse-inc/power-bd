@@ -23,3 +23,4 @@ export {
   type ReportLead,
   type SplitRow,
 } from "./reports.js";
+export { funnelNote, reasonsNote, reportTiles, type TileView } from "./display.js";

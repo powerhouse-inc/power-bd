@@ -2,8 +2,9 @@ import { useUser } from "@powerhousedao/reactor-browser";
 import { getHostAiTools } from "@powerhousedao/reactor-browser/ai";
 import { useCallback, useMemo } from "react";
 import { bdChatTools, chatInstructions } from "../../kit/chat/index.js";
+import { agentDeleteRefusal } from "../../kit/record-delete/index.js";
 import { settingsOrDefaults } from "../../kit/settings/index.js";
-import { useDriveBackend, useDriveWritable } from "../data/driveData.js";
+import { useDriveBackend, useDriveRecordsReader, useDriveWritable } from "../data/driveData.js";
 import { useTeam } from "../shared/useTeam.js";
 import { useToday } from "../shared/useToday.js";
 import { useBdSettingsDocumentsInSelectedDrive } from "../useDriveDocuments.js";
@@ -34,15 +35,21 @@ export function useChatSetup(
   const backend = useDriveBackend();
   // A view-only member's agent answers and never offers a change the server refuses.
   const mayChange = useDriveWritable();
+  // A delete the agent asks for is checked against the record page's rule first.
+  const readRecords = useDriveRecordsReader();
 
   const tools = useCallback(
     async () =>
       bdChatTools(
         await getHostAiTools(),
         { vaultDriveId, bdDriveId: driveId },
-        { ...ownTools(backend, driveId, (address) => team.nameFor(address)), withoutVault: vaultLocked },
+        {
+          ...ownTools(backend, driveId, (address) => team.nameFor(address)),
+          withoutVault: vaultLocked,
+          deleteCheck: async (documentId) => agentDeleteRefusal(documentId, await readRecords()),
+        },
       ),
-    [vaultDriveId, driveId, backend, team, vaultLocked],
+    [vaultDriveId, driveId, backend, team, vaultLocked, readRecords],
   );
   const instructions = useMemo(
     () =>

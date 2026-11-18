@@ -84,6 +84,15 @@ describe("chatInstructions: where things are", () => {
   });
 });
 
+describe("chatInstructions: deleting a record", () => {
+  it("deletes only when asked, names what can't be deleted and what keeps the history instead", () => {
+    const text = chatInstructions(FACTS);
+    expect(text).toContain("Delete a record only when the user asks for it in this conversation");
+    expect(text).toContain("The settings, playbook and investor list are never deleted, nor a proposal once sent, nor a record other records link to");
+    expect(text).toContain("archive an organisation");
+  });
+});
+
 describe("chatInstructions: the calendar, markets, reports and lead details", () => {
   it("answers what is on the calendar from the records' dates, and never says there is none", () => {
     const text = chatInstructions(FACTS);

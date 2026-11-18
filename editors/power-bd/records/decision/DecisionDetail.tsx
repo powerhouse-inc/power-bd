@@ -31,6 +31,7 @@ import {
 } from "../../kit/decision-view/index.js";
 import { useLeadDocumentsInSelectedDrive, useOpportunityDocumentsInSelectedDrive, useProposalDocumentsInSelectedDrive } from "../../components/useDriveDocuments.js";
 import { useSetSelectedNode } from "../../components/shared/useOpenRecord.js";
+import { DeleteRecord } from "../../components/shared/DeleteRecord.js";
 
 /** The decision page: shown in the Decisions place and in the thin editor. */
 export function DecisionDetail({
@@ -325,6 +326,7 @@ export function DecisionDetail({
         onAdd={(r, e) => send(actions.addReference(r), e)}
         onRemove={(rid, e) => send(actions.removeReference({ id: rid }), e)}
       />
+      <DeleteRecord document={document} />
     </div>
   );
 }

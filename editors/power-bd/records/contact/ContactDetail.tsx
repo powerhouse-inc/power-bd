@@ -22,6 +22,7 @@ import {
 import { CommitField } from "../settings/CommitField.js";
 import { Gathered } from "./Gathered.js";
 import { People } from "./People.js";
+import { DeleteRecord } from "../../components/shared/DeleteRecord.js";
 
 /** The organisation page: shown in the Organisations place and in the thin editor. */
 export function ContactDetail({
@@ -200,6 +201,7 @@ export function ContactDetail({
 
       <People people={s.people} send={send} />
       <Gathered contactId={document.header.id} />
+      <DeleteRecord document={document} />
     </div>
   );
 }

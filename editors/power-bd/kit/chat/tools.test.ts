@@ -106,6 +106,42 @@ const leadRead = {
   },
 };
 
+describe("bdChatTools: the delete tool", () => {
+  const ok = { content: [{ type: "text", text: '{"documentId":"market-1"}' }], structuredContent: { documentId: "market-1" } };
+
+  it("refuses what the record page keeps, with its reason, and sends nothing", async () => {
+    const del = hostTool("deleteDocument", { readOnly: false, result: ok });
+    const asked: string[] = [];
+    const [tool] = bdChatTools([del.tool], DRIVES, {
+      deleteCheck: (id) => {
+        asked.push(id);
+        return Promise.resolve("Other records link to this organisation: the lead \"Kelvar pilot\".");
+      },
+    });
+    expect(await tool.callback({ documentId: "org-1" })).toEqual({
+      isError: true,
+      content: [{ type: "text", text: 'Error: Other records link to this organisation: the lead "Kelvar pilot".' }],
+    });
+    expect(asked).toEqual(["org-1"]);
+    expect(del.calls).toEqual([]);
+  });
+
+  it("passes a delete the record page allows, named by documentId or id", async () => {
+    const del = hostTool("deleteDocument", { readOnly: false, result: ok });
+    const [tool] = bdChatTools([del.tool], DRIVES, { deleteCheck: () => Promise.resolve(null) });
+    expect(await tool.callback({ documentId: "market-1" })).toEqual(ok);
+    expect(await tool.callback({ id: "market-1" })).toEqual(ok);
+    expect(del.calls).toEqual([{ documentId: "market-1" }, { id: "market-1" }]);
+  });
+
+  it("asks which record when the model names none", async () => {
+    const del = hostTool("deleteDocument", { readOnly: false, result: ok });
+    const [tool] = bdChatTools([del.tool], DRIVES, { deleteCheck: () => Promise.resolve(null) });
+    expect(await tool.callback({})).toMatchObject({ isError: true });
+    expect(del.calls).toEqual([]);
+  });
+});
+
 describe("bdChatTools: what reaches the model", () => {
   it("withholds confidential items from a record read", async () => {
     const [tool] = bdChatTools([hostTool("getDocument", { result: leadRead }).tool], DRIVES);

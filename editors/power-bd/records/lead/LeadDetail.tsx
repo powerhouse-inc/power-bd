@@ -39,6 +39,7 @@ import { LeadNextBar } from "./LeadNextBar.js";
 import { MessagesSection } from "./MessagesSection.js";
 import { ProposalsSection } from "../proposal/ProposalsSection.js";
 import { useContactDocumentsInSelectedDrive, usePlaybookDocumentsInSelectedDrive } from "../../components/useDriveDocuments.js";
+import { DeleteRecord } from "../../components/shared/DeleteRecord.js";
 
 const tag = <T extends { value: string }>(list: readonly T[], v: string) =>
   list.find((t) => t.value === v);
@@ -633,6 +634,7 @@ export function LeadDetail({
         }
         onRemove={(id, e) => send(actions.removeConfidentialItem({ id }), e)}
       />
+      <DeleteRecord document={document} />
     </div>
   );
 }

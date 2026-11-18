@@ -11,6 +11,7 @@ import {
   dueStrip,
   groupDueByDay,
   overviewModel,
+  openToWatch,
   slippingForMe,
   tileActive,
   tileView,
@@ -249,6 +250,8 @@ export function OverviewView({ driveId }: { driveId: string }) {
       <div className="pb-grid-2 pb-grid-2--attention">
         <AttentionPanel
           slipping={slipping}
+          team={result.slipping.length}
+          watching={openToWatch(input)}
           byKey={byKey}
           mine={mineAttention}
           canFilter={Boolean(address)}
