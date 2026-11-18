@@ -911,3 +911,36 @@ The Lead and Opportunity audits stand. Found while testing every editor's contro
 - **Language:** the panel's and Coming up's words.
 - **Decision:** decide-by dates can be set.
 - **Emotion:** no remove-and-re-add.
+
+### Moving a lead on the Leads board (built, `views/leads/LeadsBoard.tsx`, `components/shared/board/`)
+
+The Leads audit and *Moving a card on the board* stand. This covers one change: the Leads board, one column per status, takes a dragged card the way the Overview's stages do.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** While a card is in the hand the columns are the only thing to look at, as on the Overview: those that take it tint in the accent blue, the one under the card deeper, those that refuse it fade, and each shows its one line. The card lifts and its place fades. No coloured edge on any column or card.
+2. **Wayfinding.** On this board a column is a status, so a drop names its status and nothing is picked after it. The question, when there is one, stands in the column the card was put on; Escape or Cancel gives the focus back to the card, which never left its place.
+3. **Memory and semantics.** The same drag as the Overview and every CRM board, and the same "Move to…" list on each card for the keyboard and touch. A move sends the lead page's own action and follows its rules, so the board and the page never disagree.
+4. **Language.** Status names from the vocabulary. One line per column: "Becomes Met", "Becomes Lost · asks why", "Becomes Won · asks to confirm", "Comes off hold · returns to Met". Refusals say what to do first: "Give the lead an owner first", "Take it off hold first: it returns to Met", "An investor lead goes no further than met".
+5. **Decision making.** What a drop does shows before letting go. An active status is set at once. Lost and Parked ask why, and the move waits for the reason. Won has no reason to give but is final, so it asks once: the focus starts on Cancel and the button says "Mark won". A parked lead goes back only to the status it came from. An owner and an organisation are asked for on the column, not after a failed drop.
+6. **Emotion.** Fear: "I dropped it on Won by accident". No final status is one careless drop: Lost needs a reason, Won needs a click on "Mark won", and both carry "Nothing is deleted: a closed lead keeps its history. Closing is final." Parking says it returns to where it was. A refused move leaves the card where it was with the reason beside it.
+
+**2. Concepts weighed**
+
+- **A · Task-oriented:** only the "Move to…" list. Exact, but the board already invites dragging, and the Overview does it.
+- **B · Conventional:** free drag, the status set on drop with no question, errors as toasts. Familiar, but Won would close a lead in one drop, and a toast is far from the card.
+- **C · Immersive:** columns that widen and preview the card's new look while dragging. The layout would move under the pointer on an eight-column board that already scrolls.
+
+**Chosen:** the Overview's blend, unchanged: B's drag, A's list as the second way in, C's calm one-line hints. One addition for a status board: Won, final without a reason, is confirmed (`confirm`, a new move outcome). Evidence: the lead reducer refuses Lost and Parked without a reason, anything past "to contact" without an owner and an organisation, a status change while parked, and Proposal or Won for an investor lead; the Overview audit's rule that closing is never one careless drop.
+
+**3. Implementation:** the Overview's parts (`pb-card.is-lifted`, `.is-away`, `pb-board__col.is-target`, `.is-over`, `.is-refused`, `pb-board__hint`, `pb-ask`, `pb-card__move`, `pb-card__moves`, `pb-move`, `pb-reassure`, `ErrorLine`) and a confirm variant of `pb-ask`, shown on the showcase. The rules are pure, in `kit/overview-view/move.ts` (`leadStatusMove`, `leadStatusTargets`), and a test runs every status, kind, owner and organisation against the lead reducer. The drag itself is `useBoardMove`, shared with the boards to come.
+
+**4. Mapping**
+
+- **Vision:** tinted columns take the card, faded ones do not; the lifted card shows what moves.
+- **Wayfinding:** a column is a status; the question stands where the card was put; Escape returns to the card.
+- **Memory:** the Overview's drag and "Move to…" list; the lead page's rules and actions.
+- **Language:** status names; refusals say what to do first.
+- **Decision:** what a drop does shows before it; reasons are asked for when needed; Won is confirmed.
+- **Emotion:** no final status in one careless drop; a refused move leaves the card in place with the reason.
+

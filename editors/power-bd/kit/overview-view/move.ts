@@ -52,25 +52,41 @@ export type MoveOption = OptionBase &
 /**
  * What happens when a card is put on a stage: nothing (it is there already and
  * has no other status to take), the one status is set, one of several is
- * picked, a reason is asked for, the go-or-no-go decision is opened instead,
- * or the stage refuses the card and says why.
+ * picked, a reason is asked for, a final status without a reason is confirmed,
+ * the go-or-no-go decision is opened instead, or the stage refuses the card
+ * and says why.
  */
 export type MoveOutcome =
   | { kind: "stay" }
   | { kind: "set"; option: MoveOption }
   | { kind: "choose"; options: MoveOption[]; note?: string }
   | { kind: "reason"; option: MoveOption; note?: string }
+  | { kind: "confirm"; option: MoveOption }
   | { kind: "decision"; why: string }
   | { kind: "refused"; why: string };
 
-export type MoveTarget = {
-  stage: CommonStage;
+/** A column a card can be put on (a stage on the Overview, a status on the Leads board) and what a drop there does. */
+export type ColumnTarget<K extends string> = {
+  stage: K;
   outcome: MoveOutcome;
-  /** True when the stage takes the card: anything but "stay" and "refused". */
+  /** True when the column takes the card: anything but "stay" and "refused". */
   accepts: boolean;
 };
 
+export type MoveTarget = ColumnTarget<CommonStage>;
+
 const STAGES: CommonStage[] = ["NEW", "ACTIVE", "PARKED", "CLOSED"];
+/** The lead statuses in the order the Leads board shows them. */
+export const LEAD_STATUSES: LeadStatus[] = [
+  "TO_CONTACT",
+  "IN_TOUCH",
+  "MEETING_SET",
+  "MET",
+  "PROPOSAL",
+  "WON",
+  "LOST",
+  "PARKED",
+];
 const LEAD_ACTIVE: LeadStatus[] = [
   "IN_TOUCH",
   "MEETING_SET",
@@ -110,6 +126,30 @@ const leadOption = (status: LeadStatus): MoveOption => ({
   ...base(VOCABULARY.leadStatus, status, status === "WON" || status === "LOST"),
 });
 
+const parkOption = (): MoveOption => ({
+  act: "PARK_LEAD",
+  status: "PARKED",
+  ...base(VOCABULARY.leadStatus, "PARKED", false),
+});
+
+const unparkOption = (back: LeadStatus): MoveOption => ({
+  act: "UNPARK_LEAD",
+  status: back,
+  ...base(VOCABULARY.leadStatus, back, false),
+});
+
+type LeadCard = Extract<MoveCard, { kind: "lead" }>;
+
+/** What a lead needs before it goes past "to contact", or null when it has it. */
+function leadMissing(card: LeadCard): string | null {
+  if (card.owner && card.organisationId) return null;
+  return card.owner
+    ? "Link the lead to an organisation first"
+    : card.organisationId
+      ? "Give the lead an owner first"
+      : "Give the lead an owner and an organisation first";
+}
+
 /** One option is set or asked about; several are picked from. Inside its own stage a card is never moved without a pick. */
 function offer(
   options: MoveOption[],
@@ -124,10 +164,7 @@ function offer(
     : { kind: "set", option: only };
 }
 
-function leadMove(
-  card: Extract<MoveCard, { kind: "lead" }>,
-  stage: CommonStage,
-): MoveOutcome {
+function leadMove(card: LeadCard, stage: CommonStage): MoveOutcome {
   const from = leadStage(card.status);
   if (card.status === "WON" || card.status === "LOST")
     return stage === from
@@ -138,14 +175,7 @@ function leadMove(
     const back = card.parkedFrom;
     if (!back) return refused("Open the lead to take it off hold");
     return leadStage(back) === stage
-      ? {
-          kind: "set",
-          option: {
-            act: "UNPARK_LEAD",
-            status: back,
-            ...base(VOCABULARY.leadStatus, back, false),
-          },
-        }
+      ? { kind: "set", option: unparkOption(back) }
       : refused(
           `Take it off hold first: it returns to ${label(VOCABULARY.leadStatus, back)}, in ${stageLabel(leadStage(back))}`,
         );
@@ -155,25 +185,11 @@ function leadMove(
       ? { kind: "stay" }
       : { kind: "set", option: leadOption("TO_CONTACT") };
   // Past "to contact" a lead needs an owner and an organisation.
-  if (!card.owner || !card.organisationId)
-    return refused(
-      card.owner
-        ? "Link the lead to an organisation first"
-        : card.organisationId
-          ? "Give the lead an owner first"
-          : "Give the lead an owner and an organisation first",
-    );
+  const missing = leadMissing(card);
+  if (missing) return refused(missing);
   const investor = card.leadKind === "INVESTOR";
   const note = investor ? INVESTOR_LIMIT : undefined;
-  if (stage === "PARKED")
-    return {
-      kind: "reason",
-      option: {
-        act: "PARK_LEAD",
-        status: "PARKED",
-        ...base(VOCABULARY.leadStatus, "PARKED", false),
-      },
-    };
+  if (stage === "PARKED") return { kind: "reason", option: parkOption() };
   const to: LeadStatus[] =
     stage === "ACTIVE"
       ? LEAD_ACTIVE.filter((s) => s !== card.status)
@@ -185,6 +201,50 @@ function leadMove(
     stage === from,
     note,
   );
+}
+
+/**
+ * What putting a lead on one status column does, by the same rules as the
+ * lead page: a won or lost lead stays, a parked lead only returns to where it
+ * came from, past "to contact" it needs an owner and an organisation, an
+ * investor lead stops at met, parking and losing ask why, and winning, final
+ * without a reason, asks to confirm.
+ */
+export function leadStatusMove(card: LeadCard, to: LeadStatus): MoveOutcome {
+  if (to === card.status) return { kind: "stay" };
+  if (card.status === "WON" || card.status === "LOST")
+    return refused("A won or lost lead is final");
+  if (card.status === "PARKED") {
+    const back = card.parkedFrom;
+    if (!back) return refused("Open the lead to take it off hold");
+    return to === back
+      ? { kind: "set", option: unparkOption(back) }
+      : refused(
+          `Take it off hold first: it returns to ${label(VOCABULARY.leadStatus, back)}`,
+        );
+  }
+  if (to === "TO_CONTACT")
+    return { kind: "set", option: leadOption("TO_CONTACT") };
+  const missing = leadMissing(card);
+  if (missing) return refused(missing);
+  if (to === "PARKED") return { kind: "reason", option: parkOption() };
+  if (card.leadKind === "INVESTOR" && (to === "PROPOSAL" || to === "WON"))
+    return refused(INVESTOR_LIMIT);
+  const option = leadOption(to);
+  if (option.reason) return { kind: "reason", option };
+  return option.final ? { kind: "confirm", option } : { kind: "set", option };
+}
+
+/** The Leads board's columns with what each does to the lead. */
+export function leadStatusTargets(card: LeadCard): ColumnTarget<LeadStatus>[] {
+  return LEAD_STATUSES.map((stage) => {
+    const outcome = leadStatusMove(card, stage);
+    return {
+      stage,
+      outcome,
+      accepts: outcome.kind !== "stay" && outcome.kind !== "refused",
+    };
+  });
 }
 
 const DECIDED = new Set<OpportunityStatus>([
@@ -287,6 +347,8 @@ export function moveHint(outcome: MoveOutcome): string {
       return `Pick: ${orList(outcome.options.map((o) => o.label))}`;
     case "reason":
       return `Becomes ${outcome.option.label} · asks why`;
+    case "confirm":
+      return `Becomes ${outcome.option.label} · asks to confirm`;
     case "decision":
       return "Go or no-go is decided on its page";
     case "refused":
@@ -299,7 +361,7 @@ export function moveReassurance(outcome: MoveOutcome): string | null {
   const options =
     outcome.kind === "choose"
       ? outcome.options
-      : outcome.kind === "reason"
+      : outcome.kind === "reason" || outcome.kind === "confirm"
         ? [outcome.option]
         : [];
   const final = options.find((o) => o.final);
@@ -310,20 +372,23 @@ export function moveReassurance(outcome: MoveOutcome): string | null {
     : null;
 }
 
+/** What the rules of a move read from a lead. */
+export const leadMoveCard = (s: LeadState): LeadCard => ({
+  kind: "lead",
+  status: s.status,
+  leadKind: s.kind ?? null,
+  owner: s.owner ?? null,
+  organisationId: s.organisationId ?? null,
+  parkedFrom: s.parkedFrom ?? null,
+});
+
 /** The move facts of every card on the board, by `cardKey`. */
 export function moveCards(
   input: Pick<OverviewInput, "leads" | "opportunities" | "investorLists">,
 ): Map<string, MoveCard> {
   const cards = new Map<string, MoveCard>();
   for (const { id, state: s } of input.leads)
-    cards.set(cardKey({ kind: "lead", id }), {
-      kind: "lead",
-      status: s.status,
-      leadKind: s.kind ?? null,
-      owner: s.owner ?? null,
-      organisationId: s.organisationId ?? null,
-      parkedFrom: s.parkedFrom ?? null,
-    });
+    cards.set(cardKey({ kind: "lead", id }), leadMoveCard(s));
   for (const { id, state: s } of input.opportunities)
     cards.set(cardKey({ kind: "opportunity", id }), {
       kind: "opportunity",

@@ -8,7 +8,10 @@ import {
   type MoveOutcome,
 } from "../../kit/overview-view/index.js";
 
-type Asking = Extract<MoveOutcome, { kind: "choose" | "reason" | "decision" }>;
+type Asking = Extract<
+  MoveOutcome,
+  { kind: "choose" | "reason" | "confirm" | "decision" }
+>;
 
 const tone = (o: MoveOption) =>
   (o.act === "OPPORTUNITY_STATUS"
@@ -31,7 +34,8 @@ function arrows(e: React.KeyboardEvent<HTMLElement>) {
 
 /**
  * The question a move asks, standing in the stage the card was put on: which
- * status, why, or where go or no-go is decided. Escape puts the card back.
+ * status, why, whether a final status is meant, or where go or no-go is
+ * decided. Escape puts the card back.
  */
 export function MoveAsk({
   name,
@@ -85,6 +89,28 @@ export function MoveAsk({
             >
               <PeopleMark />
               Open to decide
+            </button>
+          </div>
+        </>
+      ) : outcome.kind === "confirm" ? (
+        <>
+          {reassurance ? (
+            <p className="pb-reassure">
+              <Icon name="shield" />
+              {reassurance}
+            </p>
+          ) : null}
+          <div className="pb-ask__foot">
+            {/* The focus starts on Cancel: Enter alone never closes a record. */}
+            <button className="pb-btn pb-btn--sm" autoFocus onClick={onCancel}>
+              Cancel
+            </button>
+            <button
+              className="pb-btn pb-btn--primary pb-btn--sm"
+              disabled={busy}
+              onClick={() => onApply(outcome.option)}
+            >
+              Mark {outcome.option.label.toLowerCase()}
             </button>
           </div>
         </>
