@@ -1202,3 +1202,36 @@ Where Powerhouse and the others stand in this market, on two axes the team names
 
 One line under the organisation's head: the markets whose map it is on, each a link. It appears only when there is one, so most organisations show nothing new. Words: "On the maps of: Finance operations, Law firms". `mapsOf` in `kit/market/`.
 
+### Reports (built, `views/reports/`, `kit/reports/`)
+
+A new place, after Decisions: what converts, where leads go quiet and why they are lost, for a period.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** The win rate is the first tile and the page's anchor; the funnel below it is the one picture. Bars are the accent tint, won is green, and nothing is red: a report is read, not acted on in a hurry. A share with too few leads behind it says "Too few" in plain text instead of a number that looks precise.
+2. **Wayfinding.** Reports is a place of its own, not part of the Overview: the Overview answers "what do I do now", daily; reports answer "what is working", weekly or monthly, and mixing them would dilute the Overview's one anchor. The period choice sits at the top right, as filters do elsewhere, and changes every section at once. Every lead named in a report opens its lead.
+3. **Memory and semantics.** A funnel of bars, win rate, a reasons list with counts, tables per owner and kind: what every CRM's reports show. Named "Reports", the word those tools use, rather than "Insights", which says less.
+4. **Language.** Status names from the vocabulary; "went on" for a stage's conversion; "Gone quiet: open, no change in 30 days"; "Parked now". Reasons stay in the team's own words; a theme ("Budget or price", "Timing", "Chose someone else", "No response", "Not a fit") is a label over them, and what was said is one click away.
+5. **Decision making.** Each number says what it counts: a period counts leads added, won or lost in it; "open now" is always now. What the app does not record is said, not guessed: a lost lead's stage is unknown, so lost leads count as added but stay out of the steps, with a line saying so; investor leads stop at met, so the later steps count the other kinds. A reason joins a theme only when its words name that theme alone.
+6. **Emotion.** Fear: "is this number fooling me?". Small samples show "Too few", the rules behind each figure are written under it, and the raw reasons are always reachable, so the page earns trust instead of asking for it.
+
+**What is not here, and why:** time in each stage. A lead keeps only when it closed, not when its status changed; that history lives in each record's operations, which the app's drive data does not load. "Gone quiet" uses the last change of any kind instead, and says so.
+
+**2. Concepts weighed**
+
+- **A · Task-oriented:** a few sentences ("You win 60% of what you propose; most losses are about budget"). Fast, but hides the numbers behind them.
+- **B · Conventional:** a CRM report page with tiles, a funnel, reasons and tables. Familiar to BD experts.
+- **C · Immersive:** interactive charts with drill-down and trend lines. Rich, but the team's numbers are small, and trends over few leads mislead.
+
+**Chosen:** B, with A's honesty (each figure explained in a line) and none of C's trends. Evidence: the drive holds tens of leads, not thousands, so rates need a floor (three) and trend lines would mislead.
+
+**3. Implementation:** `.pb-tiles` with `.pb-tile--static`; `.pb-funnel` (`__row`, `__label`, `__track`, `__fill`, `__fill--won`, `__count`, `__step`); `.pb-reasons` and `.pb-reason` (`__count`, `__said`) with `.pb-disclosure`; `.pb-list` for quiet leads; `.pb-table` for the splits; the `chart` icon. Pure computations in `kit/reports/` (`funnel`, `outcomes`, `groupReasons`, `quietLeads`, `splitBy`, `periodStart`), tested.
+
+**4. Mapping**
+
+- **Vision:** the win rate first, one funnel picture, no red.
+- **Wayfinding:** a place for reflection apart from the daily Overview; one period for the whole page; names open their leads.
+- **Memory:** the reports every CRM has, by their usual names.
+- **Language:** status names, "went on", the team's own reasons under a theme.
+- **Decision:** every figure says what it counts; what is unknown is said; small samples say "Too few".
+- **Emotion:** trust earned by showing the rules and the raw reasons.

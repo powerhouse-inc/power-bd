@@ -2207,3 +2207,24 @@ a.pb-ref__title:focus-visible { outline: 2px solid var(--pb-accent); outline-off
 .pb-input--number { width: 120px; font-variant-numeric: tabular-nums; text-align: right; }
 .pb-table td.pb-num { text-align: right; }
 .pb-flex--bottom { align-items: flex-end; }
+
+/* =============================================================================
+   Reports: the funnel as bars with the share that went on from each stage,
+   and a group of reasons with what was said. Bars use
+   the accent tint and won the green tone; nothing is red but a late signal.
+   ============================================================================= */
+.pb-funnel { display: grid; gap: var(--pb-s-0-5); }
+.pb-funnel__row { display: grid; grid-template-columns: 112px minmax(0, 1fr) 48px; align-items: center; gap: var(--pb-s-3); min-height: 26px; }
+.pb-funnel__label { color: var(--pb-text); font-size: var(--pb-fs-sm); }
+.pb-funnel__track { height: 16px; overflow: hidden; border-radius: var(--pb-r-sm); background: var(--pb-bg-hover); }
+.pb-funnel__fill { display: block; height: 100%; min-width: 2px; border-radius: var(--pb-r-sm); background: var(--pb-accent-soft); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pb-accent) 35%, transparent); }
+.pb-funnel__fill--won { background: var(--pb-green-bg); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pb-green-text) 35%, transparent); }
+.pb-funnel__count { color: var(--pb-text); font-size: var(--pb-fs-sm); font-variant-numeric: tabular-nums; text-align: right; }
+/* The share that went on, between two rows, under the bars. */
+.pb-funnel__step { padding-left: calc(112px + var(--pb-s-3)); color: var(--pb-text-tertiary); font-size: var(--pb-fs-xs); line-height: 1.2; }
+.pb-reasons { display: grid; gap: var(--pb-s-0-5); }
+.pb-reason { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--pb-s-3); min-height: 30px; padding: var(--pb-s-1) var(--pb-s-2); border-radius: var(--pb-r-md); }
+.pb-reason:hover { background: var(--pb-bg-hover); }
+.pb-reason__count { color: var(--pb-text-secondary); font-size: var(--pb-fs-sm); font-variant-numeric: tabular-nums; }
+/* What was said, word for word, under its group when asked for. */
+.pb-reason__said { display: grid; gap: var(--pb-s-0-5); grid-column: 1 / -1; margin: 0; padding: 0 0 var(--pb-s-1) var(--pb-s-6); color: var(--pb-text-secondary); font-size: var(--pb-fs-xs); list-style: none; }
