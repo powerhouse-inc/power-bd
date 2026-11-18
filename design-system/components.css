@@ -1425,6 +1425,13 @@
 .pb-board__col--collapsed > .pb-board__hint { position: static; max-height: 320px; padding: var(--pb-s-1) 0 0; background: none; box-shadow: none; writing-mode: vertical-rl; align-items: center; }
 .pb-board__col--collapsed > .pb-board__hint > .pb-icon { margin: 0; transform: rotate(90deg); }
 
+/* ---- A board that takes drops ---------------------------------------------- */
+/* Every column runs the board's full height and the board leaves room under its
+   cards, so a card can be let go anywhere below a column's head, not only on
+   the cards already there. The cards keep their own height. */
+.pb-board--drop { align-items: stretch; min-height: var(--pb-board-drop-h); }
+.pb-board--drop > .pb-board__col { align-content: start; }
+
 /* ---- Room for what spills over the board's edges --------------------------- */
 /* The board scrolls sideways, and a scrolling box clips at its edge: the halo
    of a stage and the shadow of the question get room inside it, given back
