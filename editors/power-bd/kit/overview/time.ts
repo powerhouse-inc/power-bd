@@ -29,3 +29,21 @@ export function addDays(day: string, days: number): string {
 export function today(now: string, timeZone: string): string {
   return localTime(now, timeZone).day;
 }
+
+/**
+ * The instant of a calendar day and clock time in a time zone: the reverse of
+ * `localTime`. Across a daylight-saving change a clock time can occur twice or
+ * not at all; the first offset that reproduces the time wins, else the one
+ * after the change.
+ */
+export function zonedInstant(day: string, time: string, timeZone: string): string {
+  const wanted = Date.parse(`${day}T${time}:00Z`);
+  const offset = (at: number) => {
+    const l = localTime(new Date(at).toISOString(), timeZone);
+    return Date.parse(`${l.day}T${l.time}:00Z`) - at;
+  };
+  let at = wanted - offset(wanted);
+  // A second pass settles the offset when the first guess crossed a change.
+  at = wanted - offset(at);
+  return new Date(at).toISOString();
+}

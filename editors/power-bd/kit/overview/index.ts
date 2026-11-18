@@ -6,3 +6,5 @@ export { totalsPerCurrency } from "./totals.js";
 export { filterItems, mine, ownerName, viewItems } from "./views.js";
 export { gatingDecisions } from "./gating.js";
 export { isLiveProposal } from "./proposals.js";
+export { datedItems, type DatedItem } from "./due.js";
+export { addDays, localTime, zonedInstant } from "./time.js";
