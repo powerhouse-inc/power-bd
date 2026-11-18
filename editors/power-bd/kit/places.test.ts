@@ -3,7 +3,7 @@ import { ICONS } from "../../../design-system/icons.js";
 import { PLACES, countFor, hashOf, placeById, placeFromHash, saveStateView } from "./places.js";
 
 describe("places", () => {
-  it("lists the ten places, the Agent and Settings last", () => {
+  it("lists the eleven places, the Agent and Settings last", () => {
     expect(PLACES.map((p) => p.label)).toEqual([
       "Overview",
       "Leads",
@@ -11,6 +11,7 @@ describe("places", () => {
       "Funding",
       "Investors",
       "Organisations",
+      "Market",
       "Decisions",
       "Playbook",
       "Agent",

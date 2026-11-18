@@ -8,6 +8,7 @@ export type PlaceId =
   | "funding"
   | "investors"
   | "organisations"
+  | "market"
   | "decisions"
   | "playbook"
   | "agent"
@@ -21,7 +22,7 @@ export interface Place {
   empty: string;
 }
 
-/** The ten places, in sidebar order. The Agent and Settings sit at the sidebar's foot. */
+/** The eleven places, in sidebar order. The Agent and Settings sit at the sidebar's foot. */
 export const PLACES: readonly Place[] = [
   {
     id: "overview",
@@ -58,6 +59,12 @@ export const PLACES: readonly Place[] = [
     label: "Organisations",
     icon: "organisations",
     empty: "Organisations and the people you know there will appear here.",
+  },
+  {
+    id: "market",
+    label: "Market",
+    icon: "compass",
+    empty: "The markets the team works in, their size and who stands where, will appear here.",
   },
   {
     id: "decisions",

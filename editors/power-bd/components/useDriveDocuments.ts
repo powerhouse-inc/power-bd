@@ -3,6 +3,7 @@ import { isContactDocument } from "document-models/contact";
 import { isDecisionDocument } from "document-models/decision";
 import { isInvestorListDocument } from "document-models/investor-list";
 import { isLeadDocument } from "document-models/lead";
+import { isMarketDocument } from "document-models/market";
 import { isOpportunityDocument } from "document-models/opportunity";
 import { isPlaybookDocument } from "document-models/playbook";
 import { isProposalDocument } from "document-models/proposal";
@@ -26,6 +27,8 @@ export const useInvestorListDocumentsInSelectedDrive = () =>
   useDriveDocuments()?.filter(isInvestorListDocument);
 export const useLeadDocumentsInSelectedDrive = () =>
   useDriveDocuments()?.filter(isLeadDocument);
+export const useMarketDocumentsInSelectedDrive = () =>
+  useDriveDocuments()?.filter(isMarketDocument);
 export const useOpportunityDocumentsInSelectedDrive = () =>
   useDriveDocuments()?.filter(isOpportunityDocument);
 export const usePlaybookDocumentsInSelectedDrive = () =>

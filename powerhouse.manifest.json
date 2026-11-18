@@ -91,6 +91,11 @@
       "id": "proposal-editor",
       "name": "Proposal Editor",
       "documentTypes": ["powerbd/proposal"]
+    },
+    {
+      "id": "market-editor",
+      "name": "Market Editor",
+      "documentTypes": ["powerbd/market"]
     }
   ],
   "processors": [],

@@ -20,6 +20,7 @@ export const FOLDER_NAMES = [
   "Opportunities",
   "Decisions",
   "Proposals",
+  "Markets",
 ] as const;
 
 /** Records the drive holds exactly one of. */
