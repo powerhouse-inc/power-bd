@@ -2000,6 +2000,25 @@ a.pb-ref__title:focus-visible { outline: 2px solid var(--pb-accent); outline-off
 .pb-chat__held .ph-chat-assistant :is(th, td) { padding: 4px 8px; border: 0; border-bottom: 1px solid var(--pb-border); background: transparent; text-align: left; vertical-align: top; }
 .pb-chat__held .ph-chat-assistant th { color: var(--pb-text-secondary); font-weight: var(--pb-fw-medium); }
 .pb-chat__held .ph-chat-assistant hr { margin: 10px 0; border: 0; border-top: 1px solid var(--pb-border); }
+/* Citations (kit/chat/citations.ts), as the vault's own chat shows them: a
+   numbered chip where a vault document backs a claim, and under the answer
+   "From the vault", each document by number, kind and title, opening it in the
+   vault app. They come through the stack's markdown: the chip is a link around
+   one inline code; the row an h6, a list of links (number, kind and title as
+   code, code and emphasis) and a line. */
+.pb-chat__held .ph-chat-assistant a:has(> code:only-child) { text-decoration: none; }
+.pb-chat__held .ph-chat-assistant a > code:only-child,
+.pb-chat__held .ph-chat-assistant h6 + ul a > code:first-child { display: inline-flex; align-items: center; justify-content: center; min-width: 16px; height: 16px; padding: 0 4px; border-radius: var(--pb-r-full); background: var(--pb-accent-soft); color: var(--pb-accent-text); font-family: var(--pb-font-mono); font-size: 10px; font-weight: var(--pb-fw-semibold); line-height: 1; letter-spacing: 0; text-transform: none; }
+.pb-chat__held .ph-chat-assistant a > code:only-child { vertical-align: 1px; }
+.pb-chat__held .ph-chat-assistant a:hover > code:only-child { background: var(--pb-accent); color: var(--pb-text-on-accent); }
+.pb-chat__held .ph-chat-assistant h6 { margin: 14px 0 10px; padding-top: 14px; border-top: 1px solid var(--pb-border); color: var(--pb-text-tertiary); font-size: var(--pb-fs-xs); font-weight: var(--pb-fw-semibold); }
+.pb-chat__held .ph-chat-assistant h6 + ul { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.pb-chat__held .ph-chat-assistant h6 + ul > li { min-width: 0; max-width: 100%; margin: 0; }
+.pb-chat__held .ph-chat-assistant h6 + ul a { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 2px 10px 2px 3px; border: 1px solid var(--pb-border); border-radius: var(--pb-r-full); color: var(--pb-text); font-size: var(--pb-fs-xs); line-height: 20px; text-decoration: none; }
+.pb-chat__held .ph-chat-assistant h6 + ul a:hover { background: var(--pb-bg-hover); }
+.pb-chat__held .ph-chat-assistant h6 + ul a > code { flex: none; padding: 0 4px; border-radius: var(--pb-r-xs); background: var(--pb-bg-pressed); color: var(--pb-text-secondary); font-family: var(--pb-font-sans); font-size: 9px; font-weight: var(--pb-fw-medium); line-height: 16px; letter-spacing: 0.04em; text-transform: uppercase; }
+.pb-chat__held .ph-chat-assistant h6 + ul a > em { min-width: 0; overflow: hidden; font-style: normal; text-overflow: ellipsis; white-space: nowrap; }
+.pb-chat__held .ph-chat-assistant h6 ~ p { margin: 12px 0 0; color: var(--pb-text-tertiary); font-size: var(--pb-fs-xs); }
 .pb-chat__held .ph-chat-thinking { color: var(--pb-text-secondary); animation: pb-pulse 1.4s ease-in-out infinite; }
 /* A step the agent took: one quiet line, its detail a press away. */
 .pb-chat__held .ph-chat-tool { padding: 4px 8px; border: 0; border-radius: var(--pb-r-md); background: var(--pb-bg-subtle); }

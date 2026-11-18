@@ -108,7 +108,7 @@ Record pages blend the same way:
 |---|---|
 | Vision | `.pb-attention` panel (the anchor); red and orange reason lines on slipping cards and rows (`.pb-signal`); quiet summary tiles (`.pb-tiles`), neutral and smaller than the attention count; one charcoal primary per view |
 | Wayfinding | `.pb-path` status path with gates; `.pb-peek` side peek; breadcrumbs; motion that matches space: dialogs rise, the peek slides from the right, menus drop, toasts rise |
-| Memory | Gear for settings, bin for delete; `.pb-search-trigger` with ⌘K; `.pb-save-state` (Saved, Saving, Offline, Can't reach the server); undo in toasts; inline validation |
+| Memory | Gear for settings, bin for delete; `.pb-search-trigger` with ⌘K; `.pb-save-state` (Saved, Saving, Offline, Can't reach the server, View only); undo in toasts; inline validation |
 | Language | The lexicon below; `vocabulary.ts` labels; `.pb-disclosure` for tiered detail; tooltips naming time zones in full |
 | Decision | `.pb-next` bar with the next action; every slipping reason carries its fix (`vocabulary.ts`, `action`); prerequisites-first go-or-no-go dialog; `.pb-hint` help at the point of decision |
 | Emotion | `.pb-reassure` lines at risky actions; `.pb-ring` readiness; check and celebration motion; "All caught up" |
@@ -179,7 +179,7 @@ The frame every place and every record sits in. It has no content of its own yet
 3. **Memory and semantics.** Notion's layout: sidebar left, search top-right with ⌘K, gear for Settings, save state beside search. The search trigger is shown but disabled, with a title that says when it arrives, rather than a control that does nothing.
 4. **Language.** Place names and counts only, from the lexicon. Folders and singleton records the app creates on first open are never named in the UI. The empty states say what the place will hold ("Leads will appear here"), never how it is stored.
 5. **Decision making.** No decisions in the shell. The only choice is where to go, and the sidebar is the only way to make it.
-6. **Emotion.** The save state always shows: "Setting up" while the first-open set-up runs, "Up to date" after, "Offline" when the connection drops, "Can't reach the server" when a shared drive's server did not answer the last read. Opening the app twice changes nothing, so nothing can be lost or doubled.
+6. **Emotion.** The save state always shows: "Setting up" while the first-open set-up runs, "Up to date" after, "Offline" when the connection drops, "Can't reach the server" when a shared drive's server did not answer the last read, "View only" for a member who may look but not change. Opening the app twice changes nothing, so nothing can be lost or doubled.
 
 **2. Concepts weighed**
 
@@ -1202,3 +1202,39 @@ Where Powerhouse and the others stand in this market, on two axes the team names
 
 One line under the organisation's head: the markets whose map it is on, each a link. It appears only when there is one, so most organisations show nothing new. Words: "On the maps of: Finance operations, Law firms". `mapsOf` in `kit/market/`.
 
+### Opening a record at once, and view-only members (built, `components/LiveRecord.tsx`, `components/shared/useOpenRecord.ts`, `components/data/`; ticket 49)
+
+**1. Checkpoints.** *Vision:* a record opens the moment it is chosen, a new one included, from the app's own copy of the space. *Wayfinding:* the address, Back, Forward and the toolbar's close behave as before. *Memory:* the same record pages. *Language:* "View only" in the save state's place for a member who may look but not change; trying to change something says "You can view this space but not change it. Ask an admin of the space for access to edit." *Decision:* a view-only member learns why before anything is sent. *Emotion:* no change can be lost or left waiting; nothing pretends to save.
+
+**2. Concepts weighed:** hiding every editing control for view-only members (dozens of controls, and the page would no longer match what colleagues see), disabling the whole page (cards and tabs are buttons too), and keeping the page whole while every change explains itself (chosen), with the state in the header.
+
+**3. Implementation:** the record asked for is noted and shown from the live copy with the editor Connect would mount; Connect's selection takes over once it moves. The server answers whether the person may change the space (the check every write faces); an unclear answer never locks anyone out.
+
+**4. Mapping**
+
+- **Vision:** records open at once.
+- **Wayfinding:** Back, Forward and close unchanged.
+- **Memory:** the same pages.
+- **Language:** "View only".
+- **Decision:** the reason comes before any attempt is sent.
+- **Emotion:** nothing pretends to save.
+
+
+### Citations in the chat: vault documents by title, opening in the vault (built, `kit/chat/citations.ts`, `components/chat/useCitedChat.ts`; ticket 51)
+
+Asked on 2026-11-18: the chat should "cite the sources it found just like the original chat inside the vault app", each citation opening the document, with "the title from the note or source docs, not ids". The reference was the vault chat's answer: a numbered chip after the claim, then "From the vault" with each document's number, kind and title, and "Found with 1 search of the vault."
+
+**1. Checkpoints.** *Vision:* the answer stays the anchor; a citation is a small numbered chip in the accent tint where its claim ends, and the row under a rule is quieter (a tertiary label, outlined chips). *Wayfinding:* a chip opens its document in the vault app in a new tab, at the address Connect gives it (localhost or a deployed Connect), so the conversation stays where it is. *Memory:* the vault chat's own chips (number, kind, title); numbered sources as in Perplexity and Notion AI. *Language:* the vault's words ("From the vault", "source", "MoC", "Found with 2 searches of the vault") and the document's title, never its id (the lexicon's "Note in the vault, or the note's title"). *Decision:* the reader checks a claim by its number, then opens the document; a citation that cannot open (an id the model made up, a BD record) is left out rather than offered. *Emotion:* every claim from the vault shows where it came from, and every chip opens.
+
+**2. Concepts weighed:** links on the titles inside the prose (no new parts, but long titles break the sentence, and the model would have to write them), the vault's chips and row (chosen: the team already reads the vault's answers this way, and the user sent it as the reference), and cards on hover with the passage behind each claim (the vault's evidence pipeline, which the stack's panel cannot host).
+
+**3. Implementation:** the chips come through the stack's markdown: an inline chip is a link around one inline code; the row an h6 ("From the vault"), a list of links (number, kind and title as code, code and emphasis) and a line, styled under `.pb-chat__held .ph-chat-assistant` with tokens, light and dark; demo in the Chat section. Titles come from the vault tools' results (and, once the page closes, from the documents a long result named, kept with the conversation), else the name the vault files the document under. The address is Connect's own (`getNodeTarget`, `getTargetHref`, the base path included); a document the vault's copy does not list opens by its id. Only what is shown changes: the model's history keeps its markers.
+
+**4. Mapping**
+
+- **Vision:** small accent chips at the claims; a quiet row under a rule.
+- **Wayfinding:** each chip opens its document in the vault app, beside the conversation.
+- **Memory:** the vault chat's chips and row.
+- **Language:** the vault's words, and the document's title.
+- **Decision:** check by number, open by click; nothing offered that cannot open.
+- **Emotion:** every claim from the vault shows its source.

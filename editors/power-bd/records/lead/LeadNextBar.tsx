@@ -1,4 +1,3 @@
-import { useSetSelectedNode } from "@powerhousedao/reactor-browser";
 import type { ReactNode } from "react";
 import { Icon } from "../../components/Icon.js";
 import { ErrorLine } from "../../components/shared/ErrorLine.js";
@@ -6,6 +5,7 @@ import { fmtDay } from "../../components/shared/relationship/common.js";
 import type { NextAction } from "../../kit/lead-view/index.js";
 import type { LeadProposalNext } from "../../kit/proposal-list/index.js";
 import { useNewProposal } from "../proposal/ProposalsSection.js";
+import { useSetSelectedNode } from "../../components/shared/useOpenRecord.js";
 
 /**
  * The lead's one next action. While the lead is at "proposal" it is the

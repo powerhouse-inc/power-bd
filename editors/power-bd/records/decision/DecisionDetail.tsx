@@ -1,11 +1,7 @@
 import { useToday } from "../../components/shared/useToday.js";
 import { PeopleMark } from "../../components/shared/PeopleMark.js";
 import { ErrorLine } from "../../components/shared/ErrorLine.js";
-import {
-  useUser,
-  useSetSelectedNode,
-  type DocumentDispatch,
-} from "@powerhousedao/reactor-browser";
+import { useUser, type DocumentDispatch } from "@powerhousedao/reactor-browser";
 import {
   actions,
   type DecisionAction,
@@ -34,6 +30,7 @@ import {
   isOverdue,
 } from "../../kit/decision-view/index.js";
 import { useLeadDocumentsInSelectedDrive, useOpportunityDocumentsInSelectedDrive, useProposalDocumentsInSelectedDrive } from "../../components/useDriveDocuments.js";
+import { useSetSelectedNode } from "../../components/shared/useOpenRecord.js";
 
 /** The decision page: shown in the Decisions place and in the thin editor. */
 export function DecisionDetail({

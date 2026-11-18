@@ -1,4 +1,4 @@
-import { useSetSelectedNode } from "@powerhousedao/reactor-browser";
+import { useSetSelectedNode } from "../../components/shared/useOpenRecord.js";
 import { EmptyStart } from "../../components/EmptyStart.js";
 import { Icon } from "../../components/Icon.js";
 import { ErrorLine } from "../../components/shared/ErrorLine.js";

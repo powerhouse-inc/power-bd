@@ -1,5 +1,5 @@
 import { actions, type MarketState } from "document-models/market";
-import { useSetSelectedNode } from "@powerhousedao/reactor-browser";
+import { useSetSelectedNode } from "../../components/shared/useOpenRecord.js";
 import { useEffect, useRef } from "react";
 import type { ViewportBox } from "../../components/shared/useViewportBox.js";
 import { Icon } from "../../components/Icon.js";

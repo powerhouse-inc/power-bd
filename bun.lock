@@ -4,9 +4,6 @@
   "workspaces": {
     "": {
       "name": "@powerhousedao/power-bd",
-      "dependencies": {
-        "@powerhousedao/reactor-attachments": "^6.3.0-dev.1",
-      },
       "devDependencies": {
         "@electric-sql/pglite": "0.3.15",
         "@electric-sql/pglite-tools": "0.2.20",
@@ -22,6 +19,7 @@
         "@powerhousedao/ph-cli": "6.3.0-dev.1",
         "@powerhousedao/reactor": "6.3.0-dev.1",
         "@powerhousedao/reactor-browser": "6.3.0-dev.1",
+        "@powerhousedao/reactor-mcp": "6.3.0-dev.1",
         "@powerhousedao/shared": "6.3.0-dev.1",
         "@powerhousedao/switchboard": "6.3.0-dev.1",
         "@powerhousedao/vetra-studio": "6.3.0-dev.1",

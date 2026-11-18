@@ -476,3 +476,23 @@ describe("keptConversations", () => {
     expect(heard).toBe(before);
   });
 });
+
+describe("keptConversations: citations once the page closes", () => {
+  it("keeps the documents a long result named, so the answer's citations keep their titles", async () => {
+    const storage = memoryStorage();
+    const chat = keptConversations({ storage: () => storage, newId, limits: { resultChars: 100 } }).of("space", "ann");
+    const doc = { documentId: "doc-1", title: "Desk research on Brisa Labs", documentType: "bai/source" };
+    const result = { results: [{ ...doc, content: "x".repeat(500) }] };
+    await chat.send(
+      "Which sources?",
+      [],
+      agentPlaying([
+        { type: "tool-start", toolCallId: "t1", name: "search_vault", args: { query: "Brisa" } },
+        { type: "tool-result", toolCallId: "t1", name: "search_vault", state: "done", result },
+        says("This one [[doc-1]]."),
+      ]).start,
+    );
+    const kept = keptConversations({ storage: () => storage, newId }).of("space", "ann").view().messages;
+    expect(stepField(partOf(kept, 1, 0), "result")).toEqual({ note: RESULT_NOT_KEPT, documents: [doc] });
+  });
+});

@@ -1,7 +1,7 @@
-import { useSetSelectedNode } from "@powerhousedao/reactor-browser";
 import { Section } from "../../components/shared/relationship/common.js";
 import { organisationView } from "../../kit/organisation/index.js";
 import { useInvestorListDocumentsInSelectedDrive, useLeadDocumentsInSelectedDrive, useOpportunityDocumentsInSelectedDrive, useProposalDocumentsInSelectedDrive } from "../../components/useDriveDocuments.js";
+import { useSetSelectedNode } from "../../components/shared/useOpenRecord.js";
 
 /** The records that were not typed in the lead, funding or investor places but belong with this organisation. */
 export function Gathered({ contactId }: { contactId: string }) {

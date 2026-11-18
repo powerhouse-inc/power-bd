@@ -163,3 +163,18 @@ export function isLastManager(rows: readonly RosterRow[], address: string): bool
   const managers = rows.filter((row) => row.level === "ADMIN");
   return managers.length === 1 && managers[0]?.address === address.toLowerCase();
 }
+
+/**
+ * Whether the person may change the space, from asking the server
+ * `canExecuteOperation` (the check every write faces); undefined when it
+ * could not say, so a server that does not answer never locks anyone out.
+ */
+export function mayChange(answer: Answer): boolean | undefined {
+  const value = (answer.data as { canExecuteOperation?: unknown } | undefined)?.canExecuteOperation;
+  return typeof value === "boolean" ? value : undefined;
+}
+
+/** What a view-only member is told when they try to change something. */
+export const VIEW_ONLY =
+  "You can view this space but not change it. Ask an admin of the space for access to edit.";
+

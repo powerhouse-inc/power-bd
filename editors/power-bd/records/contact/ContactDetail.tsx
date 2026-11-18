@@ -1,5 +1,6 @@
 import { NotesField } from "./NotesField.js";
-import { useSetSelectedNode, type DocumentDispatch } from "@powerhousedao/reactor-browser";
+import type { DocumentDispatch } from "@powerhousedao/reactor-browser";
+import { useSetSelectedNode } from "../../components/shared/useOpenRecord.js";
 import { mapsOf } from "../../kit/market/index.js";
 import { useMarketDocumentsInSelectedDrive } from "../../components/useDriveDocuments.js";
 import { organisationLabel } from "../../kit/organisation-list/index.js";

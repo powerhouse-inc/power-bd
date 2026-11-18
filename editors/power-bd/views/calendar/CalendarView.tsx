@@ -1,4 +1,5 @@
-import { useSetSelectedNode, useUser } from "@powerhousedao/reactor-browser";
+import { useUser } from "@powerhousedao/reactor-browser";
+import { useSetSelectedNode } from "../../components/shared/useOpenRecord.js";
 import { useState } from "react";
 import { Icon } from "../../components/Icon.js";
 import { useToday } from "../../components/shared/useToday.js";

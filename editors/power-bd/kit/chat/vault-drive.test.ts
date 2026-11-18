@@ -37,3 +37,12 @@ describe("routeVaultCall: no vault in Settings", () => {
     ).toEqual({ args: { driveId: "vault-2" } });
   });
 });
+
+describe("routeVaultCall: history of the BD space", () => {
+  it("points a history call on the BD space at Power BD's own history tools", () => {
+    const route = routeVaultCall({ documentId: BD, driveId: BD }, { vaultDriveId: VAULT, bdDriveId: BD });
+    const refusal = "refusal" in route ? route.refusal : "";
+    expect(refusal).toContain("getRecentChanges");
+    expect(refusal).toContain("getRecordHistory");
+  });
+});

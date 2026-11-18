@@ -1,9 +1,10 @@
-import { useSelectedDriveId, useSetSelectedNode } from "@powerhousedao/reactor-browser";
+import { useSelectedDriveId } from "@powerhousedao/reactor-browser";
 import { actions, type ProposalAction } from "document-models/proposal";
 import { useCreateRecord } from "../../components/shared/useCreateRecord.js";
 import type { OnErrors } from "../../components/shared/useRun.js";
 import type { CopyStep } from "../../kit/proposal-copy/index.js";
 import { useDriveWrite } from "../../components/data/driveData.js";
+import { useSetSelectedNode } from "../../components/shared/useOpenRecord.js";
 
 /**
  * A copy step names its creator in `actions` and carries that creator's input.

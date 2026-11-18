@@ -1,4 +1,3 @@
-import { useSetSelectedNode } from "@powerhousedao/reactor-browser";
 import { actions } from "document-models/proposal";
 import { Icon } from "../../components/Icon.js";
 import { ErrorLine } from "../../components/shared/ErrorLine.js";
@@ -7,6 +6,7 @@ import { Section } from "../../components/shared/relationship/common.js";
 import { useRun } from "../../components/shared/useRun.js";
 import type { ProposalRow } from "../../kit/proposal-list/index.js";
 import { useStartProposal } from "./useStartProposal.js";
+import { useSetSelectedNode } from "../../components/shared/useOpenRecord.js";
 
 /** Starts a proposal on a lead and opens it; `error` is why it could not be started. */
 export function useNewProposal(leadId: string) {

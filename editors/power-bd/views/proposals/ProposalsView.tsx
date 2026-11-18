@@ -1,4 +1,3 @@
-import { useSetSelectedNode } from "@powerhousedao/reactor-browser";
 import { useState } from "react";
 import { EmptyStart } from "../../components/EmptyStart.js";
 import { Icon } from "../../components/Icon.js";
@@ -16,6 +15,7 @@ import {
 } from "../../kit/overview-view/index.js";
 import { ProposalsBoard } from "./ProposalsBoard.js";
 import { waitSummary } from "../../kit/proposal-list/index.js";
+import { useSetSelectedNode } from "../../components/shared/useOpenRecord.js";
 
 /** The Proposals place: every proposal with its lead, status, value, valid-until day and what it waits on, on a board by status or in a list grouped by status. Both take drops. */
 export function ProposalsView(_: { driveId: string }) {

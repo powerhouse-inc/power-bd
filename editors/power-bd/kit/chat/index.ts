@@ -6,6 +6,20 @@ export {
   type BrowserKeyStore,
 } from "./browser-key.js";
 export { chatWay, type ChatWay, type OwnKeyShown } from "./chat-way.js";
+export {
+  citeConversation,
+  documentsIn,
+  type CitationSource,
+  type CitedDocument,
+} from "./citations.js";
+export {
+  bdHistoryTools,
+  historySource,
+  RECENT_CHANGES_TOOL,
+  RECORD_HISTORY_TOOL,
+  type BdHistorySource,
+  type HistoryClient,
+} from "./history-tools.js";
 export { chatInstructions, type InstructionFacts } from "./instructions.js";
 export {
   keptConversations,
@@ -32,5 +46,6 @@ export {
   type PersonChoice,
 } from "./person-choice.js";
 export { redactToolResult } from "./redact.js";
-export { bdChatTools, type ChatTool } from "./tools.js";
+export { serverToolClient, type ModelLookups, type ServerClient } from "./tool-client.js";
+export { bdChatTools, readsTheVault, type ChatTool, type OwnTools } from "./tools.js";
 export { routeVaultCall, type VaultDrives } from "./vault-drive.js";

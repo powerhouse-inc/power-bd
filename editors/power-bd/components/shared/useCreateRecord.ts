@@ -1,11 +1,11 @@
-import { addDocument, useSetSelectedNode } from "@powerhousedao/reactor-browser";
+import { addDocument } from "@powerhousedao/reactor-browser";
 import { useState } from "react";
 import { topFolderId, type FolderName } from "../../kit/drive-plan.js";
-import { useDriveBackend, useDriveNodes } from "../data/driveData.js";
-import { createOnServer, waitForArrival } from "../serverWrites.js";
+import { VIEW_ONLY } from "../../kit/access/access.js";
+import { useDriveBackend, useDriveNodes, useDriveWritable } from "../data/driveData.js";
+import { createOnServer } from "../serverWrites.js";
+import { useSetSelectedNode } from "./useOpenRecord.js";
 
-/** Said when a record was saved on the server but has not reached this browser yet. */
-export const ARRIVING = "Saved. It will appear here in a moment.";
 
 /**
  * Creates a record in its top-level folder of the drive. `create` resolves to
@@ -14,9 +14,8 @@ export const ARRIVING = "Saved. It will appear here in a moment.";
  *
  * A shared drive's record is created on its server, so a member's record is
  * accepted like the owner's, and is in the app's live copy as soon as `create`
- * resolves, so the caller can fill it in at once. Opening it waits until
- * Connect also holds it, since Connect opens the record. A drive kept only in
- * this browser is written through Connect.
+ * resolves: the caller can fill it in, and it opens, at once. A drive kept
+ * only in this browser is written through Connect.
  */
 export function useCreateRecord(
   driveId: string,
@@ -27,6 +26,7 @@ export function useCreateRecord(
   const nodes = useDriveNodes() ?? [];
   const select = useSetSelectedNode();
   const backend = useDriveBackend();
+  const writable = useDriveWritable();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -34,6 +34,10 @@ export function useCreateRecord(
     name: string,
     options: { open?: boolean } = {},
   ): Promise<string | undefined> => {
+    if (!writable) {
+      setError(VIEW_ONLY);
+      return undefined;
+    }
     setError(null);
     setBusy(true);
     try {
@@ -42,11 +46,6 @@ export function useCreateRecord(
       if (backend?.kind === "server") {
         id = await createOnServer(backend.base, driveId, name, documentType, parent);
         await backend.live.syncTree();
-        const open = options.open ?? true;
-        if (open && !(await waitForArrival(driveId, id))) {
-          setError(ARRIVING);
-          return id;
-        }
       } else {
         id = (await addDocument(driveId, name, documentType, parent)).id;
       }

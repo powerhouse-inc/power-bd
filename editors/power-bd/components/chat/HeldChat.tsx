@@ -15,6 +15,7 @@ import { useChatPlaces } from "./useChatPlaces.js";
 import { useAutoApprove, usePerson } from "./useChatChoices.js";
 import { useChatService, type ChatService } from "./useChatService.js";
 import { useChatSetup } from "./useChatSetup.js";
+import { useCitedChat } from "./useCitedChat.js";
 import { useKeptChat } from "./useKeptChat.js";
 
 const SUGGESTIONS = [
@@ -103,11 +104,13 @@ function HeldConversation({
     vaultDriveId,
     autoApprove,
   );
-  const chat = useKeptChat(keptChats.of(driveId, person), tools, {
+  const kept = useKeptChat(keptChats.of(driveId, person), tools, {
     connection,
     instructions,
     autoApprove,
   });
+  // Shown with the vault's documents cited by title, each opening in the vault app.
+  const chat = useCitedChat(kept, vaultDriveId);
 
   return (
     <>

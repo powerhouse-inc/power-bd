@@ -1,4 +1,3 @@
-import { useSetSelectedNode } from "@powerhousedao/reactor-browser";
 import { useState } from "react";
 import { FundingBoard } from "./FundingBoard.js";
 import { GroupedTable } from "../../components/shared/board/GroupedTable.js";
@@ -19,6 +18,7 @@ import { deadline, sortByDeadline } from "../../kit/funding/index.js";
 import { attemptsLeft } from "../../kit/overview/index.js";
 import { useNow } from "../../components/shared/useNow.js";
 import { useBdSettingsDocumentsInSelectedDrive, useContactDocumentsInSelectedDrive, useOpportunityDocumentsInSelectedDrive } from "../../components/useDriveDocuments.js";
+import { useSetSelectedNode } from "../../components/shared/useOpenRecord.js";
 
 /** The Funding place: opportunities by status on a board, or by status in deadline order in a list, and a way to start one. */
 export function FundingView({ driveId }: { driveId: string }) {

@@ -22,6 +22,7 @@ import type {
   PendingApproval,
   ReactorChatAgent,
 } from "@powerhousedao/reactor-browser/ai";
+import { documentsIn } from "./citations.js";
 import type { ChoiceStorage } from "./person-choice.js";
 
 /** A message in the model's history, as the stack's agent keeps it. */
@@ -92,6 +93,8 @@ export const IMAGE_NOT_KEPT = "An image was attached here. Images are not kept o
 export const STOPPED_STEP = "Stopped: the page closed before this step finished.";
 /** Under a conversation whose last answer the page's closing cut off. */
 export const STOPPED_BY_RELOAD = "The last answer stopped when the page closed. Ask again to go on.";
+/** Most documents kept for a long result: what its citations need once the page closes. */
+const KEPT_DOCUMENTS = 30;
 /** What the model reads where a long result was. */
 const RESULT_LEFT_OUT =
   "This result was not kept. Call the tool again with the same input if you need it.";
@@ -360,7 +363,7 @@ function copyOf(view: ConversationView, history: ModelMessage[], chars: number):
           ...part,
           args: longer(part.args, chars) ? { note: RESULT_NOT_KEPT } : part.args,
           ...(part.result !== undefined && longer(part.result, chars)
-            ? { result: { note: RESULT_NOT_KEPT } }
+            ? { result: notKept(part.result) }
             : {}),
         };
       }),
@@ -385,6 +388,16 @@ function copyOf(view: ConversationView, history: ModelMessage[], chars: number):
       return message;
     }),
   };
+}
+
+/**
+ * What stands in a kept copy for a result too long to keep: the note, and the
+ * documents it named (id, title, type), so the answer's citations still show
+ * their titles once the page closes.
+ */
+function notKept(result: unknown) {
+  const documents = documentsIn(result, KEPT_DOCUMENTS);
+  return documents.length > 0 ? { note: RESULT_NOT_KEPT, documents } : { note: RESULT_NOT_KEPT };
 }
 
 /** A kept copy as it was written, or nothing when it is not one. */

@@ -1,6 +1,6 @@
 {
   "name": "@powerhousedao/power-bd",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Business development for Powerhouse teams: leads, funding opportunities, investors, proposals, decisions and the playbook in one drive app, linked to the Knowledge Vault.",
   "license": "AGPL-3.0-only",
   "files": [
@@ -99,6 +99,7 @@
     "@powerhousedao/ph-cli": "6.3.0-dev.1",
     "@powerhousedao/reactor": "6.3.0-dev.1",
     "@powerhousedao/reactor-browser": "6.3.0-dev.1",
+    "@powerhousedao/reactor-mcp": "6.3.0-dev.1",
     "@powerhousedao/shared": "6.3.0-dev.1",
     "@powerhousedao/switchboard": "6.3.0-dev.1",
     "@powerhousedao/vetra-studio": "6.3.0-dev.1",
@@ -164,9 +165,6 @@
     "protobufjs",
     "utf-8-validate"
   ],
-  "dependencies": {
-    "@powerhousedao/reactor-attachments": "^6.3.0-dev.1"
-  },
   "publishConfig": {
     "access": "public"
   }

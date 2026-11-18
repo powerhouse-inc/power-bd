@@ -15,7 +15,7 @@ export interface VaultDrives {
 export type VaultRoute = { args: Record<string, unknown> } | { refusal: string };
 
 const NOT_A_VAULT =
-  "Refused: that drive is the BD space, not a vault. Read BD records with getDocuments and getDocument; leave driveId out to read the vault named in Settings.";
+  "Refused: that drive is the BD space, not a vault. Read BD records with getDocuments and getDocument, what was added or changed with getRecentChanges, and who changed a record with getRecordHistory; leave driveId out to read the vault named in Settings.";
 const NO_VAULT =
   "Refused: no vault is named in Power BD's Settings, so there is no vault to read. Tell the user to name one under Settings, or pass the driveId of a vault they name.";
 
