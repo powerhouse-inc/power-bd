@@ -34,3 +34,4 @@ export {
 export { redactToolResult } from "./redact.js";
 export { bdChatTools, type ChatTool } from "./tools.js";
 export { routeVaultCall, type VaultDrives } from "./vault-drive.js";
+export { agentRequests, createAgentRequests } from "./agent-request.js";

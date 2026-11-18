@@ -1202,3 +1202,35 @@ Where Powerhouse and the others stand in this market, on two axes the team names
 
 One line under the organisation's head: the markets whose map it is on, each a link. It appears only when there is one, so most organisations show nothing new. Words: "On the maps of: Finance operations, Law firms". `mapsOf` in `kit/market/`.
 
+### Meeting brief (built, `records/lead/BriefDialog.tsx`, `kit/brief/`)
+
+From a lead's page ("Prepare a brief") or a scheduled meeting on it ("Brief"): what to know before talking to them, on one page, assembled from the records alone.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** One wide dialog, the brief's title as its head and the status line under it. Sections are quiet headings with short lines; the only colour is a late step in red and the purple lock callout of the confidential items, the same callout the lead page uses. "Refine with the agent" is the one primary button.
+2. **Wayfinding.** It opens over the lead and closes back to it (Escape, Close, or a click outside). From a meeting, it opens with that meeting. Nothing navigates away.
+3. **Memory and semantics.** A briefing note as account teams write them: who they are, who is who, why we talk to them, what happened, what is open, where the proposal stands, what to read, what never to say. Copy as markdown, as Proposal Preview copies.
+4. **Language.** Section headings in plain words ("Who is who", "What happened", "Read first", "Never claim", "Internal only"); people and owners by name; "Late:" before an overdue step.
+5. **Decision making.** Everything needed before a meeting without opening five sections of the lead: the angles sorted best first, the live proposal only, open steps by date. The agent is optional and comes second: the brief stands without it, and "Refine with the agent" asks for a write-up and five questions to ask.
+6. **Emotion.** Fears: "will the confidential items leak into a copy or the chat?", "did that send something?". The confidential items show to the team in the lock callout, and say they are never copied for others or sent to the agent; "Copy markdown" leaves them out, "Copy for the team" says it carries them; the foot says nothing is sent from Power BD.
+
+**2. Concepts weighed**
+
+- **A · Task-oriented:** a "Brief" section on the lead page. Always there, but it repeats the page and buries the page's own work.
+- **B · Conventional:** a briefing document in a dialog, copied or handed on. Familiar from account plans and meeting notes.
+- **C · Immersive:** the agent writes the brief from scratch in the chat. Polished, but nothing to read without a key, and a brief that changes each time it is asked.
+
+**Chosen:** B, with C as the second step. Evidence: the records already hold every fact a brief needs; the chat promises the confidential items stay out of it; the agent may not be set up (no key).
+
+**3. Implementation:** `.pb-dialog--doc` (wide, its body scrolls), `.pb-brief__summary`, `__section`, `__heading`, `__list`, `__detail`, `__late`, `__empty`; `.pb-callout--purple` with the lock for the internal items; `.pb-reassure` in the foot. Shown on the showcase. The brief is pure (`kit/brief/`: `buildBrief`, `briefMarkdown`, `agentPrompt`); the agent is asked through `kit/chat/agent-request.ts`, which the Shell hears (it opens the chat the person's way) and the conversation takes once it may go on.
+
+**4. Mapping**
+
+- **Vision:** one dialog, one primary button; red only for a late step; the lock callout for the confidential items.
+- **Wayfinding:** opens over the lead, from the lead or a meeting; closes back to it.
+- **Memory:** a briefing note; copy as markdown.
+- **Language:** plain section headings, names not addresses.
+- **Decision:** what a meeting needs on one page; the agent second and optional.
+- **Emotion:** confidential items never leave with a copy or the chat, and say so; nothing is sent.
+

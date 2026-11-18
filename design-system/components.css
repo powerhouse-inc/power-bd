@@ -2207,3 +2207,20 @@ a.pb-ref__title:focus-visible { outline: 2px solid var(--pb-accent); outline-off
 .pb-input--number { width: 120px; font-variant-numeric: tabular-nums; text-align: right; }
 .pb-table td.pb-num { text-align: right; }
 .pb-flex--bottom { align-items: flex-end; }
+
+/* =============================================================================
+   Meeting brief: a document to read before a meeting, in a wide dialog whose
+   body scrolls. Sections in the order people ask; late steps in red; the
+   confidential items in the purple lock callout the record pages use.
+   ============================================================================= */
+.pb-dialog--doc { display: flex; flex-direction: column; width: min(720px, 100%); max-height: calc(100vh - var(--pb-s-12)); }
+.pb-dialog--doc > .pb-dialog__body { overflow-y: auto; color: var(--pb-text); }
+.pb-dialog--doc > .pb-dialog__foot { flex-wrap: wrap; align-items: center; }
+.pb-dialog__foot > .pb-reassure { margin-right: auto; }
+.pb-brief__summary { color: var(--pb-text-secondary); font-size: var(--pb-fs-sm); }
+.pb-brief__section { display: grid; gap: var(--pb-s-1); }
+.pb-brief__heading { margin: var(--pb-s-2) 0 0; color: var(--pb-text); font-size: var(--pb-fs-sm); font-weight: var(--pb-fw-semibold); }
+.pb-brief__list { display: grid; gap: var(--pb-s-1-5); margin: 0; padding-left: var(--pb-s-4); font-size: var(--pb-fs-sm); }
+.pb-brief__detail { display: block; color: var(--pb-text-tertiary); font-size: var(--pb-fs-xs); }
+.pb-brief__late { color: var(--pb-red-text); font-weight: var(--pb-fw-medium); }
+.pb-brief__empty { color: var(--pb-text-tertiary); font-size: var(--pb-fs-sm); }
