@@ -1013,6 +1013,9 @@
     radial-gradient(farthest-side at 50% 100%, color-mix(in srgb, var(--pb-text) 18%, transparent), transparent) bottom / 100% 12px no-repeat;
 }
 .pb-list--scroll .pb-list__group { position: sticky; top: 0; z-index: 1; background: var(--pb-bg); }
+/* Coming up: the day pointed at in the strip and its items in the list share the accent tint, so a mark and its item read as one. */
+.pb-strip__day.is-focus { background: var(--pb-accent-soft); }
+.pb-list__day.is-focus .pb-list__item { background: var(--pb-accent-soft); }
 
 /* ---- Emotion: reassurance and progress ------------------------------------ */
 /* One line that names the fear and answers it, beside the risky action. */

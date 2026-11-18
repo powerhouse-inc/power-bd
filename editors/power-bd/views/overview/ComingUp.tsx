@@ -1,4 +1,4 @@
-import type { Ref } from "react";
+import { useRef, useState, type Ref } from "react";
 import { Icon } from "../../components/Icon.js";
 import { fmtDay } from "../../components/shared/relationship/common.js";
 import type { DueItem, ItemRef } from "../../kit/overview/index.js";
@@ -36,6 +36,22 @@ export function ComingUp({
   onOpen: (r: ItemRef) => void;
   ref?: Ref<HTMLElement>;
 }) {
+  const list = useRef<HTMLDivElement>(null);
+  // The day pointed at: from the strip it also shows the day's items in the list; from the list it only marks the strip.
+  const [focus, setFocus] = useState<{ day: string; from: "strip" | "list" } | null>(null);
+  const show = (day: string) => {
+    setFocus({ day, from: "strip" });
+    const box = list.current;
+    const group = box?.querySelector<HTMLElement>(`[data-day="${day}"]`);
+    // Scrolls the list, never the page: the day's heading comes to the top of the list.
+    if (box && group)
+      box.scrollTo({
+        top: box.scrollTop + group.getBoundingClientRect().top - box.getBoundingClientRect().top,
+        behavior: "smooth",
+      });
+  };
+  const leave = () => setFocus(null);
+
   return (
     <section
       className="pb-stack pb-gap-2"
@@ -62,7 +78,13 @@ export function ComingUp({
               aria-current={c.today ? "date" : undefined}
               title={text}
               aria-label={text}
-              className={`pb-strip__day${c.today ? " is-today" : ""}${c.weekend ? " is-weekend" : ""}${c.weekStart ? " is-week-start" : ""}${c.total > 0 ? " has-due" : ""}`}
+              tabIndex={c.total > 0 ? 0 : undefined}
+              onMouseEnter={c.total > 0 ? () => show(c.day) : undefined}
+              onMouseLeave={leave}
+              onFocus={c.total > 0 ? () => show(c.day) : undefined}
+              onBlur={leave}
+              onClick={c.total > 0 ? () => show(c.day) : undefined}
+              className={`pb-strip__day${c.today ? " is-today" : ""}${c.weekend ? " is-weekend" : ""}${c.weekStart ? " is-week-start" : ""}${c.total > 0 ? " has-due" : ""}${focus?.day === c.day ? " is-focus" : ""}`}
             >
               <span className="pb-strip__wd">{c.weekday.slice(0, 1)}</span>
               <span className="pb-strip__num">{c.date}</span>
@@ -99,9 +121,16 @@ export function ComingUp({
           role="region"
           aria-label="Items coming up"
           tabIndex={0}
+          ref={list}
         >
           {days.map((g) => (
-            <div key={g.day}>
+            <div
+              key={g.day}
+              data-day={g.day}
+              className={`pb-list__day${focus?.day === g.day && focus.from === "strip" ? " is-focus" : ""}`}
+              onMouseEnter={() => setFocus({ day: g.day, from: "list" })}
+              onMouseLeave={leave}
+            >
               <div className="pb-list__group">
                 <strong>{fmtDay(dayInstant(g.day))}</strong> ·{" "}
                 {relativeDay(g.day, today)}

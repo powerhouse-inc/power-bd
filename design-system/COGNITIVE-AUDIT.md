@@ -1128,3 +1128,16 @@ A new place, after Overview: every dated item of the open records on its day, a 
 - **Decision:** only the team's dates move; one confirmation for a meeting; add asks what, for whom, then the words.
 - **Emotion:** others' dates can't be dragged; nothing is sent from Power BD; a refused change leaves the item where it was.
 
+### Coming up: a day in the strip and its items (built, `views/overview/ComingUp.tsx`)
+
+The Overview audit stands. This covers one change: pointing at a day in the strip shows its items in the list, and pointing at an item shows its day in the strip.
+
+1. **Vision and attention.** The marks in the strip were anonymous: a diamond on the 26th said "a deadline" but not which one. Now the day pointed at and its items share the accent tint, so a mark and its item read as one. There is no coloured edge, and nothing red or orange.
+2. **Wayfinding.** The list scrolls itself (never the page) so the day's heading comes to the top. Leaving the strip leaves the list where it is, so what was found stays in view.
+3. **Memory and semantics.** Hover-to-reveal, as a calendar's day highlights its events. A day with items can also be reached with Tab and tapped on a touch screen.
+4. **Language.** No new words; the day's own line ("Thu 26 Nov · in 8 days") is the heading the list scrolls to.
+5. **Decision making.** Answers "what is that mark?" without opening anything or counting rows.
+6. **Emotion.** Nothing changes on hover, so pointing around is safe.
+
+**Implementation:** `.pb-strip__day.is-focus` and `.pb-list__day.is-focus` (the items tinted, since the sticky heading keeps its own background); the strip's days with items take focus (`tabIndex`).
+
