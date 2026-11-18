@@ -1,4 +1,3 @@
-import { useSetSelectedNode } from "@powerhousedao/reactor-browser";
 import { ErrorLine } from "../../components/shared/ErrorLine.js";
 import { useState } from "react";
 import { EmptyStart } from "../../components/EmptyStart.js";
@@ -7,6 +6,7 @@ import { Icon } from "../../components/Icon.js";
 import { organisationRows } from "../../kit/organisation-list/index.js";
 import { DueForDeletion } from "./DueForDeletion.js";
 import { useContactDocumentsInSelectedDrive, useInvestorListDocumentsInSelectedDrive, useLeadDocumentsInSelectedDrive, useOpportunityDocumentsInSelectedDrive, useProposalDocumentsInSelectedDrive } from "../../components/useDriveDocuments.js";
+import { useSetSelectedNode } from "../../components/shared/useOpenRecord.js";
 
 /** The Organisations place: every organisation with its country, tags and relationships, and the retention list. */
 export function OrganisationsView({ driveId }: { driveId: string }) {

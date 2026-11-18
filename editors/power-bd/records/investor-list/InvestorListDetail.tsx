@@ -1,8 +1,4 @@
-import {
-  type DocumentDispatch,
-  useSelectedDriveId,
-  useSetSelectedNode,
-} from "@powerhousedao/reactor-browser";
+import { type DocumentDispatch, useSelectedDriveId } from "@powerhousedao/reactor-browser";
 import { Fragment, useState } from "react";
 import type { Action } from "document-model";
 import { actions as contactActions } from "document-models/contact";
@@ -34,6 +30,7 @@ import { InvestorRowDetail } from "../../views/investors/InvestorRowDetail.js";
 import { StartRelationshipPanel } from "../../views/investors/StartRelationshipPanel.js";
 import "../../kit/design.js";
 import { useDriveWrite, type DriveWrite } from "../../components/data/driveData.js";
+import { useSetSelectedNode } from "../../components/shared/useOpenRecord.js";
 
 type Dispatch = DocumentDispatch<InvestorListAction>;
 type Panel = { rowId: string; kind: "details" | "exclude" | "start" };

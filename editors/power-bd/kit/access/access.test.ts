@@ -8,6 +8,7 @@ import {
   readAnswer,
   rosterRows,
   shortAddress,
+  mayChange,
   standingOf,
 } from "./access.js";
 
@@ -156,3 +157,17 @@ describe("isLastManager", () => {
     expect(isLastManager(rows, PEER.toUpperCase().replace("0X", "0x"))).toBe(false);
   });
 });
+
+describe("mayChange", () => {
+  it("reads the server's yes and no", () => {
+    expect(mayChange({ data: { canExecuteOperation: true } })).toBe(true);
+    expect(mayChange({ data: { canExecuteOperation: false } })).toBe(false);
+  });
+
+  it("does not guess when the server did not say", () => {
+    expect(mayChange({ error: "The server answered HTTP 500." })).toBeUndefined();
+    expect(mayChange({ data: {} })).toBeUndefined();
+    expect(mayChange({ data: { canExecuteOperation: "yes" } })).toBeUndefined();
+  });
+});
+

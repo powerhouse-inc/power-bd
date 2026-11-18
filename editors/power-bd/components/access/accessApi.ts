@@ -5,6 +5,7 @@
  */
 import { ambientRenownTokenProvider } from "@powerhousedao/reactor-browser";
 import {
+  mayChange,
   probeVerdict,
   readAnswer,
   type Answer,
@@ -101,3 +102,15 @@ export async function readServerDrive(base: string, driveId: string): Promise<Dr
   if ("problem" in read) throw new Error(read.problem);
   return read.drive;
 }
+
+/** Whether the person may change the drive: the server's own answer, as every write gets it. */
+export async function askMayChange(base: string, driveId: string): Promise<boolean | undefined> {
+  return mayChange(
+    await auth(
+      base,
+      `query C($id: String!) { canExecuteOperation(documentIdOrSlug: $id, operationType: "ADD_FILE") }`,
+      { id: driveId },
+    ),
+  );
+}
+

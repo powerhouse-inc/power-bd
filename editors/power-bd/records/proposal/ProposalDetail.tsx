@@ -1,8 +1,4 @@
-import {
-  useSetSelectedNode,
-  useUser,
-  type DocumentDispatch,
-} from "@powerhousedao/reactor-browser";
+import { useUser, type DocumentDispatch } from "@powerhousedao/reactor-browser";
 import { generateId } from "document-model";
 import {
   type ProposalAction,
@@ -48,6 +44,7 @@ import { usePageView, usePreviewMode } from "./usePageView.js";
 import { stepAction, useStartProposal } from "./useStartProposal.js";
 import { useWithPictures } from "./useWithPictures.js";
 import { useContactDocumentsInSelectedDrive, useDecisionDocumentsInSelectedDrive, useLeadDocumentsInSelectedDrive, usePlaybookDocumentsInSelectedDrive } from "../../components/useDriveDocuments.js";
+import { useSetSelectedNode } from "../../components/shared/useOpenRecord.js";
 
 type Dispatch = DocumentDispatch<ProposalAction>;
 

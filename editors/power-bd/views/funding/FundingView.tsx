@@ -1,4 +1,3 @@
-import { useSetSelectedNode } from "@powerhousedao/reactor-browser";
 import { ErrorLine } from "../../components/shared/ErrorLine.js";
 import { settingsOrDefaults } from "../../kit/settings/index.js";
 import { VOCABULARY } from "../../../../design-system/vocabulary.js";
@@ -11,6 +10,7 @@ import { deadline, sortByDeadline } from "../../kit/funding/index.js";
 import { attemptsLeft } from "../../kit/overview/index.js";
 import { useNow } from "../../components/shared/useNow.js";
 import { useBdSettingsDocumentsInSelectedDrive, useContactDocumentsInSelectedDrive, useOpportunityDocumentsInSelectedDrive } from "../../components/useDriveDocuments.js";
+import { useSetSelectedNode } from "../../components/shared/useOpenRecord.js";
 
 /** The Funding place: opportunities in deadline order, and a way to start one. */
 export function FundingView({ driveId }: { driveId: string }) {

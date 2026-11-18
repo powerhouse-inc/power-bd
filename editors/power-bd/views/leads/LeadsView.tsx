@@ -1,5 +1,4 @@
 import { NextStep, NextStepSignal } from "./NextStep.js";
-import { useSetSelectedNode } from "@powerhousedao/reactor-browser";
 import { ErrorLine } from "../../components/shared/ErrorLine.js";
 import { useState } from "react";
 import { VOCABULARY } from "../../../../design-system/vocabulary.js";
@@ -12,6 +11,7 @@ import { ProposalBadge } from "../../components/shared/ProposalBadge.js";
 import { nextAction } from "../../kit/lead-view/index.js";
 import { proposalBadges } from "../../kit/proposal-list/index.js";
 import { useContactDocumentsInSelectedDrive, useLeadDocumentsInSelectedDrive, useProposalDocumentsInSelectedDrive } from "../../components/useDriveDocuments.js";
+import { useSetSelectedNode } from "../../components/shared/useOpenRecord.js";
 
 /** The Leads place: every lead with its status, owner and next step, and a way to start one. */
 export function LeadsView({ driveId }: { driveId: string }) {

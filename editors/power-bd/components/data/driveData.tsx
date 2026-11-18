@@ -8,6 +8,7 @@ import {
   useNodesInSelectedDrive,
   useSelectedDriveId,
   useSwitchboards,
+  useUser,
   type DocumentDispatch,
 } from "@powerhousedao/reactor-browser";
 import type { Action, PHDocument } from "document-model";
@@ -18,11 +19,14 @@ import {
   useDeferredValue,
   useEffect,
   useMemo,
+  useState,
   useSyncExternalStore,
   type ReactNode,
 } from "react";
+import { VIEW_ONLY } from "../../kit/access/access.js";
 import { createLoadableChecks } from "../../kit/drive/loadable.js";
 import { createLiveDrive, type LiveDrive } from "../../kit/live-drive/live-drive.js";
+import { askMayChange } from "../access/accessApi.js";
 import { placeDrive, type DriveHome } from "../access/useDriveSwitchboard.js";
 import { renameOnServer, serverDriveSource, startLiveFeed } from "../serverWrites.js";
 
@@ -42,6 +46,8 @@ export type DriveBackend =
   | { kind: "connect"; driveId: string };
 
 const BackendContext = createContext<DriveBackend | undefined>(undefined);
+/** Whether the person may change the drive: false for a view-only member; undefined until known. */
+const WritableContext = createContext<boolean | undefined>(undefined);
 
 /** How often the server is read again while its change feed is down, and while it is up. */
 const FEED_DOWN_MS = 60_000;
@@ -124,7 +130,39 @@ export function DriveDataProvider({ driveId, children }: { driveId: string; chil
     [home, driveId],
   );
   useKeptCurrent(backend);
-  return <BackendContext value={backend}>{children}</BackendContext>;
+  const writable = useMayChange(backend);
+  return (
+    <BackendContext value={backend}>
+      <WritableContext value={writable}>{children}</WritableContext>
+    </BackendContext>
+  );
+}
+
+/**
+ * Whether the person may change a server drive, asked once per person (again
+ * when they sign in or out). A drive kept here is always theirs to change.
+ */
+function useMayChange(backend: DriveBackend): boolean | undefined {
+  const me = useUser()?.address;
+  const [answer, setAnswer] = useState<{ key: string; may: boolean | undefined }>();
+  const key = backend.kind === "server" ? `${backend.base}\n${backend.driveId}\n${me ?? ""}` : "";
+  useEffect(() => {
+    if (backend.kind !== "server") return;
+    let live = true;
+    void askMayChange(backend.base, backend.driveId).then((may) => {
+      if (live) setAnswer({ key, may });
+    });
+    return () => {
+      live = false;
+    };
+  }, [backend, key]);
+  if (backend.kind !== "server") return true;
+  return answer?.key === key ? answer.may : undefined;
+}
+
+/** Whether the person may change the open drive; true until the server says otherwise. */
+export function useDriveWritable(): boolean {
+  return useContext(WritableContext) !== false;
 }
 
 /** The open drive's backend; undefined outside the app (a record opened on its own). */
@@ -229,9 +267,18 @@ export interface DriveWrite {
   rename: (documentId: string, name: string) => Promise<void>;
 }
 
-function writesFor(backend: DriveBackend | undefined, selectedDriveId: string | undefined): DriveWrite {
-  const dispatchTo: DriveWrite["dispatchTo"] =
-    backend?.kind === "server"
+function writesFor(
+  backend: DriveBackend | undefined,
+  selectedDriveId: string | undefined,
+  writable: boolean,
+): DriveWrite {
+  const dispatchTo: DriveWrite["dispatchTo"] = !writable
+    ? async (_actions, _documentId, onErrors) => {
+        // A view-only member is told why at once; nothing is sent to be refused.
+        await Promise.resolve();
+        onErrors?.([new Error(VIEW_ONLY)]);
+      }
+    : backend?.kind === "server"
       ? async (actions, documentId, onErrors, onSuccess) => {
           try {
             const { document, rejected } = await backend.live.write(documentId, Array.isArray(actions) ? actions : [actions]);
@@ -258,6 +305,7 @@ function writesFor(backend: DriveBackend | undefined, selectedDriveId: string | 
       return d;
     },
     rename: async (documentId, name) => {
+      if (!writable) return;
       if (backend?.kind === "server") {
         await renameOnServer(backend.base, backend.driveId, documentId, name);
         await backend.live.syncTree();
@@ -273,7 +321,8 @@ function writesFor(backend: DriveBackend | undefined, selectedDriveId: string | 
 export function useDriveWrite(): DriveWrite {
   const backend = useDriveBackend();
   const selected = useSelectedDriveId();
-  return useMemo(() => writesFor(backend, selected ?? undefined), [backend, selected]);
+  const writable = useDriveWritable();
+  return useMemo(() => writesFor(backend, selected ?? undefined, writable), [backend, selected, writable]);
 }
 
 /** The dispatch of a record not known yet: it says so instead of sending anything. */

@@ -4,8 +4,6 @@ import {
   ambientRenownSigner,
   ambientRenownTokenProvider,
   baseDocumentModels,
-  getDriveNode,
-  getPHStore,
   makeAuthConnectionParams,
   phDocumentFromGetDocument,
   startDocumentChangesSubscription,
@@ -15,7 +13,6 @@ import { addFolder, moveNode, setDriveIcon, updateNode } from "@powerhousedao/sh
 import { generateId, setName, type PHDocument } from "document-model";
 import type { DriveSource, LiveDrive } from "../kit/live-drive/live-drive.js";
 import { documentModels } from "../../../document-models/document-models.js";
-import { waitUntil } from "../kit/wait/wait.js";
 
 /**
  * Writes that go straight to a shared drive's server instead of through
@@ -30,8 +27,8 @@ import { waitUntil } from "../kit/wait/wait.js";
  */
 const clients = new Map<string, GraphQLReactorClient>();
 
-/** The server's client, signed with the person's Renown identity. */
-function serverClient(base: string): GraphQLReactorClient {
+/** The server's client, signed with the person's Renown identity; the agent's tools use it too. */
+export function serverClient(base: string): GraphQLReactorClient {
   let client = clients.get(base);
   if (!client) {
     client = new GraphQLReactorClient({
@@ -80,25 +77,6 @@ export async function addFoldersOnServer(
 /** Sets the drive's icon on its server. */
 export async function setIconOnServer(base: string, driveId: string, icon: string): Promise<void> {
   await serverClient(base).execute(driveId, "main", [setDriveIcon({ icon })]);
-}
-
-/** How long a new record may take to reach this browser before the person is told it will follow. */
-const ARRIVAL_MS = 20_000;
-
-/**
- * Waits until this browser's Connect holds the new record, its entry in the
- * drive and the record itself, so opening and editing it work as for any
- * other. True when it arrived in time.
- */
-export function waitForArrival(driveId: string, id: string): Promise<boolean> {
-  return waitUntil(
-    async () => {
-      if (!(await getDriveNode(driveId, id, { refresh: true }))) return false;
-      await getPHStore()?.reactorClient?.read.get(id);
-      return true;
-    },
-    { timeoutMs: ARRIVAL_MS, everyMs: 400 },
-  );
 }
 
 /** The drive's server as the live copy reads and writes it. */

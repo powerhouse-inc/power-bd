@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bdChatTools, type ChatTool } from "./tools.js";
+import { bdChatTools, readsTheVault, type ChatTool } from "./tools.js";
 
 const VAULT = "vault-drive-1";
 const BD = "bd-drive-1";
@@ -145,5 +145,39 @@ describe("bdChatTools: the vault's tools", () => {
     const [tool] = bdChatTools([hostTool("read_document", { vault: true, result: vaultRead }).tool], DRIVES);
     const out = await tool.callback({ documentId: "lead-1", driveId: "bd-drive-2" });
     expect(JSON.stringify(out)).not.toContain("distrusts");
+  });
+});
+
+describe("bdChatTools: Power BD's own tools", () => {
+  it("uses its own reactor tools in place of the host's, and still withholds confidential items", async () => {
+    const hostRead = hostTool("getDocument");
+    const ownRead = hostTool("getDocument", { result: leadRead });
+    const tools = bdChatTools(
+      [hostRead.tool, hostTool("addActions").tool, hostTool("search_vault", { vault: true }).tool],
+      DRIVES,
+      { reactor: [ownRead.tool] },
+    );
+    expect(tools.map((t) => t.name)).toEqual(["getDocument", "search_vault"]);
+    const out = await tools[0].callback({ documentId: "lead-1" });
+    expect(hostRead.calls).toEqual([]);
+    expect(ownRead.calls).toEqual([{ documentId: "lead-1" }]);
+    expect(JSON.stringify(out)).not.toContain("distrusts");
+  });
+
+  it("adds its own tools after the host's, never in place of one with the same name", () => {
+    const tools = bdChatTools(
+      [hostTool("getDocument").tool, hostTool("document_history", { vault: true }).tool],
+      DRIVES,
+      { bd: [hostTool("getRecordHistory").tool, hostTool("document_history").tool] },
+    );
+    expect(tools.map((t) => t.name)).toEqual(["getDocument", "document_history", "getRecordHistory"]);
+    expect(tools[1].description).toMatch(/^Knowledge vault — /);
+  });
+});
+
+describe("readsTheVault: which of the chat's tools read the vault", () => {
+  it("counts every tool but the space's own reads and writes", () => {
+    for (const name of ["getDocument", "addActions", "getRecentChanges", "getRecordHistory"]) expect(readsTheVault(name)).toBe(false);
+    for (const name of ["search_vault", "read_document", "list_sources"]) expect(readsTheVault(name)).toBe(true);
   });
 });

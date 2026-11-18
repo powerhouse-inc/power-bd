@@ -130,3 +130,40 @@ describe("chatInstructions: how to answer", () => {
     expect(text).toContain("due window");
   });
 });
+
+describe("chatInstructions: what changed, and who", () => {
+  it("sends questions of recency and authorship to the BD space's history tools, not the vault's", () => {
+    const text = chatInstructions(FACTS);
+    expect(text).toContain("Record listings carry no dates");
+    expect(text).toContain("getRecentChanges");
+    expect(text).toContain("getRecordHistory");
+    expect(text).toContain("recent_changes and document_history read the vault only");
+  });
+
+  it("says where people's names come from", () => {
+    expect(chatInstructions(FACTS)).toContain("team list (teamMembers)");
+  });
+});
+
+describe("chatInstructions: a view-only member", () => {
+  it("tells the agent not to offer changes, and who can give access", () => {
+    const text = chatInstructions({ ...FACTS, mayChange: false });
+    expect(text).toContain("can view this space but not change it");
+    expect(text).toContain("Settings, under Access");
+    expect(text).not.toContain("Auto-approve is off");
+  });
+
+  it("assumes the space may be changed when nothing says otherwise", () => {
+    expect(chatInstructions(FACTS)).not.toContain("not change it");
+    expect(chatInstructions({ ...FACTS, mayChange: true })).toContain("Auto-approve is off");
+  });
+});
+
+describe("chatInstructions: citations", () => {
+  it("asks for the vault's [[documentId]] citations and leaves titles and lists to the chat", () => {
+    const text = chatInstructions(FACTS);
+    expect(text).toContain("as [[documentId]] right after what it supports");
+    expect(text).toContain("never add a list of sources, write links or show ids yourself");
+    expect(text).toContain("Cite vault documents only; name BD records in words.");
+  });
+});

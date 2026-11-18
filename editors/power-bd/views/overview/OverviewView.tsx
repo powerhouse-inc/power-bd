@@ -1,4 +1,4 @@
-import { useSetSelectedNode, useUser } from "@powerhousedao/reactor-browser";
+import { useUser } from "@powerhousedao/reactor-browser";
 import { useRef, useState } from "react";
 import { EmptyPlace } from "../../components/EmptyPlace.js";
 import { fmtDay } from "../../components/shared/relationship/common.js";
@@ -29,6 +29,7 @@ import { OverviewTable } from "./OverviewTable.js";
 import { SummaryTiles, type Tile } from "./SummaryTiles.js";
 import { useNow } from "../../components/shared/useNow.js";
 import { useBdSettingsDocumentsInSelectedDrive, useContactDocumentsInSelectedDrive, useDecisionDocumentsInSelectedDrive, useInvestorListDocumentsInSelectedDrive, useLeadDocumentsInSelectedDrive, useOpportunityDocumentsInSelectedDrive, useProposalDocumentsInSelectedDrive } from "../../components/useDriveDocuments.js";
+import { useSetSelectedNode } from "../../components/shared/useOpenRecord.js";
 
 /** A document's id and its global state, the shape the kit reads. */
 const plain = <S,>(d: { header: { id: string }; state: { global: S } }) => ({

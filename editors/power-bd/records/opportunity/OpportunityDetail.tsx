@@ -1,8 +1,4 @@
-import {
-  useSetSelectedNode,
-  useUser,
-  type DocumentDispatch,
-} from "@powerhousedao/reactor-browser";
+import { useUser, type DocumentDispatch } from "@powerhousedao/reactor-browser";
 import {
   actions,
   type OpportunityAction,
@@ -50,6 +46,7 @@ import { CURRENCY_FORMAT, currencyCode } from "../../kit/format/index.js";
 import { StepsSection } from "./StepsSection.js";
 import { SubmissionsSection } from "./SubmissionsSection.js";
 import { useBdSettingsDocumentsInSelectedDrive, useContactDocumentsInSelectedDrive, useDecisionDocumentsInSelectedDrive, useOpportunityDocumentsInSelectedDrive } from "../../components/useDriveDocuments.js";
+import { useSetSelectedNode } from "../../components/shared/useOpenRecord.js";
 
 /** The funding opportunity page: shown in the Funding place and in the thin editor. */
 export function OpportunityDetail({

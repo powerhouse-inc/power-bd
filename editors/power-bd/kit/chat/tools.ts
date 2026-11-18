@@ -1,11 +1,17 @@
 /**
  * The chat's tools: the host's, narrowed to what BD needs and wrapped so the
  * rules hold whatever the model asks. The reactor's document tools read and
- * change records; the vault's tools read notes. Drive administration,
- * workflows and switchboard schemas are left out. Every write, the eight
- * people-only steps included, asks on the stack's approval card unless the
- * person turned auto-approve on.
+ * change records; the vault's tools read notes; Power BD's own read the BD
+ * space's history. Drive administration, workflows and switchboard schemas
+ * are left out. Every write, the eight people-only steps included, asks on
+ * the stack's approval card unless the person turned auto-approve on.
+ *
+ * For a shared space the reactor's tools come from Power BD, built on the
+ * space's Switchboard (tool-client.ts), in place of Connect's.
  */
+import type { ZodRawShape } from "zod";
+import { refused } from "./envelope.js";
+import { RECENT_CHANGES_TOOL, RECORD_HISTORY_TOOL } from "./history-tools.js";
 import { redactToolResult } from "./redact.js";
 import { routeVaultCall, type VaultDrives } from "./vault-drive.js";
 
@@ -17,7 +23,8 @@ import { routeVaultCall, type VaultDrives } from "./vault-drive.js";
 export interface ChatTool {
   name: string;
   description?: string;
-  inputSchema: unknown;
+  /** The arguments, as zod fields (the stack's `PhAiToolDescriptor`). */
+  inputSchema: ZodRawShape;
   annotations?: {
     title?: string;
     readOnlyHint?: boolean;
@@ -46,16 +53,31 @@ const VAULT_MARK = "Knowledge vault — ";
 
 const isVaultTool = (tool: ChatTool) => tool.description?.startsWith(VAULT_MARK) === true;
 
-/** A tool's answer that it refused, as the MCP envelope the agent unwraps. */
-function refused(message: string) {
-  return { isError: true, content: [{ type: "text", text: `Error: ${message}` }] };
+/** The chat's tools that read or change the BD space; every other one it offers reads the vault. */
+const SPACE_TOOLS = new Set([...REACTOR_TOOLS, RECENT_CHANGES_TOOL, RECORD_HISTORY_TOOL]);
+
+/** Whether a tool the chat offers reads the vault, by its name (as a conversation keeps it). */
+export const readsTheVault = (toolName: string) => !SPACE_TOOLS.has(toolName);
+
+/** Tools Power BD brings to the chat itself. */
+export interface OwnTools {
+  /** The reactor's tools on the space's Switchboard, in place of the host's. */
+  reactor?: readonly ChatTool[];
+  /** Power BD's own tools, such as the BD space's history. */
+  bd?: readonly ChatTool[];
 }
 
 /** The tools the chat offers, each wrapped by the rules that apply to it. */
-export function bdChatTools<T extends ChatTool>(tools: readonly T[], drives: VaultDrives): T[] {
-  return tools
-    .filter((tool) => REACTOR_TOOLS.has(tool.name) || isVaultTool(tool))
-    .map((tool) => redacted(isVaultTool(tool) ? routed(tool, drives) : tool));
+export function bdChatTools(
+  tools: readonly ChatTool[],
+  drives: VaultDrives,
+  own: OwnTools = {},
+): ChatTool[] {
+  const reactor = own.reactor ?? tools.filter((tool) => REACTOR_TOOLS.has(tool.name));
+  const vault = tools.filter(isVaultTool).map((tool) => routed(tool, drives));
+  const taken = new Set([...reactor, ...vault].map((tool) => tool.name));
+  const bd = (own.bd ?? []).filter((tool) => !taken.has(tool.name));
+  return [...reactor, ...vault, ...bd].map(redacted);
 }
 
 /** Any tool, its result cleaned of confidential items before the model reads it. */

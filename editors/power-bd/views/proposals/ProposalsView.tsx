@@ -1,4 +1,3 @@
-import { useSetSelectedNode } from "@powerhousedao/reactor-browser";
 import { useState } from "react";
 import { EmptyPlace } from "../../components/EmptyPlace.js";
 import { EmptyStart } from "../../components/EmptyStart.js";
@@ -13,6 +12,7 @@ import {
   statusOptions,
   waitSummary,
 } from "../../kit/proposal-list/index.js";
+import { useSetSelectedNode } from "../../components/shared/useOpenRecord.js";
 
 const STATUSES = statusOptions();
 

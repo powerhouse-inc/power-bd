@@ -1,6 +1,5 @@
 import { useToday } from "../../components/shared/useToday.js";
 import { ErrorLine } from "../../components/shared/ErrorLine.js";
-import { useSetSelectedNode } from "@powerhousedao/reactor-browser";
 import { VOCABULARY } from "../../../../design-system/vocabulary.js";
 import { EmptyStart } from "../../components/EmptyStart.js";
 import { Icon } from "../../components/Icon.js";
@@ -16,6 +15,7 @@ import {
   sortDecisions,
 } from "../../kit/decision-view/index.js";
 import { useDecisionDocumentsInSelectedDrive, useLeadDocumentsInSelectedDrive, useOpportunityDocumentsInSelectedDrive, useProposalDocumentsInSelectedDrive } from "../../components/useDriveDocuments.js";
+import { useSetSelectedNode } from "../../components/shared/useOpenRecord.js";
 
 /** The Decisions place: open questions first, overdue ones marked, and a way to start one. */
 export function DecisionsView({ driveId }: { driveId: string }) {

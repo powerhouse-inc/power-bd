@@ -46,9 +46,12 @@ import {
   useDriveIcon,
   useDriveNodes,
   useDriveProblem,
+  useDriveWritable,
   useRecordSafe,
 } from "./data/driveData.js";
 import { addTopFolders } from "./driveSetup.js";
+import { isLiveRecord, LiveRecord } from "./LiveRecord.js";
+import { currentRequest, requestOpen, useRequestedRecord } from "./shared/useOpenRecord.js";
 import { addFoldersOnServer, createOnServer, setIconOnServer } from "./serverWrites.js";
 import { useCreateRecord } from "./shared/useCreateRecord.js";
 import { Sidebar } from "./Sidebar.js";
@@ -122,6 +125,9 @@ export function Shell({
   const problem = useDriveProblem();
   const selected = useSelectedNode();
   const setSelectedNode = useSetSelectedNode();
+  // The record asked for here: a shared drive's record shows from the live
+  // copy at once, before Connect's own copy holds it (see useOpenRecord).
+  const requested = useRequestedRecord();
 
   // The drive's icon as the set-up finds it: an icon-less drive gets the app's own.
   const icon = useDriveIcon(driveId);
@@ -150,8 +156,9 @@ export function Shell({
     if (ready) loadedOnce.add(driveId);
   }, [ready, driveId]);
   const backend = useDriveBackend();
+  const writable = useDriveWritable();
   useEffect(() => {
-    if (!needsSetUp || !backend) return;
+    if (!needsSetUp || !backend || !writable) return;
     // A shared drive is set up on its server, where a member's writes are
     // checked against the drive; one kept only here, through Connect.
     const server = backend.kind === "server" ? backend : undefined;
@@ -177,7 +184,7 @@ export function Shell({
         console.error("Power BD: drive set-up failed", error);
         setSetUpFailed(driveId);
       });
-  }, [driveId, needsSetUp, backend]);
+  }, [driveId, needsSetUp, backend, writable]);
 
   // ⌘K or Ctrl+K opens search from anywhere in the app, and closes it again.
   useEffect(() => {
@@ -221,13 +228,23 @@ export function Shell({
     ? "offline"
     : problem
       ? "unreachable"
-      : missing && setUpFailed !== driveId
+      : !writable
+        ? "view-only"
+        : missing && setUpFailed !== driveId
       ? "setting-up"
       : "up-to-date";
   const current = placeById(place);
   const PlaceView = place === "agent" ? undefined : PLACE_VIEWS[place];
-  const open = children ? selected : undefined;
-  const atAgent = place === "agent" && !children;
+  const liveId = backend?.kind === "server" ? (requested ?? selected?.id) : undefined;
+  const liveDocument = useRecordSafe(liveId);
+  const liveRecord = liveDocument && isLiveRecord(liveDocument) ? liveDocument : undefined;
+  const record = liveRecord ? <LiveRecord document={liveRecord} /> : children;
+  const open = liveRecord
+    ? { id: liveRecord.header.id, name: liveRecord.header.name }
+    : children
+      ? selected
+      : undefined;
+  const atAgent = place === "agent" && !record;
   const besideOpen = chatBeside && !atAgent;
   // The crumb reads the record's own title once it has loaded (the entry's
   // name can lag behind it), without holding up the frame until then.
@@ -239,6 +256,7 @@ export function Shell({
   /** A record opened or closed here that Connect has not finished moving to yet. */
   const connectMove = useRef<{ to: string | undefined; at: number } | null>(null);
   const goTo = (id: PlaceId, recordId?: string) => {
+    requestOpen(recordId);
     setPlace(id);
     setInvestorRow(undefined);
     // Opening or closing a record is Connect's move, with its own history
@@ -252,6 +270,7 @@ export function Shell({
   // Back and Forward: the address names the place, and Connect restores the record.
   useEffect(() => {
     const onPop = () => {
+      requestOpen(undefined);
       setPlace(placeFromHash(window.location.hash) ?? "overview");
       setInvestorRow(undefined);
     };
@@ -267,6 +286,20 @@ export function Shell({
   // while Connect is still moving: writing the address under a move it has
   // started left the record open with the address saying it was closed.
   const selectedId = selected?.id;
+  // A record asked for here gives way to Connect's selection once it moves on:
+  // to another record (Back, Forward, a link), or away from the asked record
+  // (its toolbar closed it). A selection that drops a record it could not find
+  // leaves the request standing.
+  const wasSelected = useRef(selectedId);
+  useEffect(() => {
+    const was = wasSelected.current;
+    wasSelected.current = selectedId;
+    const asked = currentRequest();
+    if (asked === undefined) return;
+    if (selectedId !== undefined ? selectedId !== asked : was === asked) requestOpen(undefined);
+  }, [selectedId]);
+  // A request belongs to the drive it was made in.
+  useEffect(() => () => requestOpen(undefined), [driveId]);
   useEffect(() => {
     const move = connectMove.current;
     if (move) {
@@ -333,7 +366,7 @@ export function Shell({
   const shown = !ready ? (
     <PlaceLoading place={current} />
   ) : (
-    children ||
+    record ||
     (PlaceView ? (
       <PlaceView driveId={driveId} />
     ) : (

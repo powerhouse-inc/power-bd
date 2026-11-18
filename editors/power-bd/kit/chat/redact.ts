@@ -10,7 +10,8 @@
  * descent or a quoted name with escapes, is refused before the model sees it.
  */
 
-const NOTE =
+/** What stands where confidential items were withheld. */
+export const WITHHELD_NOTE =
   "Confidential items stay out of the chat. People read them on the record in Power BD.";
 
 const FILTER_REFUSED =
@@ -107,7 +108,7 @@ function withhold(value: unknown): unknown {
 
 function withheld(items: unknown): unknown {
   if (Array.isArray(items) && items.length === 0) return items;
-  const note: Withheld = { withheld: countOf(items), note: NOTE };
+  const note: Withheld = { withheld: countOf(items), note: WITHHELD_NOTE };
   return note;
 }
 
