@@ -147,3 +147,4 @@ export {
   type InvestorRowCard,
   type ProposalCard,
 } from "./status-moves.js";
+export { groupRows } from "./group-rows.js";

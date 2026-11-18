@@ -1057,3 +1057,42 @@ The Proposals audit and *Moving a lead on the Leads board* stand. This covers on
 - **Language:** status names and the panel's button words; refusals say what to do first.
 - **Decision:** approval and sending stay a person's; the answer names its option; reasons where the reducer needs them.
 - **Emotion:** nothing is approved or sent by a drop; answers say nothing reaches the client.
+
+### Moving a row on the lists (built, `components/shared/board/GroupedTable.tsx`; Leads, Funding, Proposals and Investors in List)
+
+The board entries stand. This covers one change: the List view of Leads, Funding, Proposals and Investors takes a dragged row the way its board takes a card, so drag means one thing in the app: change the status.
+
+**1. Checkpoints**
+
+1. **Vision and attention.** While a row is in the hand, the groups are the only thing to look at. A group that takes the row tints in the accent blue, across its heading and its rows, deeper under the pointer. A group that refuses fades its rows. Each says its one line on its heading. The row left behind is faint. No coloured edge anywhere, as on the board.
+2. **Wayfinding.** The list keeps its columns and its order. It only stands under one heading per status, in the board's column order, so List and Board read in the same order and a status is in the same place in both. An empty status is its heading line, "Won · 0", short, and it still takes a row. The question stands in the group the row was put in, where it will land. The "Move to…" list and a refusal stand right under the row. Escape gives the focus back to the row, which never left.
+3. **Memory and semantics.** A grouped table is Notion's "group by status", with the same drag between groups. The row is moved with the board's rules and sends the board's actions, so List, Board and the record page never disagree.
+4. **Language.** Group headings are the status names with their counts. The lines and refusals are the board's: "Becomes Lost · asks why", "Give the lead an owner first", "Go or no-go is decided on its page".
+5. **Decision making.** What a drop does shows before letting go, on the heading of the group under the pointer. The questions are the board's: which option, why, confirm a final status, or where a person decides. On Investors, Engaged hands over to "Start relationship", which opens in its usual place, under the row it is for, since the list already starts a relationship there.
+6. **Emotion.** The same safety as the board. Nothing final happens in one careless drop. A refused move leaves the row where it was, with the reason under it. Every move can also be made from "Move to…", for anyone who does not drag.
+
+**2. Concepts weighed**
+
+- **A · Task-oriented:** no dragging in lists, only a status picker per row. Exact, but the user asked for dragging on lists, and it would make the List view the one place where dragging does nothing.
+- **B · Conventional:** drag a row up and down to reorder it. Familiar from to-do lists, but reordering means something different from the board's drag, needs a stored position in four models, and would replace the deadline order Funding is read by.
+- **C · Immersive:** while dragging, turn the list into a board. The layout would move under the pointer.
+
+**Chosen:** grouping by status with the board's drag (A's picker kept as "Move to…"). Evidence: the user chose "drag to change status, the same as the board" over reordering on 18 Nov; it needs no model change; and the board's rules are already tested against every reducer.
+
+**Decided with it**
+
+- **Grouping replaces the state tabs (Investors) and the status filter (Proposals) in List, as it already did on the board.** A tab or filter showing one status would hide every other group, leaving nowhere to drop a row. The headings carry the counts the tabs showed. The investor list's source-list filter stays, because it filters by where a row came from, not by state.
+- **Empty groups stay on screen as one heading line,** so each status can always take a row; the board does the same with its empty columns.
+- **The Status column stays,** though the heading says it, so each list's columns are unchanged.
+
+**3. Implementation:** `GroupedTable` with `groupRows` (`kit/overview-view/group-rows.ts`) on top of `useBoardMove`, whose rules and actions are the board's. A tbody per status is the drop zone. New parts in `components.css`, shown under "Moving a row" on the showcase: `pb-table__group`, `pb-table__group-head`, `pb-table__panel`, `pb-table__move`, and `tr.is-lifted` / `tr.is-away`. Rows can take the focus (Tab), and Enter opens one where a click does.
+
+**4. Mapping**
+
+- **Vision:** a tinted group takes the row and a faded one does not; the row in the hand is faint where it was.
+- **Wayfinding:** the board's order; the question where the row will land; Escape back to the row.
+- **Memory:** Notion's grouped table; the board's rules and actions.
+- **Language:** the board's status names, lines and refusals.
+- **Decision:** what a drop does shows before it; the board's questions; the investor's start where the list starts it.
+- **Emotion:** nothing final in one drop; a refusal leaves the row in place with the reason under it; "Move to…" for those who do not drag.
+

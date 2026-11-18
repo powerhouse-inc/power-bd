@@ -1473,6 +1473,38 @@
 .pb-move[aria-disabled="true"] .pb-tag { opacity: 0.5; }
 .pb-move[aria-disabled="true"] .pb-move__hint { color: var(--pb-text-tertiary); }
 
+/* ---- A list grouped by status, taking drops -------------------------------- */
+/* The list's rows under one heading per status, in the board's column order.
+   Each status is a tbody: its heading and its rows are one drop zone, tinted
+   while a row is in the hand like a board column; an empty status is its
+   one-line heading, which still takes a drop. The heading carries the same
+   one-line hint as a column. The question, the "Move to…" list and a refusal
+   stand in full-width rows, where the row will land or right under it. */
+.pb-table__group-head > th { height: 38px; padding: var(--pb-s-3) var(--pb-s-2) var(--pb-s-1-5); border-top: 0; color: var(--pb-text); font-weight: var(--pb-fw-regular); }
+.pb-table__group-head > th > .pb-count { margin-left: var(--pb-s-1-5); }
+.pb-table tbody tr.pb-table__group-head:hover { background: none; }
+.pb-table__group-head .pb-board__hint { position: static; display: none; margin-left: var(--pb-s-2); padding: 0; background: none; box-shadow: none; vertical-align: middle; }
+.pb-table__group.is-refused .pb-table__group-head .pb-board__hint,
+.pb-table__group.is-over .pb-table__group-head .pb-board__hint { display: inline-flex; }
+.pb-table__group.is-target > tr > * { background: var(--pb-accent-soft); transition: background var(--pb-dur) var(--pb-ease); }
+.pb-table__group.is-target.is-over > tr > * { background: color-mix(in srgb, var(--pb-accent) 22%, transparent); }
+.pb-table__group.is-refused > tr:not(.pb-table__group-head) { opacity: 0.4; }
+/* The row in the hand: raised as it leaves, then faint where it was. */
+.pb-table tr.is-lifted { background: var(--pb-bg-elevated); box-shadow: var(--pb-shadow-popover); }
+.pb-table tr.is-away { opacity: 0.35; }
+/* "Move to…" on a row: the card's quiet button, in the row's last cell. */
+.pb-table__move { width: 1%; white-space: nowrap; text-align: right; }
+.pb-table__move > .pb-card__move { opacity: 0; transition: opacity var(--pb-dur) var(--pb-ease); }
+.pb-table tr:hover .pb-table__move > .pb-card__move,
+.pb-table tr:focus-within .pb-table__move > .pb-card__move,
+.pb-table__move > .pb-card__move[aria-expanded="true"] { opacity: 1; }
+@media (hover: none) { .pb-table__move > .pb-card__move { opacity: 1; } }
+.pb-table tbody tr.pb-table__panel:hover { background: none; }
+.pb-table__panel > td { padding: var(--pb-s-2); }
+.pb-table__panel .pb-ask,
+.pb-table__panel .pb-card__moves { max-width: 440px; }
+.pb-table__panel .pb-card__moves { margin: 0; padding-top: 0; border-top: 0; }
+
 @media (prefers-reduced-motion: reduce) {
   .pb-card.is-lifted { transform: none; }
 }
