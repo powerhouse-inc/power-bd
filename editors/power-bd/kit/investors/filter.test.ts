@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { countByState, filterRows, sourceLists } from "./filter.js";
+import { filterRows, sourceLists } from "./filter.js";
 
 const rows = [
   { id: "1", state: "LISTED", sourceList: "Map" },
@@ -9,15 +9,6 @@ const rows = [
 ] as const;
 
 describe("filter", () => {
-  it("counts by state with an All total", () => {
-    expect(countByState(rows)).toEqual({
-      ALL: 4,
-      LISTED: 1,
-      SHORTLISTED: 1,
-      EXCLUDED: 1,
-      ENGAGED: 1,
-    });
-  });
   it("filters by state and source list", () => {
     expect(filterRows(rows, "ALL", null).length).toBe(4);
     expect(filterRows(rows, "SHORTLISTED", null).map((r) => r.id)).toEqual([

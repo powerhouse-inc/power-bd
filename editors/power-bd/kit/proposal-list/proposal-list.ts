@@ -265,25 +265,6 @@ export function proposalRows(input: ProposalRowsInput): ProposalRow[] {
     .map(({ row }) => row);
 }
 
-/** The rows of one status; every row for the choice that narrows nothing (`""`). */
-export function filterRows(
-  rows: readonly ProposalRow[],
-  status: string,
-): ProposalRow[] {
-  return rows.filter((r) => !status || r.status === status);
-}
-
-/** The status filter's choices: "All", then each status by its label. */
-export function statusOptions(): { value: string; label: string }[] {
-  return [
-    { value: "", label: "All" },
-    ...Object.entries(PROPOSAL_STATUS).map(([value, { label }]) => ({
-      value,
-      label,
-    })),
-  ];
-}
-
 /** How many open proposals wait on the team, and how many on the client. */
 export function waitSummary(rows: readonly ProposalRow[]): {
   us: number;
